@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "홈",
+    "shop": "쇼핑",
+    "about": "소개",
+    "blog": "블로그",
+    "contact": "연락처",
+    "free_shipping": "$150 이상 주문 시 무료 배송"
+  },
+  "home": {
+    "shop_now": "지금 쇼핑하기",
+    "view_lookbook": "룩북 보기",
+    "explore_collection": "컬렉션 탐색"
+  }
+}

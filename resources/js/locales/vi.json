@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "shop": "Cửa hàng",
+    "about": "Giới thiệu",
+    "blog": "Blog",
+    "contact": "Liên hệ",
+    "free_shipping": "Miễn phí vận chuyển cho tất cả đơn hàng trên $150"
+  },
+  "home": {
+    "shop_now": "Mua Ngay",
+    "view_lookbook": "Xem Lookbook",
+    "explore_collection": "Khám Phá Bộ Sưu Tập"
+  }
+}

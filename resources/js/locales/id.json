@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "shop": "Belanja",
+    "about": "Tentang",
+    "blog": "Blog",
+    "contact": "Kontak",
+    "free_shipping": "Gratis ongkos kirim untuk pesanan di atas $150"
+  },
+  "home": {
+    "shop_now": "Belanja Sekarang",
+    "view_lookbook": "Lihat Lookbook",
+    "explore_collection": "Jelajahi Koleksi"
+  }
+}

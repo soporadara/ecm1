@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "shop": "ショップ",
+    "about": "私たちについて",
+    "blog": "ブログ",
+    "contact": "お問い合わせ",
+    "free_shipping": "$150以上のご注文で送料無料"
+  },
+  "home": {
+    "shop_now": "今すぐ購入",
+    "view_lookbook": "ルックブックを見る",
+    "explore_collection": "コレクションを探索"
+  }
+}

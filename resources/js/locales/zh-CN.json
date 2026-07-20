@@ -1,0 +1,63 @@
+{
+  "nav": {
+    "home": "首页",
+    "shop": "商店",
+    "about": "关于我们",
+    "blog": "博客",
+    "contact": "联系我们",
+    "free_shipping": "满 $50 免费送货"
+  },
+  "home": {
+    "shop_now": "立即购物",
+    "view_lookbook": "查看产品图册",
+    "explore_collection": "探索系列",
+    "view_all": "查看全部",
+    "discover_now": "立即发现",
+    "shop_the_sale": "特价购物",
+    "shop_the_look": "购买此造型"
+  },
+  "benefits": {
+    "free_shipping": "免费送货",
+    "free_shipping_desc": "订单满 $150 免费",
+    "secure_payment": "安全付款",
+    "secure_payment_desc": "100% 安全结账",
+    "easy_returns": "轻松退货",
+    "easy_returns_desc": "30天退货政策",
+    "support": "24/7 全天候支持",
+    "support_desc": "专属客户支持"
+  },
+  "newsletter": {
+    "title": "订阅我们的新闻通讯",
+    "subtitle": "订阅以获取特别优惠、免费赠品和千载难逢的交易。",
+    "placeholder": "输入您的电子邮件地址",
+    "button": "订阅",
+    "footer_desc": "订阅以接收更新、获取独家优惠等。"
+  },
+  "footer": {
+    "desc": "发现最新时尚潮流。我们精心挑选的系列为您带来最优质的服装，让您每天看起来都光彩照人。",
+    "shop": "商店",
+    "company": "公司",
+    "about_us": "关于我们",
+    "careers": "招贤纳士",
+    "our_blog": "我们的博客",
+    "contact_us": "联系我们",
+    "store_locator": "寻找门店",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "rights": "版权所有。"
+  },
+  "db": {
+    "Spring Collection 2026": "2026 春季系列",
+    "Elevate Your Everyday Style": "提升您的日常风格",
+    "Shop by Category": "按类别购物",
+    "Explore our wide range of premium collections": "探索我们广泛的优质系列",
+    "Women": "女装",
+    "Men": "男装",
+    "Accessories": "配饰",
+    "Beauty": "美容",
+    "Trending Products": "热门产品",
+    "Handpicked for you": "为您精选",
+    "New Arrivals": "新品上市",
+    "Latest additions to our collection": "我们系列的最新添加"
+  }
+}
