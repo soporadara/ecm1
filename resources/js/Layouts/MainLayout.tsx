@@ -6,10 +6,13 @@ import MegaMenu from '../Components/MegaMenu';
 import MobileMenu from '../Components/MobileMenu';
 import SearchBar from '../Components/SearchBar';
 import RegionSettings from '../Components/RegionSettings';
+import SeoHead from '../Components/SeoHead';
 import { useCurrency } from '../Contexts/CurrencyContext';
 
 interface Props {
     children: ReactNode;
+    title?: string;
+    description?: string;
 }
 
 const languageCodes: Record<string, string> = {
@@ -22,12 +25,12 @@ const languageCodes: Record<string, string> = {
     'Indonesian': 'id'
 };
 
-export default function MainLayout({ children }: Props) {
+export default function MainLayout({ children, title, description }: Props) {
     const { global_nav, cart }: any = usePage().props;
     const { currentCurrency } = useCurrency();
     const { url } = usePage();
     const isHome = url === '/';
-    const { categories, brands, collections } = global_nav || { categories: [], brands: [], collections: [] };
+    const { categories, brands, collections, menus } = global_nav || { categories: [], brands: [], collections: [], menus: [] };
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -105,6 +108,7 @@ export default function MainLayout({ children }: Props) {
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-900 font-sans antialiased text-brand-gray dark:text-gray-300 flex flex-col relative transition-colors duration-300">
+            <SeoHead title={title} description={description} />
             
             {/* Drawers */}
             <MobileMenu 
@@ -138,30 +142,37 @@ export default function MainLayout({ children }: Props) {
                     <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between relative">
                         {/* Left: Navigation Menus */}
                         <nav className="flex items-center space-x-6 text-[13px] font-bold text-brand-dark dark:text-gray-300 w-1/3 h-full">
-                            <Link href="/" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.home')}</Link>
-                            {/* SHOP with MegaMenu */}
-                            <div className="flex items-center h-full group static cursor-pointer">
-                                <Link href="/shop" className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
-                                    {t('nav.shop')}
-                                    <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                </Link>
-                                <MegaMenu categories={categories} brands={brands} collections={collections} />
-                            </div>
-                            <Link href="/pages/about-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.about')}</Link>
-                            <Link href="/blog" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.blog')}</Link>
-                            <Link href="/pages/contact-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.contact')}</Link>
+                            {menus && menus.length > 0 ? (
+                                menus.find((m: any) => m.location === 'header' || m.name === 'Main Menu')?.items.map((item: any) => (
+                                    <div key={item.id} className="flex items-center h-full group static cursor-pointer">
+                                        <Link href={item.url} className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
+                                            {item.title}
+                                            {item.url === '/shop' && <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>}
+                                        </Link>
+                                        {item.url === '/shop' && <MegaMenu categories={categories} brands={brands} collections={collections} />}
+                                    </div>
+                                ))
+                            ) : (
+                                <>
+                                    <Link href="/" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.home')}</Link>
+                                    <div className="flex items-center h-full group static cursor-pointer">
+                                        <Link href="/shop" className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
+                                            {t('nav.shop')}
+                                            <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </Link>
+                                        <MegaMenu categories={categories} brands={brands} collections={collections} />
+                                    </div>
+                                    <Link href="/pages/about-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.about')}</Link>
+                                    <Link href="/blog" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.blog')}</Link>
+                                    <Link href="/pages/contact-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.contact')}</Link>
+                                </>
+                            )}
                         </nav>
                         
                         {/* Center: Logo */}
-                        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4">
+                        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
                             <Link href="/" className="flex items-center gap-2">
                                 <span className="font-bold tracking-tight text-2xl text-brand-secondary dark:text-white capitalize">Rafel</span>
-                            </Link>
-                            
-                            {/* Explicit CMS Link for the User */}
-                            <Link href="/admin" className="hidden lg:flex items-center gap-1 bg-red-50 text-red-600 px-3 py-1 rounded text-xs font-bold hover:bg-red-100 transition-colors">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                CMS Dashboard
                             </Link>
                         </div>
 
@@ -346,12 +357,13 @@ export default function MainLayout({ children }: Props) {
                         {/* Column 4: We Accept */}
                         <div>
                             <h3 className="text-sm font-bold text-brand-secondary dark:text-white mb-6 uppercase tracking-wider">We Accept</h3>
-                            <div className="flex flex-wrap gap-2">
-                                <img src="https://www.ababank.com/fileadmin/user_upload/ABA_Pay_Way/ABA_Pay_logo.png" alt="ABA PAY" className="h-8 object-contain bg-[#005E82] rounded p-1 border border-gray-100" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Visa_Logo.png/640px-Visa_Logo.png" alt="VISA" className="h-8 object-contain bg-white rounded p-1 border border-gray-100" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/1200px-Mastercard_2019_logo.svg.png" alt="Mastercard" className="h-8 object-contain bg-white rounded p-1 border border-gray-100" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/UnionPay_logo.svg/1200px-UnionPay_logo.svg.png" alt="UnionPay" className="h-8 object-contain bg-white rounded p-1 border border-gray-100" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/JCB_logo.svg/1200px-JCB_logo.svg.png" alt="JCB" className="h-8 object-contain bg-white rounded p-1 border border-gray-100" />
+                            <div className="flex flex-wrap gap-2 items-center">
+                                <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.0.0/min/flat/visa.svg" alt="Visa" className="h-8 w-auto object-contain bg-white rounded p-1 border border-gray-100" />
+                                <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.0.0/min/flat/mastercard.svg" alt="Mastercard" className="h-8 w-auto object-contain bg-white rounded p-1 border border-gray-100" />
+                                <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.0.0/min/flat/unionpay.svg" alt="UnionPay" className="h-8 w-auto object-contain bg-white rounded p-1 border border-gray-100" />
+                                <img src="https://cdn.jsdelivr.net/npm/payment-icons@1.0.0/min/flat/jcb.svg" alt="JCB" className="h-8 w-auto object-contain bg-white rounded p-1 border border-gray-100" />
+                                <img src="https://dai-ichicambodia.com/img/aba.png" alt="ABA" className="h-8 w-auto object-contain bg-white rounded p-1 border border-gray-100" />
+                                <img src="https://bredcambodia.com.kh/wp-content/uploads/2022/12/KHQR-available-here-logo-with-bg.png" alt="KHQR" className="h-8 w-auto object-contain rounded p-1 border border-gray-100" />
                                 <div className="h-8 flex items-center bg-white border border-gray-100 rounded px-2 gap-1">
                                     <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                     <span className="text-xs text-gray-600 font-medium whitespace-nowrap">Cash on Delivery</span>

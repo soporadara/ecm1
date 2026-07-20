@@ -19,7 +19,7 @@ class BannerController extends Controller
                 'id' => $heroSection->id,
                 'title' => $heroSection->title,
                 'subtitle' => $heroSection->subtitle,
-                'content_data' => $heroSection->content_data,
+                'content_data' => $heroSection->content,
                 'is_active' => $heroSection->is_active,
             ] : null,
         ]);
@@ -43,7 +43,7 @@ class BannerController extends Controller
             ['sort_order' => 1]
         );
 
-        $contentData = $heroSection->content_data ?? [];
+        $contentData = $heroSection->content ?? [];
 
         // Handle File Upload
         if ($request->media_source === 'upload' && $request->hasFile('media_file')) {
@@ -61,7 +61,7 @@ class BannerController extends Controller
         $heroSection->update([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'content_data' => $contentData,
+            'content' => $contentData,
         ]);
 
         return back()->with('success', 'Banner updated successfully.');

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import toast from 'react-hot-toast';
 
 export default function Index({ users, filters }: any) {
     const { data, setData, get } = useForm({
@@ -14,7 +15,11 @@ export default function Index({ users, filters }: any) {
     };
 
     const handleRoleChange = (userId: number, newRole: string) => {
-        router.put(route('admin.users.update', userId), { role: newRole }, { preserveScroll: true });
+        router.put(route('admin.users.update', userId), { role: newRole }, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('User role updated successfully'),
+            onError: () => toast.error('Failed to update user role'),
+        });
     };
 
     const roles = [

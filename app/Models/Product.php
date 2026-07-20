@@ -14,7 +14,6 @@ class Product extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'images' => 'array',
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'is_featured' => 'boolean'

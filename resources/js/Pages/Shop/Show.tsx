@@ -101,10 +101,15 @@ export default function Show({ product, relatedProducts }: any) {
     const stockToDisplay = activeVariant ? activeVariant.stock : product.stock;
     const discount = product.sale_price ? Math.round(((parseFloat(product.price) - parseFloat(product.sale_price)) / parseFloat(product.price)) * 100) : 0;
 
+    const shareOnTwitter = () => {
+        window.open(`https://twitter.com/intent/tweet?url=${window.location.href}&text=Check out ${product.name}`, '_blank');
+    };
+
     return (
-        <MainLayout>
-            <Head title={product.seo_title || product.name} />
-            
+        <MainLayout 
+            title={product.name} 
+            description={product.short_description || product.description.substring(0, 150)}
+        >
             {/* Breadcrumbs */}
             <div className="bg-gray-100 dark:bg-gray-900 py-6 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
                 <div className="container mx-auto px-4 lg:px-8">

@@ -16,7 +16,7 @@ class HomeController extends Controller
         $allProductIds = collect();
         
         foreach ($sections as $section) {
-            $content = json_decode($section->content, true);
+            $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
             if ($content && isset($content['product_ids'])) {
                 $allProductIds = $allProductIds->merge($content['product_ids']);
             }
@@ -38,8 +38,9 @@ class HomeController extends Controller
         // Transform sections to include their hydrated products
         $mappedSections = $sections->map(function ($section) use ($products, $trendingProducts, $popularProducts) {
             $data = $section->toArray();
-            $content = json_decode($section->content, true) ?? [];
-            $data['content_data'] = $content;
+            $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
+            $content = $content ?? [];
+            $data['content'] = $content;
 
             if (isset($content['product_ids'])) {
                 $data['products'] = collect($content['product_ids'])

@@ -48,7 +48,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'roles' => $request->user()->getRoleNames(),
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name'),
+                ]) : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -58,7 +61,13 @@ class HandleInertiaRequests extends Middleware
                 'categories' => \App\Models\Category::whereNull('parent_id')->with('children')->get(),
                 'brands' => \App\Models\Brand::take(6)->get(),
                 'collections' => \App\Models\Collection::where('is_active', true)->take(6)->get(),
+                'menus' => \Illuminate\Support\Facades\Schema::hasTable('menus') 
+                    ? \App\Models\Menu::with(['items' => fn($q) => $q->whereNull('parent_id')->with('children')])->get() 
+                    : [],
             ],
+            'seo_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
+                ? \App\Models\Setting::where('group', 'seo')->pluck('value', 'key')->toArray()
+                : [],
             'cart' => $cart,
         ];
     }

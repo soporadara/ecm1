@@ -44,10 +44,9 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('dashboard');
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
+
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
     Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
     Route::patch('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('orders.update');
@@ -55,12 +54,51 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
     Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class);
     
-    // Banner Settings
-    Route::get('settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('admin.settings.banner');
-    Route::post('settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('admin.settings.banner.update');
+    // Categories
+    Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
+
+    // Customers
+    Route::get('customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
+    Route::get('customers/{user}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
+
+    // Brands
+    Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Coupons
+    Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
     
+    // Media Library
+    Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
+    Route::post('media', [\App\Http\Controllers\Admin\MediaController::class, 'store'])->name('media.store');
+    Route::delete('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+    
+    // Menus
+    Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class)->except(['create', 'show', 'edit']);
+    Route::post('menus/{menu}/items', [\App\Http\Controllers\Admin\MenuController::class, 'storeItem'])->name('menus.items.store');
+    Route::put('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'updateItem'])->name('menus.items.update');
+    Route::delete('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+    
+    // Banner Settings
+    Route::get('/settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('settings.banner');
+    Route::post('/settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('admin.settings.banner.update');
+    
+    // SEO Settings
+    Route::get('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
+    Route::post('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'store'])->name('seo.store');
+
+    // Restored CMS Modules
+    Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'destroy']);
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+    Route::get('/themes', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('themes.index');
+    Route::get('/customize', [\App\Http\Controllers\Admin\ThemeController::class, 'customize'])->name('themes.customize');
+    Route::post('/customize', [\App\Http\Controllers\Admin\ThemeController::class, 'updateCustomize'])->name('themes.customize.update');
+
     // User management
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'update']);
+    
+    // Staff & RBAC
+    Route::resource('staff', \App\Http\Controllers\Admin\StaffController::class)->except(['show']);
 });
 
 Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');

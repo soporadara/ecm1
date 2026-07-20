@@ -13,7 +13,14 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
-        'image'
+        'image',
+        'parent_id',
+        'description',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function products(): HasMany

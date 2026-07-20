@@ -15,9 +15,7 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedRoles = ['superadmin', 'admin', 'supervisor', 'editor', 'support'];
-        
-        if (!auth()->check() || !in_array(auth()->user()->role, $allowedRoles)) {
+        if (!auth()->check() || !auth()->user()->can('dashboard.view')) {
             abort(403, 'Unauthorized access. Only authorized staff can view this page.');
         }
 

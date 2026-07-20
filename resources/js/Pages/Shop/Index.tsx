@@ -60,9 +60,7 @@ export default function Index({ products, filters }: any) {
     const activeFilterCount = Object.keys(filters).filter(k => k !== 'page' && k !== 'sort').length;
 
     return (
-        <MainLayout>
-            <Head title="Shop" />
-            
+        <MainLayout title="Shop">
             {/* Page Header */}
             <div className="bg-brand-secondary py-16 text-white relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10">

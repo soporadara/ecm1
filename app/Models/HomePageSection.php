@@ -7,4 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class HomePageSection extends Model
 {
     protected $guarded = [];
+
+    protected $casts = [
+        'content' => 'array',
+    ];
 }
