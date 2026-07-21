@@ -179,31 +179,26 @@ export default function Create() {
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t border-admin-border/50 flex flex-col sm:flex-row gap-6 bg-admin-bg p-4 rounded-xl">
-                        <div className="flex items-center">
-                            <input
-                                id="is_published"
-                                type="checkbox"
-                                className="rounded border-admin-border bg-admin-surface text-admin-primary focus:ring-admin-primary/50 h-5 w-5 transition-all"
-                                checked={data.is_published}
-                                onChange={e => setData('is_published', e.target.checked)}
-                            />
-                            <label htmlFor="is_published" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
-                                Publish Page
-                            </label>
-                        </div>
-                        <div className="flex items-center">
-                            <input
-                                id="is_private"
-                                type="checkbox"
-                                className="rounded border-admin-border bg-admin-surface text-admin-danger focus:ring-admin-danger/50 h-5 w-5 transition-all"
-                                checked={data.is_private}
-                                onChange={e => setData('is_private', e.target.checked)}
-                            />
-                            <label htmlFor="is_private" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
-                                Private (Hidden from public)
-                            </label>
-                        </div>
+                    <div className="pt-6 border-t border-admin-border/50 bg-admin-bg p-4 rounded-xl">
+                        <label className="block text-sm font-bold text-admin-text-muted mb-2 uppercase tracking-wide">Page Status</label>
+                        <select
+                            className="w-full sm:w-1/2 rounded-xl border-admin-border bg-admin-surface text-admin-text focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary transition-all duration-200"
+                            value={data.is_private ? 'private' : data.is_published ? 'published' : 'draft'}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === 'published') {
+                                    setData({ ...data, is_published: true, is_private: false });
+                                } else if (val === 'private') {
+                                    setData({ ...data, is_published: true, is_private: true });
+                                } else {
+                                    setData({ ...data, is_published: false, is_private: false });
+                                }
+                            }}
+                        >
+                            <option value="published">Public (Visible to everyone)</option>
+                            <option value="private">Private (Hidden from public)</option>
+                            <option value="draft">Draft (Not published)</option>
+                        </select>
                     </div>
 
                 </div>
