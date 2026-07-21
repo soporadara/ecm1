@@ -31,15 +31,15 @@
 
 @layer base {
     :root {
-        --admin-bg: #F6F7F9;
+        --admin-bg: #F0F2F5;
         --admin-surface: #FFFFFF;
-        --admin-surface-muted: #F1F3F5;
+        --admin-surface-muted: #F8FAFC;
         --admin-text: #172033;
         --admin-text-muted: #778196;
         --admin-border: #E5E8ED;
-        --admin-primary: #0F9F84;
-        --admin-primary-hover: #0B866F;
-        --admin-secondary: #FF9B42;
+        --admin-primary: #00A183;
+        --admin-primary-hover: #00886F;
+        --admin-secondary: #FF8A4C;
     }
     .dark {
         --admin-bg: #111815;

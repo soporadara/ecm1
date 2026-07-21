@@ -32,50 +32,45 @@ const NavGroup = ({
     currentPath: string;
     collapsed: boolean;
 }) => {
-    const [open, setOpen] = useState(true);
-
     const isActive = (href: string) => currentPath.startsWith(href) && href !== '/admin';
     const isExactActive = (href: string) => currentPath === href;
 
     return (
-        <div className="mb-1">
+        <div className="mb-4">
             {!collapsed && (
-                <button
-                    onClick={() => setOpen(!open)}
-                    className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors"
-                >
+                <div className="px-5 mb-2 text-xs font-bold text-admin-text-muted capitalize">
                     {label}
-                    <Icon
-                        d={open ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"}
-                        className="w-3 h-3"
-                    />
-                </button>
-            )}
-            {(open || collapsed) && (
-                <div className="space-y-0.5">
-                    {items.map((item) => {
-                        const active = isExactActive(item.href) || isActive(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                title={collapsed ? item.label : undefined}
-                                className={`
-                                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-                                    ${collapsed ? 'justify-center' : ''}
-                                    ${active
-                                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/50'
-                                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                                    }
-                                `}
-                            >
-                                <span className="flex-shrink-0">{item.icon}</span>
-                                {!collapsed && <span className="truncate">{item.label}</span>}
-                            </Link>
-                        );
-                    })}
                 </div>
             )}
+            <div className="space-y-1.5 px-3">
+                {items.map((item) => {
+                    const active = isExactActive(item.href) || isActive(item.href);
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            title={collapsed ? item.label : undefined}
+                            className={`
+                                flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
+                                ${collapsed ? 'justify-center' : ''}
+                                ${active
+                                    ? 'bg-admin-primary text-white shadow-lg shadow-admin-primary/30'
+                                    : 'text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text'
+                                }
+                            `}
+                        >
+                            <span className="flex-shrink-0">{item.icon}</span>
+                            {!collapsed && <span className="truncate">{item.label}</span>}
+                            {!collapsed && active && (
+                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-80" />
+                            )}
+                            {!collapsed && !active && (
+                                <Icon d="M9 5l7 7-7 7" className="ml-auto w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                            )}
+                        </Link>
+                    );
+                })}
+            </div>
         </div>
     );
 };
@@ -236,24 +231,23 @@ export default function AdminLayout({ children, title, actions }: Props) {
     ];
 
     const SidebarContent = () => (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-admin-surface border-r border-admin-border/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative z-10">
             {/* Store Header */}
-            <div className={`flex items-center border-b border-slate-700/50 ${collapsed ? 'p-3 justify-center' : 'p-5'}`}>
-                <Link href="/admin" className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-white text-sm">
+            <div className={`flex items-center pt-8 pb-6 ${collapsed ? 'px-4 justify-center' : 'px-8'}`}>
+                <Link href="/admin" className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 bg-admin-secondary rounded-[14px] flex items-center justify-center flex-shrink-0 font-black text-white text-lg shadow-lg shadow-admin-secondary/40">
                         R
                     </div>
                     {!collapsed && (
-                        <div className="min-w-0">
-                            <p className="font-bold text-white text-sm truncate">Rafel</p>
-                            <p className="text-xs text-slate-500 truncate">Admin Panel</p>
+                        <div className="min-w-0 flex items-center">
+                            <p className="font-extrabold text-admin-text text-2xl tracking-tight truncate lowercase">rafel</p>
                         </div>
                     )}
                 </Link>
                 {!collapsed && (
                     <button
                         onClick={() => setCollapsed(true)}
-                        className="ml-auto p-1 text-slate-500 hover:text-white rounded transition-colors"
+                        className="ml-auto p-1.5 text-admin-text-muted hover:text-admin-text hover:bg-admin-surface-muted rounded-xl transition-colors"
                         title="Collapse sidebar"
                     >
                         <Icon d="M11 19l-7-7 7-7m8 14l-7-7 7-7" className="w-4 h-4" />
@@ -262,7 +256,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 {collapsed && (
                     <button
                         onClick={() => setCollapsed(false)}
-                        className="absolute left-full ml-1 p-1 bg-slate-800 text-slate-400 hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute left-full ml-1 p-1 bg-white border border-admin-border shadow-sm text-admin-text-muted hover:text-admin-text rounded-full transition-colors opacity-0 group-hover:opacity-100"
                         title="Expand sidebar"
                     />
                 )}
@@ -278,26 +272,26 @@ export default function AdminLayout({ children, title, actions }: Props) {
             </nav>
 
             {/* User Footer */}
-            <div className={`border-t border-slate-700/50 p-3 ${collapsed ? 'flex justify-center' : ''}`}>
+            <div className={`mt-auto mb-6 mx-4 p-4 rounded-2xl border border-admin-border/50 bg-admin-surface-muted/50 ${collapsed ? 'flex justify-center' : ''}`}>
                 {collapsed ? (
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                    <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0"
                         title={auth?.user?.name}>
                         {auth?.user?.name?.charAt(0)?.toUpperCase()}
                     </div>
                 ) : (
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0 border border-admin-primary/20">
                             {auth?.user?.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">{auth?.user?.name}</p>
-                            <p className="text-xs text-slate-500 truncate capitalize">{auth?.user?.role}</p>
+                            <p className="text-sm font-bold text-admin-text truncate">{auth?.user?.name}</p>
+                            <p className="text-xs font-semibold text-admin-text-muted truncate capitalize">{auth?.user?.role}</p>
                         </div>
                         <Link
                             href="/logout"
                             method="post"
                             as="button"
-                            className="p-1.5 text-slate-500 hover:text-white rounded transition-colors"
+                            className="p-2 text-admin-text-muted hover:text-admin-danger hover:bg-admin-danger/10 rounded-xl transition-colors"
                             title="Logout"
                         >
                             <Icon d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" className="w-4 h-4" />
@@ -352,45 +346,66 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-16' : 'md:ml-60'}`}
             >
                 {/* Top Bar */}
-                <header className="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-                    {/* Left: Mobile hamburger + Title */}
-                    <div className="flex items-center gap-3 min-w-0">
+                <header className="bg-transparent pt-8 pb-4 flex items-center justify-between px-4 md:px-8 z-30">
+                    {/* Left: Mobile hamburger + Greeting */}
+                    <div className="flex items-center gap-4 min-w-0">
                         <button
-                            className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="md:hidden p-2 text-admin-text-muted hover:text-admin-text rounded-xl hover:bg-admin-surface-muted transition-colors"
                             onClick={() => setMobileOpen(!mobileOpen)}
                         >
-                            <Icon d="M4 6h16M4 12h16M4 18h16" className="w-5 h-5" />
+                            <Icon d="M4 6h16M4 12h16M4 18h16" className="w-6 h-6" />
                         </button>
-                        {title && (
-                            <h1 className="text-base font-semibold text-slate-800 truncate">{title}</h1>
-                        )}
+                        
+                        <div className="hidden md:block">
+                            <h1 className="text-[26px] font-bold text-admin-text flex items-center gap-2">
+                                Good morning {auth?.user?.name?.split(' ')[0]} <span className="text-2xl">👋</span>
+                            </h1>
+                            <p className="text-[13px] text-admin-text-muted mt-1 font-medium">Time to rise up for today's tasks</p>
+                        </div>
                     </div>
 
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-2">
-                        {/* Search */}
-                        <button
-                            onClick={() => setSearchOpen(true)}
-                            className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-                        >
-                            <Icon d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" className="w-4 h-4" />
-                            <span>Search</span>
-                            <kbd className="text-xs bg-white px-1.5 py-0.5 rounded border border-slate-300 text-slate-400">⌘K</kbd>
+                    {/* Right: Actions & Profile */}
+                    <div className="flex items-center gap-4">
+                        {/* Notification Bell */}
+                        <button className="relative p-2.5 text-admin-text-muted hover:text-admin-text transition-colors bg-admin-surface rounded-full shadow-sm border border-admin-border/40">
+                            <Icon d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" className="w-5 h-5" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-admin-primary rounded-full border-2 border-admin-surface"></span>
                         </button>
 
-                        {/* View Storefront */}
-                        <a
-                            href="/"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                            <Icon d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" className="w-4 h-4" />
-                            <span>Storefront</span>
-                        </a>
+                        {/* Search & Storefront (Desktop only) */}
+                        <div className="hidden md:flex items-center gap-2">
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className="p-2.5 text-admin-text-muted hover:text-admin-text transition-colors bg-admin-surface rounded-full shadow-sm border border-admin-border/40"
+                                title="Search (Cmd+K)"
+                            >
+                                <Icon d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" className="w-5 h-5" />
+                            </button>
+                            <a
+                                href="/"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-2.5 text-admin-text-muted hover:text-admin-text transition-colors bg-admin-surface rounded-full shadow-sm border border-admin-border/40"
+                                title="Storefront"
+                            >
+                                <Icon d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" className="w-5 h-5" />
+                            </a>
+                        </div>
 
+                        {/* Profile Pill */}
+                        <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-admin-border/50">
+                            <div className="text-right">
+                                <p className="text-[11px] font-bold text-admin-text-muted uppercase tracking-wider">Your Balance</p>
+                                <p className="text-[15px] font-bold text-admin-primary">$566.55</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm">
+                                {auth?.user?.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                            <Icon d="M19 9l-7 7-7-7" className="w-4 h-4 text-admin-text-muted ml-1" />
+                        </div>
+                        
                         {/* Primary Page Action Slot */}
-                        {actions && <div className="flex items-center gap-2">{actions}</div>}
+                        {actions && <div className="flex items-center gap-2 ml-2">{actions}</div>}
                     </div>
                 </header>
 
