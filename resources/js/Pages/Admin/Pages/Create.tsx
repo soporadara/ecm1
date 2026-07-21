@@ -12,7 +12,9 @@ export default function Create() {
         content: '',
         seo_title: '',
         seo_description: '',
+        banner_image: null as File | null,
         is_published: true,
+        is_private: false,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -123,7 +125,7 @@ export default function Create() {
                                         placeholder="https://..."
                                         className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
                                         value={typeof data.banner_image === 'string' ? data.banner_image : ''}
-                                        onChange={e => setData('banner_image', e.target.value)}
+                                        onChange={e => setData('banner_image', e.target.value as any)}
                                     />
                                     <div className="flex items-center gap-3">
                                         <span className="text-sm text-gray-500 font-bold">OR</span>
@@ -177,17 +179,31 @@ export default function Create() {
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t border-gray-100 dark:border-gray-700 flex items-center">
-                        <input
-                            id="is_published"
-                            type="checkbox"
-                            className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-brand-primary focus:ring-brand-primary h-5 w-5"
-                            checked={data.is_published}
-                            onChange={e => setData('is_published', e.target.checked)}
-                        />
-                        <label htmlFor="is_published" className="ml-3 block text-sm font-medium text-gray-900 dark:text-white">
-                            Publish Page immediately
-                        </label>
+                    <div className="pt-6 border-t border-admin-border/50 flex flex-col sm:flex-row gap-6 bg-admin-bg p-4 rounded-xl">
+                        <div className="flex items-center">
+                            <input
+                                id="is_published"
+                                type="checkbox"
+                                className="rounded border-admin-border bg-admin-surface text-admin-primary focus:ring-admin-primary/50 h-5 w-5 transition-all"
+                                checked={data.is_published}
+                                onChange={e => setData('is_published', e.target.checked)}
+                            />
+                            <label htmlFor="is_published" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
+                                Publish Page
+                            </label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                id="is_private"
+                                type="checkbox"
+                                className="rounded border-admin-border bg-admin-surface text-admin-danger focus:ring-admin-danger/50 h-5 w-5 transition-all"
+                                checked={data.is_private}
+                                onChange={e => setData('is_private', e.target.checked)}
+                            />
+                            <label htmlFor="is_private" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
+                                Private (Hidden from public)
+                            </label>
+                        </div>
                     </div>
 
                 </div>

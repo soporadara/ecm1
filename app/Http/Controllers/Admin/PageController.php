@@ -78,7 +78,8 @@ class PageController extends Controller
             'seo_title' => 'nullable|string|max:255',
             'seo_description' => 'nullable|string',
             'banner_image' => 'nullable',
-            'is_published' => 'boolean'
+            'is_published' => 'boolean',
+            'is_private' => 'boolean'
         ]);
 
         if (empty($validated['slug'])) {
@@ -115,7 +116,8 @@ class PageController extends Controller
             'seo_title' => 'nullable|string|max:255',
             'seo_description' => 'nullable|string',
             'banner_image' => 'nullable',
-            'is_published' => 'boolean'
+            'is_published' => 'boolean',
+            'is_private' => 'boolean'
         ]);
 
         if (empty($validated['slug'])) {

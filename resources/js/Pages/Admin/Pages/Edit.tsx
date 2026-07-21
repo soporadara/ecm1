@@ -15,6 +15,7 @@ export default function Edit({ page }: any) {
         seo_description: page.seo_description || '',
         banner_image: page.banner_image || '',
         is_published: page.is_published,
+        is_private: page.is_private,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -179,17 +180,31 @@ export default function Edit({ page }: any) {
                         </div>
                     </div>
 
-                    <div className="pt-6 border-t border-admin-border/50 flex items-center bg-admin-bg p-4 rounded-xl">
-                        <input
-                            id="is_published"
-                            type="checkbox"
-                            className="rounded border-admin-border bg-admin-surface text-admin-primary focus:ring-admin-primary/50 h-5 w-5 transition-all"
-                            checked={data.is_published}
-                            onChange={e => setData('is_published', e.target.checked)}
-                        />
-                        <label htmlFor="is_published" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
-                            Publish Page
-                        </label>
+                    <div className="pt-6 border-t border-admin-border/50 flex flex-col sm:flex-row gap-6 bg-admin-bg p-4 rounded-xl">
+                        <div className="flex items-center">
+                            <input
+                                id="is_published"
+                                type="checkbox"
+                                className="rounded border-admin-border bg-admin-surface text-admin-primary focus:ring-admin-primary/50 h-5 w-5 transition-all"
+                                checked={data.is_published}
+                                onChange={e => setData('is_published', e.target.checked)}
+                            />
+                            <label htmlFor="is_published" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
+                                Publish Page
+                            </label>
+                        </div>
+                        <div className="flex items-center">
+                            <input
+                                id="is_private"
+                                type="checkbox"
+                                className="rounded border-admin-border bg-admin-surface text-admin-danger focus:ring-admin-danger/50 h-5 w-5 transition-all"
+                                checked={data.is_private}
+                                onChange={e => setData('is_private', e.target.checked)}
+                            />
+                            <label htmlFor="is_private" className="ml-3 block text-sm font-bold text-admin-text cursor-pointer">
+                                Private (Hidden from public)
+                            </label>
+                        </div>
                     </div>
 
                 </div>
