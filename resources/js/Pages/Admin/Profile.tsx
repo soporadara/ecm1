@@ -11,14 +11,23 @@ export default function AdminProfile() {
         name: user.name,
         email: user.email,
         phone_e164: user.phone_e164 || '',
-        current_password: '',
     });
 
     const updateProfile = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const originalPhone = user.phone_e164 || '';
+        const newPhone = data.phone_e164 || '';
+        if (newPhone !== originalPhone && newPhone.length > 0) {
+            const code = window.prompt(`An SMS with a verification code has been sent to ${newPhone}.\n\nPlease enter the 6-digit code to verify (use 123456 for testing):`);
+            if (code !== '123456') {
+                alert('Invalid verification code.');
+                return;
+            }
+        }
+
         put(route('profile.update'), {
             preserveScroll: true,
-            onSuccess: () => setData('current_password', ''),
         });
     };
 
@@ -138,12 +147,12 @@ export default function AdminProfile() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-admin-text-muted mb-2">Email Address</label>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-2">Email Address <span className="text-xs font-normal opacity-70">(Cannot be changed)</span></label>
                                 <input
                                     type="email"
                                     value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
-                                    className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-3 text-admin-text font-medium focus:ring-2 focus:ring-admin-primary/50 transition-all"
+                                    disabled
+                                    className="w-full bg-admin-surface-muted/50 border-none rounded-xl px-4 py-3 text-admin-text-muted font-medium cursor-not-allowed"
                                 />
                                 {errors.email && <p className="text-sm text-admin-danger mt-1 font-medium">{errors.email}</p>}
                             </div>
@@ -159,20 +168,6 @@ export default function AdminProfile() {
                                 />
                                 {errors.phone_e164 && <p className="text-sm text-admin-danger mt-1 font-medium">{errors.phone_e164}</p>}
                             </div>
-
-                            <hr className="border-admin-border/50 my-6" />
-
-                            <div>
-                                <label className="block text-sm font-bold text-admin-text-muted mb-2">Current Password (Required to save changes)</label>
-                                <input
-                                    type="password"
-                                    value={data.current_password}
-                                    onChange={e => setData('current_password', e.target.value)}
-                                    className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-3 text-admin-text font-medium focus:ring-2 focus:ring-admin-primary/50 transition-all"
-                                />
-                                {errors.current_password && <p className="text-sm text-admin-danger mt-1 font-medium">{errors.current_password}</p>}
-                            </div>
-
                             <div className="pt-2 flex items-center justify-between">
                                 {recentlySuccessful && <span className="text-sm font-bold text-admin-primary">Saved successfully!</span>}
                                 <button

@@ -44,7 +44,6 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone_e164' => ['nullable', 'string', 'max:20'],
-            'current_password' => ['required', 'current_password'],
         ]);
 
         $user->fill([

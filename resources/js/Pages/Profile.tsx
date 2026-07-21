@@ -11,14 +11,23 @@ export default function Profile() {
         name: user.name,
         email: user.email,
         phone_e164: user.phone_e164 || '',
-        current_password: '',
     });
 
     const updateProfile = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const originalPhone = user.phone_e164 || '';
+        const newPhone = data.phone_e164 || '';
+        if (newPhone !== originalPhone && newPhone.length > 0) {
+            const code = window.prompt(`An SMS with a verification code has been sent to ${newPhone}.\n\nPlease enter the 6-digit code to verify (use 123456 for testing):`);
+            if (code !== '123456') {
+                alert('Invalid verification code.');
+                return;
+            }
+        }
+
         put(route('profile.update'), {
             preserveScroll: true,
-            onSuccess: () => setData('current_password', ''),
         });
     };
 
@@ -144,12 +153,12 @@ export default function Profile() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address <span className="text-xs text-gray-400">(Cannot be changed)</span></label>
                                 <input
                                     type="email"
                                     value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
-                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
+                                    disabled
+                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                 />
                                 {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                             </div>
@@ -168,16 +177,7 @@ export default function Profile() {
 
                             <hr className="border-gray-200 dark:border-gray-800 my-6" />
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password <span className="text-gray-400">(Required)</span></label>
-                                <input
-                                    type="password"
-                                    value={data.current_password}
-                                    onChange={e => setData('current_password', e.target.value)}
-                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
-                                />
-                                {errors.current_password && <p className="text-sm text-red-500 mt-1">{errors.current_password}</p>}
-                            </div>
+
 
                             <div className="pt-2 flex items-center justify-between">
                                 {recentlySuccessful && <span className="text-sm font-medium text-green-600 dark:text-green-400">Saved successfully!</span>}
