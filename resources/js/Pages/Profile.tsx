@@ -13,22 +13,35 @@ export default function Profile() {
         phone_e164: user.phone_e164 || '',
     });
 
+    const [showSmsModal, setShowSmsModal] = useState(false);
+    const [smsCode, setSmsCode] = useState('');
+
+    const submitForm = () => {
+        put(route('profile.update'), {
+            preserveScroll: true,
+            onSuccess: () => setShowSmsModal(false),
+        });
+    };
+
     const updateProfile = (e: React.FormEvent) => {
         e.preventDefault();
         
         const originalPhone = user.phone_e164 || '';
         const newPhone = data.phone_e164 || '';
         if (newPhone !== originalPhone && newPhone.length > 0) {
-            const code = window.prompt(`An SMS with a verification code has been sent to ${newPhone}.\n\nPlease enter the 6-digit code to verify (use 123456 for testing):`);
-            if (code !== '123456') {
-                alert('Invalid verification code.');
-                return;
-            }
+            setShowSmsModal(true);
+        } else {
+            submitForm();
         }
+    };
 
-        put(route('profile.update'), {
-            preserveScroll: true,
-        });
+    const handleSmsVerify = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (smsCode === '123456') {
+            submitForm();
+        } else {
+            alert('Invalid verification code. Please use 123456 for testing.');
+        }
     };
 
     // Password Form
@@ -243,6 +256,49 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
+
+            {/* SMS Verification Modal */}
+            {showSmsModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Verify Your Phone Number</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6">
+                            We've sent an SMS with a verification code to <strong>{data.phone_e164}</strong>. 
+                            (For testing, please enter <strong>123456</strong>).
+                        </p>
+                        <form onSubmit={handleSmsVerify} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">6-Digit Code</label>
+                                <input
+                                    type="text"
+                                    value={smsCode}
+                                    onChange={e => setSmsCode(e.target.value)}
+                                    maxLength={6}
+                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white text-center tracking-[0.5em] text-lg transition-all"
+                                    placeholder="••••••"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSmsModal(false)}
+                                    className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="flex-1 px-4 py-3 bg-black dark:bg-white text-white dark:text-black font-semibold rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                >
+                                    {processing ? 'Verifying...' : 'Verify & Save'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }

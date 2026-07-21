@@ -13,22 +13,35 @@ export default function AdminProfile() {
         phone_e164: user.phone_e164 || '',
     });
 
+    const [showSmsModal, setShowSmsModal] = useState(false);
+    const [smsCode, setSmsCode] = useState('');
+
+    const submitForm = () => {
+        put(route('profile.update'), {
+            preserveScroll: true,
+            onSuccess: () => setShowSmsModal(false),
+        });
+    };
+
     const updateProfile = (e: React.FormEvent) => {
         e.preventDefault();
         
         const originalPhone = user.phone_e164 || '';
         const newPhone = data.phone_e164 || '';
         if (newPhone !== originalPhone && newPhone.length > 0) {
-            const code = window.prompt(`An SMS with a verification code has been sent to ${newPhone}.\n\nPlease enter the 6-digit code to verify (use 123456 for testing):`);
-            if (code !== '123456') {
-                alert('Invalid verification code.');
-                return;
-            }
+            setShowSmsModal(true);
+        } else {
+            submitForm();
         }
+    };
 
-        put(route('profile.update'), {
-            preserveScroll: true,
-        });
+    const handleSmsVerify = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (smsCode === '123456') {
+            submitForm();
+        } else {
+            alert('Invalid verification code. Please use 123456 for testing.');
+        }
     };
 
     // Password Form
@@ -237,6 +250,49 @@ export default function AdminProfile() {
                     </div>
                 </div>
             </div>
+
+            {/* SMS Verification Modal */}
+            {showSmsModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-admin-surface rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                        <h3 className="text-xl font-bold text-admin-text mb-4">Verify Your Phone Number</h3>
+                        <p className="text-admin-text-muted mb-6">
+                            We've sent an SMS with a verification code to <strong>{data.phone_e164}</strong>. 
+                            (For testing, please enter <strong>123456</strong>).
+                        </p>
+                        <form onSubmit={handleSmsVerify} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-2">6-Digit Code</label>
+                                <input
+                                    type="text"
+                                    value={smsCode}
+                                    onChange={e => setSmsCode(e.target.value)}
+                                    maxLength={6}
+                                    className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-3 text-admin-text font-medium focus:ring-2 focus:ring-admin-primary/50 text-center tracking-[0.5em] text-lg"
+                                    placeholder="••••••"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSmsModal(false)}
+                                    className="flex-1 px-4 py-3 bg-admin-surface-muted text-admin-text font-bold rounded-xl hover:bg-admin-border/50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="flex-1 px-4 py-3 bg-admin-primary text-white font-bold rounded-xl hover:bg-admin-primary-hover shadow-lg shadow-admin-primary/30 transition-all disabled:opacity-50"
+                                >
+                                    {processing ? 'Verifying...' : 'Verify & Save'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
