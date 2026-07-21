@@ -49,9 +49,8 @@ const NavGroup = ({
                         <Link
                             key={item.href}
                             href={item.href}
-                            title={collapsed ? item.label : undefined}
                             className={`
-                                flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
+                                group relative flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
                                 ${collapsed ? 'justify-center' : ''}
                                 ${active
                                     ? 'bg-admin-primary text-white shadow-lg shadow-admin-primary/30'
@@ -61,6 +60,14 @@ const NavGroup = ({
                         >
                             <span className="flex-shrink-0">{item.icon}</span>
                             {!collapsed && <span className="truncate">{item.label}</span>}
+                            
+                            {/* Custom Tooltip for collapsed state */}
+                            {collapsed && (
+                                <div className="absolute left-full ml-3 px-3 py-1.5 bg-admin-text text-white text-xs font-semibold rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-xl before:content-[''] before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-1 before:border-4 before:border-transparent before:border-r-admin-text">
+                                    {item.label}
+                                </div>
+                            )}
+
                             {!collapsed && active && (
                                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-80" />
                             )}
