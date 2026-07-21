@@ -307,20 +307,20 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* Desktop Sidebar */}
             <aside
                 className={`
-                    hidden md:flex flex-col fixed left-0 top-0 h-full z-40 bg-admin-primary transition-all duration-300 ease-in-out
-                    ${collapsed ? 'w-16' : 'w-60'}
+                    hidden md:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-300 ease-in-out
+                    ${collapsed ? 'w-20' : 'w-64'}
                 `}
             >
+                <SidebarContent />
                 {collapsed && (
                     <button
                         onClick={() => setCollapsed(false)}
-                        className="absolute -right-3 top-20 w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-indigo-600 transition-colors shadow-md"
+                        className="absolute -right-4 top-24 w-8 h-8 bg-admin-surface border-2 border-admin-bg rounded-full flex items-center justify-center text-admin-text hover:text-admin-primary hover:border-admin-primary transition-all shadow-md z-50 cursor-pointer"
                         title="Expand"
                     >
-                        <Icon d="M9 5l7 7-7 7" className="w-3 h-3" />
+                        <Icon d="M9 5l7 7-7 7" className="w-4 h-4 ml-0.5" />
                     </button>
                 )}
-                <SidebarContent />
             </aside>
 
             {/* Mobile Overlay */}
@@ -334,7 +334,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* Mobile Sidebar */}
             <aside
                 className={`
-                    fixed left-0 top-0 h-full w-64 z-50 bg-admin-primary transition-transform duration-300 ease-in-out md:hidden
+                    fixed left-0 top-0 h-full w-64 z-50 transition-transform duration-300 ease-in-out md:hidden
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >
@@ -343,7 +343,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
 
             {/* Main Content */}
             <div
-                className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-16' : 'md:ml-60'}`}
+                className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}
             >
                 {/* Top Bar */}
                 <header className="bg-transparent pt-8 pb-4 flex items-center justify-between px-4 md:px-8 z-30">
