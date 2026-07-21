@@ -63,24 +63,24 @@ export default function Index({ pages }: any) {
                                                         System
                                                     </span>
                                                 )}
-                                                {page.is_private && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-admin-danger/10 text-admin-danger border border-admin-danger/20">
-                                                        Private
-                                                    </span>
-                                                )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-admin-text-muted font-medium">
                                             {page.slug}
                                         </td>
                                         <td className="px-6 py-4">
-                                            {page.is_published ? (
+                                            {page.is_private ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-admin-danger/10 text-admin-danger border border-admin-danger/20">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-admin-danger"></span>
+                                                    Private
+                                                </span>
+                                            ) : page.is_published ? (
                                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-admin-success/10 text-admin-success">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-admin-success"></span>
                                                     Published
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-admin-surface-muted text-admin-text-muted">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-admin-surface-muted text-admin-text-muted border border-admin-border/50">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-admin-text-muted/50"></span>
                                                     Draft
                                                 </span>
