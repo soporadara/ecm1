@@ -122,7 +122,7 @@ const NavGroup = ({
 };
 
 export default function AdminLayout({ children, title, actions }: Props) {
-    const { auth, ziggy } = usePage().props as any;
+    const { auth, ziggy, general_settings } = usePage().props as any;
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/admin';
 
     const [collapsed, setCollapsed] = useState(() => {
