@@ -75,6 +75,9 @@ class HandleInertiaRequests extends Middleware
             'seo_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
                 ? \App\Models\Setting::where('group', 'seo')->pluck('value', 'key')->toArray()
                 : [],
+            'general_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
+                ? \App\Models\Setting::where('group', 'general')->pluck('value', 'key')->toArray()
+                : [],
             'cart' => $cart,
         ];
     }

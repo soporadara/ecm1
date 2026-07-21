@@ -2,8 +2,10 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 import RichTextEditor from '../../../Components/RichTextEditor';
+import { useState } from 'react';
 
 export default function Edit({ page }: any) {
+    const [editorMode, setEditorMode] = useState<'visual' | 'code'>('visual');
     const { data, setData, post, processing, errors } = useForm({
         _method: 'put',
         title: page.title || '',
@@ -20,6 +22,20 @@ export default function Edit({ page }: any) {
         post(`/admin/pages/${page.id}`, {
             onSuccess: () => toast.success('Page updated successfully!')
         });
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result as string;
+            setData('content', content);
+            setEditorMode('code');
+            toast.success('File loaded into code editor');
+        };
+        reader.readAsText(file);
     };
 
     return (
@@ -68,11 +84,34 @@ export default function Edit({ page }: any) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-admin-text-muted mb-2 uppercase tracking-wide">Content</label>
-                        <RichTextEditor
-                            value={data.content}
-                            onChange={(content) => setData('content', content)}
-                        />
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-sm font-bold text-admin-text-muted uppercase tracking-wide">Content</label>
+                            <div className="flex items-center gap-3">
+                                <label className="text-xs text-admin-primary hover:text-admin-primary-hover cursor-pointer flex items-center gap-1 font-bold">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    Upload HTML File
+                                    <input type="file" accept=".html,.txt" className="hidden" onChange={handleFileUpload} />
+                                </label>
+                                <div className="bg-admin-surface-muted p-1 rounded-lg inline-flex border border-admin-border/50">
+                                    <button type="button" onClick={() => setEditorMode('visual')} className={`px-3 py-1 text-xs font-bold rounded ${editorMode === 'visual' ? 'bg-admin-surface text-admin-text shadow-sm' : 'text-admin-text-muted hover:text-admin-text'}`}>Visual Editor</button>
+                                    <button type="button" onClick={() => setEditorMode('code')} className={`px-3 py-1 text-xs font-bold rounded ${editorMode === 'code' ? 'bg-admin-surface text-admin-text shadow-sm' : 'text-admin-text-muted hover:text-admin-text'}`}>Raw Code</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {editorMode === 'visual' ? (
+                            <RichTextEditor
+                                value={data.content}
+                                onChange={(content) => setData('content', content)}
+                            />
+                        ) : (
+                            <textarea
+                                value={data.content}
+                                onChange={(e) => setData('content', e.target.value)}
+                                className="w-full h-[500px] font-mono text-sm p-4 rounded-xl border-admin-border bg-admin-bg text-[#4ade80] focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary transition-all duration-200"
+                                placeholder="<html>...</html> or <style>...</style> <div>...</div>"
+                            />
+                        )}
                         {errors.content && <p className="text-admin-danger text-xs font-medium mt-1.5">{errors.content}</p>}
                     </div>
 

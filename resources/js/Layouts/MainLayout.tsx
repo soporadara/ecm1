@@ -26,7 +26,7 @@ const languageCodes: Record<string, string> = {
 };
 
 export default function MainLayout({ children, title, description }: Props) {
-    const { auth, global_nav, cart }: any = usePage().props;
+    const { auth, global_nav, cart, general_settings }: any = usePage().props;
     const { currentCurrency } = useCurrency();
     const { url } = usePage();
     const isHome = url === '/';
@@ -174,7 +174,11 @@ export default function MainLayout({ children, title, description }: Props) {
                         {/* Center: Logo */}
                         <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
                             <Link href="/" className="flex items-center gap-2">
-                                <span className="font-bold tracking-tight text-2xl text-brand-secondary dark:text-white capitalize">Rafel</span>
+                                {general_settings?.store_logo ? (
+                                    <img src={general_settings.store_logo} alt={general_settings?.store_name || 'Store Logo'} className="h-10 w-auto object-contain" />
+                                ) : (
+                                    <span className="font-bold tracking-tight text-2xl text-brand-secondary dark:text-white capitalize">{general_settings?.store_name || 'Rafel'}</span>
+                                )}
                             </Link>
                         </div>
 
@@ -256,7 +260,11 @@ export default function MainLayout({ children, title, description }: Props) {
                     
                     <div className="absolute left-1/2 transform -translate-x-1/2">
                         <Link href="/" className="flex items-center gap-1">
-                            <span className="font-bold tracking-tight text-xl text-brand-secondary dark:text-white capitalize">Rafel</span>
+                            {general_settings?.store_logo ? (
+                                <img src={general_settings.store_logo} alt={general_settings?.store_name || 'Store Logo'} className="h-8 w-auto object-contain" />
+                            ) : (
+                                <span className="font-bold tracking-tight text-xl text-brand-secondary dark:text-white capitalize">{general_settings?.store_name || 'Rafel'}</span>
+                            )}
                         </Link>
                     </div>
 
@@ -283,10 +291,14 @@ export default function MainLayout({ children, title, description }: Props) {
                         {/* Column 1: Store Info */}
                         <div>
                             <Link href="/" className="inline-block mb-6">
-                                <span className="font-bold tracking-tight text-3xl text-brand-secondary dark:text-white capitalize">Rafel</span>
+                                {general_settings?.store_logo ? (
+                                    <img src={general_settings.store_logo} alt={general_settings?.store_name || 'Store Logo'} className="h-12 w-auto object-contain grayscale opacity-80" />
+                                ) : (
+                                    <span className="font-bold tracking-tight text-3xl text-brand-secondary dark:text-white capitalize">{general_settings?.store_name || 'Rafel'}</span>
+                                )}
                             </Link>
                             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-                                Elevate your everyday style with Rafel. We bring you the latest fashion trends and high-quality accessories from top global brands right to your doorstep.
+                                Elevate your everyday style with {general_settings?.store_name || 'Rafel'}. We bring you the latest fashion trends and high-quality accessories from top global brands right to your doorstep.
                             </p>
                             <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                                 <li className="flex items-start gap-3">
@@ -379,7 +391,7 @@ export default function MainLayout({ children, title, description }: Props) {
                     </div>
                     
                     <div className="border-t border-gray-200 dark:border-gray-800 mt-16 pt-8 pb-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Powered By Rafel &copy; {new Date().getFullYear()}
+                        Powered By {general_settings?.store_name || 'Rafel'} &copy; {new Date().getFullYear()}
                     </div>
                 </div>
             </footer>

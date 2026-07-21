@@ -5,6 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title inertia>{{ config('app.name', 'Pengu') }}</title>
         
+        @php
+            $favicon = \Illuminate\Support\Facades\Schema::hasTable('settings') ? \App\Models\Setting::where('group', 'general')->where('key', 'store_favicon')->value('value') : null;
+        @endphp
+        @if($favicon)
+            <link rel="icon" href="{{ $favicon }}">
+        @endif
+        
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">

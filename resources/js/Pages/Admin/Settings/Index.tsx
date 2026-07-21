@@ -10,6 +10,8 @@ interface SettingsProps {
         support_phone?: string;
         currency?: string;
         store_address?: string;
+        store_logo?: string;
+        store_favicon?: string;
     };
 }
 
@@ -20,7 +22,12 @@ export default function GeneralSettings({ settings }: SettingsProps) {
         support_phone: settings.support_phone || '',
         currency: settings.currency || 'USD',
         store_address: settings.store_address || '',
+        store_logo: null as File | null,
+        store_favicon: null as File | null,
     });
+
+    const [logoPreview, setLogoPreview] = React.useState<string | null>(settings.store_logo || null);
+    const [faviconPreview, setFaviconPreview] = React.useState<string | null>(settings.store_favicon || null);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -106,6 +113,50 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             ></textarea>
                             {errors.store_address && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_address}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Logo (Header)</label>
+                                {logoPreview && (
+                                    <div className="mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
+                                        <img src={logoPreview} alt="Store Logo" className="h-12 object-contain" />
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={e => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setData('store_logo', e.target.files[0]);
+                                            setLogoPreview(URL.createObjectURL(e.target.files[0]));
+                                        }
+                                    }}
+                                    className="w-full text-sm text-gray-900 dark:text-white"
+                                />
+                                {errors.store_logo && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_logo}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Favicon</label>
+                                {faviconPreview && (
+                                    <div className="mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
+                                        <img src={faviconPreview} alt="Store Favicon" className="h-8 object-contain" />
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/png, image/jpeg, image/x-icon"
+                                    onChange={e => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setData('store_favicon', e.target.files[0]);
+                                            setFaviconPreview(URL.createObjectURL(e.target.files[0]));
+                                        }
+                                    }}
+                                    className="w-full text-sm text-gray-900 dark:text-white"
+                                />
+                                {errors.store_favicon && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_favicon}</p>}
+                            </div>
                         </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">

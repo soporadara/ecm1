@@ -16,8 +16,11 @@ class MenuController extends Controller
             $q->whereNull('parent_id')->with('children');
         }])->get();
 
+        $pages = \App\Models\Page::select('id', 'title', 'slug')->get();
+
         return Inertia::render('Admin/Menus/Index', [
-            'menus' => $menus
+            'menus' => $menus,
+            'pages' => $pages,
         ]);
     }
 
@@ -69,6 +72,25 @@ class MenuController extends Controller
         $menu->items()->create($validated);
 
         return back()->with('success', 'Menu item added.');
+    }
+
+    public function storeBulkItems(Request $request, Menu $menu)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.label' => 'required|string|max:255',
+            'items.*.url' => 'required|string|max:255',
+        ]);
+
+        foreach ($validated['items'] as $item) {
+            $menu->items()->create([
+                'label' => $item['label'],
+                'url' => $item['url'],
+                'order' => 0,
+            ]);
+        }
+
+        return back()->with('success', 'Pages added to menu.');
     }
 
     public function updateItem(Request $request, Menu $menu, MenuItem $item)

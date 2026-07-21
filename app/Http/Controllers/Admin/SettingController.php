@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class SettingController extends Controller
@@ -26,13 +27,35 @@ class SettingController extends Controller
             'support_phone' => 'nullable|string|max:50',
             'currency' => 'required|string|max:10',
             'store_address' => 'nullable|string',
+            'store_logo' => 'nullable|image|max:2048',
+            'store_favicon' => 'nullable|mimes:ico,png,jpg|max:512',
         ]);
 
-        foreach ($validated as $key => $value) {
-            Setting::updateOrCreate(
-                ['group' => 'general', 'key' => $key],
-                ['value' => $value ?? '']
-            );
+        $settingsToSave = [
+            'store_name' => $validated['store_name'] ?? null,
+            'support_email' => $validated['support_email'] ?? null,
+            'support_phone' => $validated['support_phone'] ?? null,
+            'currency' => $validated['currency'] ?? null,
+            'store_address' => $validated['store_address'] ?? null,
+        ];
+
+        if ($request->hasFile('store_logo')) {
+            $logoPath = $request->file('store_logo')->store('settings', 'public');
+            $settingsToSave['store_logo'] = '/storage/' . $logoPath;
+        }
+
+        if ($request->hasFile('store_favicon')) {
+            $faviconPath = $request->file('store_favicon')->store('settings', 'public');
+            $settingsToSave['store_favicon'] = '/storage/' . $faviconPath;
+        }
+
+        foreach ($settingsToSave as $key => $value) {
+            if ($value !== null || $key === 'store_address' || $key === 'support_phone') {
+                Setting::updateOrCreate(
+                    ['group' => 'general', 'key' => $key],
+                    ['value' => $value ?? '']
+                );
+            }
         }
 
         return back()->with('success', 'General settings updated successfully.');
