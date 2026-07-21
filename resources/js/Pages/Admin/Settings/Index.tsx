@@ -22,8 +22,8 @@ export default function GeneralSettings({ settings }: SettingsProps) {
         support_phone: settings.support_phone || '',
         currency: settings.currency || 'USD',
         store_address: settings.store_address || '',
-        store_logo: null as File | null,
-        store_favicon: null as File | null,
+        store_logo: settings.store_logo || '' as File | string | null,
+        store_favicon: settings.store_favicon || '' as File | string | null,
     });
 
     const [logoPreview, setLogoPreview] = React.useState<string | null>(settings.store_logo || null);
@@ -118,43 +118,73 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Logo (Header)</label>
+                                <div className="flex flex-col gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Image URL (e.g., https://...)"
+                                        value={typeof data.store_logo === 'string' ? data.store_logo : ''}
+                                        onChange={e => {
+                                            setData('store_logo', e.target.value);
+                                            setLogoPreview(e.target.value);
+                                        }}
+                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-bold text-gray-400">OR</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={e => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setData('store_logo', e.target.files[0]);
+                                                    setLogoPreview(URL.createObjectURL(e.target.files[0]));
+                                                }
+                                            }}
+                                            className="w-full text-sm text-gray-900 dark:text-white"
+                                        />
+                                    </div>
+                                </div>
                                 {logoPreview && (
-                                    <div className="mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
+                                    <div className="mt-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
                                         <img src={logoPreview} alt="Store Logo" className="h-12 object-contain" />
                                     </div>
                                 )}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={e => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setData('store_logo', e.target.files[0]);
-                                            setLogoPreview(URL.createObjectURL(e.target.files[0]));
-                                        }
-                                    }}
-                                    className="w-full text-sm text-gray-900 dark:text-white"
-                                />
                                 {errors.store_logo && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_logo}</p>}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Favicon</label>
+                                <div className="flex flex-col gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Image URL (e.g., https://...)"
+                                        value={typeof data.store_favicon === 'string' ? data.store_favicon : ''}
+                                        onChange={e => {
+                                            setData('store_favicon', e.target.value);
+                                            setFaviconPreview(e.target.value);
+                                        }}
+                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-bold text-gray-400">OR</span>
+                                        <input
+                                            type="file"
+                                            accept="image/png, image/jpeg, image/x-icon"
+                                            onChange={e => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setData('store_favicon', e.target.files[0]);
+                                                    setFaviconPreview(URL.createObjectURL(e.target.files[0]));
+                                                }
+                                            }}
+                                            className="w-full text-sm text-gray-900 dark:text-white"
+                                        />
+                                    </div>
+                                </div>
                                 {faviconPreview && (
-                                    <div className="mb-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
+                                    <div className="mt-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
                                         <img src={faviconPreview} alt="Store Favicon" className="h-8 object-contain" />
                                     </div>
                                 )}
-                                <input
-                                    type="file"
-                                    accept="image/png, image/jpeg, image/x-icon"
-                                    onChange={e => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setData('store_favicon', e.target.files[0]);
-                                            setFaviconPreview(URL.createObjectURL(e.target.files[0]));
-                                        }
-                                    }}
-                                    className="w-full text-sm text-gray-900 dark:text-white"
-                                />
                                 {errors.store_favicon && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_favicon}</p>}
                             </div>
                         </div>

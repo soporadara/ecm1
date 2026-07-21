@@ -27,8 +27,8 @@ class SettingController extends Controller
             'support_phone' => 'nullable|string|max:50',
             'currency' => 'required|string|max:10',
             'store_address' => 'nullable|string',
-            'store_logo' => 'nullable|image|max:2048',
-            'store_favicon' => 'nullable|mimes:ico,png,jpg|max:512',
+            'store_logo' => 'nullable',
+            'store_favicon' => 'nullable',
         ]);
 
         $settingsToSave = [
@@ -42,11 +42,15 @@ class SettingController extends Controller
         if ($request->hasFile('store_logo')) {
             $logoPath = $request->file('store_logo')->store('settings', 'public');
             $settingsToSave['store_logo'] = '/storage/' . $logoPath;
+        } elseif (is_string($request->input('store_logo'))) {
+            $settingsToSave['store_logo'] = $request->input('store_logo');
         }
 
         if ($request->hasFile('store_favicon')) {
             $faviconPath = $request->file('store_favicon')->store('settings', 'public');
             $settingsToSave['store_favicon'] = '/storage/' . $faviconPath;
+        } elseif (is_string($request->input('store_favicon'))) {
+            $settingsToSave['store_favicon'] = $request->input('store_favicon');
         }
 
         foreach ($settingsToSave as $key => $value) {
