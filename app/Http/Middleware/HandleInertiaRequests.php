@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Helpers\FeatureFlags;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -35,14 +36,20 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        // Fetch cart globally without side effects (don't update session here)
-        $sessionId = \Illuminate\Support\Facades\Session::getId();
+        // Only load cart when the storefront cart feature is enabled
         $cart = null;
-        if (auth()->check()) {
-            $cart = \App\Models\Cart::with(['items.product.images', 'items.productVariant'])->where('user_id', auth()->id())->first();
-        }
-        if (!$cart) {
-            $cart = \App\Models\Cart::with(['items.product.images', 'items.productVariant'])->where('session_id', $sessionId)->first();
+        if (FeatureFlags::enabled('storefront_cart_enabled') && \Illuminate\Support\Facades\Schema::hasTable('carts')) {
+            $sessionId = \Illuminate\Support\Facades\Session::getId();
+            if (auth()->check()) {
+                $cart = \App\Models\Cart::with(['items.product.images', 'items.productVariant'])
+                    ->where('user_id', auth()->id())
+                    ->first();
+            }
+            if (!$cart) {
+                $cart = \App\Models\Cart::with(['items.product.images', 'items.productVariant'])
+                    ->where('session_id', $sessionId)
+                    ->first();
+            }
         }
 
         return [

@@ -43,7 +43,7 @@ export default function CategoryEdit({ category, parents }: { category: Category
         <AdminLayout title="Edit Category">
             <Head title={`Edit ${category.name} — Rafel CMS`} />
 
-            <div className="max-w-2xl">
+            <div className="w-full">
                 <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Link href="/admin/categories" className="hover:text-indigo-600 dark:hover:text-indigo-400">Categories</Link>
                     <span>/</span>

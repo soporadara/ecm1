@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
+import RichTextEditor from '../../../Components/RichTextEditor';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -35,7 +36,7 @@ export default function Create() {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+            <form onSubmit={handleSubmit} className="space-y-6 w-full">
                 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden p-6 space-y-6">
                     
@@ -63,18 +64,54 @@ export default function Create() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content (HTML allowed)</label>
-                        <textarea
-                            className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
-                            rows={10}
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                        <RichTextEditor
                             value={data.content}
-                            onChange={e => setData('content', e.target.value)}
-                        ></textarea>
+                            onChange={(content) => setData('content', content)}
+                        />
                         {errors.content && <p className="text-red-500 text-xs mt-1">{errors.content}</p>}
                     </div>
 
                     <div className="pt-6 border-t border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">SEO Optimization</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Page Banner & SEO Optimization</h3>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banner Image URL or Upload</label>
+                                <div className="flex flex-col gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="https://..."
+                                        className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
+                                        value={typeof data.banner_image === 'string' ? data.banner_image : ''}
+                                        onChange={e => setData('banner_image', e.target.value)}
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm text-gray-500 font-bold">OR</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-primary/10 file:text-brand-primary hover:file:bg-brand-primary/20 transition-all cursor-pointer"
+                                            onChange={e => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setData('banner_image', e.target.files[0]);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                {errors.banner_image && <p className="text-red-500 text-xs mt-1">{errors.banner_image}</p>}
+                                {data.banner_image && (
+                                    <div className="mt-3 h-32 rounded-lg overflow-hidden border border-gray-200">
+                                        <img 
+                                            src={typeof data.banner_image === 'string' ? data.banner_image : URL.createObjectURL(data.banner_image as any)} 
+                                            className="w-full h-full object-cover" 
+                                            alt="Banner Preview" 
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                         
                         <div className="space-y-4">
                             <div>

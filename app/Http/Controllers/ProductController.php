@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FeatureFlags;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,6 +11,10 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        if (FeatureFlags::disabled('storefront_products_enabled')) {
+            return redirect()->route('home');
+        }
+
         $query = Product::with(['category', 'images', 'brand', 'variants'])
             ->where('is_active', true);
 
@@ -103,6 +108,10 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        if (FeatureFlags::disabled('storefront_products_enabled')) {
+            return redirect()->route('home');
+        }
+
         $relatedProducts = Product::with('images')
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
@@ -118,6 +127,10 @@ class ProductController extends Controller
 
     public function searchLive(Request $request)
     {
+        if (FeatureFlags::disabled('storefront_product_search_enabled')) {
+            return response()->json([]);
+        }
+
         $query = $request->input('q');
         
         if (!$query || strlen($query) < 2) {

@@ -20,12 +20,13 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
     useEffect(() => {
         if (!popup) return;
 
-        const hasSeenPopup = localStorage.getItem(`has_seen_popup_${popup.id}`);
+        // For testing purposes, we check session storage so it resets when they close the tab,
+        // rather than local storage which persists forever.
+        const hasSeenPopup = sessionStorage.getItem(`has_seen_popup_${popup.id}`);
         if (!hasSeenPopup) {
-            // Add a small delay so it doesn't instantly appear and shock the user
             const timer = setTimeout(() => {
                 setIsOpen(true);
-            }, 1500);
+            }, 500); // reduced delay to 500ms
             return () => clearTimeout(timer);
         }
     }, [popup]);
@@ -33,8 +34,7 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
     const handleClose = () => {
         setIsOpen(false);
         if (popup) {
-            // Save to localStorage so they don't see this specific popup again
-            localStorage.setItem(`has_seen_popup_${popup.id}`, 'true');
+            sessionStorage.setItem(`has_seen_popup_${popup.id}`, 'true');
         }
     };
 

@@ -9,17 +9,13 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the users.
-     */
     public function index(Request $request)
     {
-        // Add basic authorization: only superadmin or admin should manage users
-        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
-            abort(403, 'Unauthorized access. Only Admins can manage users.');
-        }
+        $this->authorize('staff.view'); // Use proper spatie permission
 
-        $query = User::query();
+        $query = User::whereDoesntHave('roles', function($q) {
+            $q->where('name', '!=', 'Customer');
+        });
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -29,34 +25,11 @@ class UserController extends Controller
             });
         }
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->input('role'));
-        }
-
         $users = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
-            'filters' => $request->only(['search', 'role']),
+            'filters' => $request->only(['search']),
         ]);
-    }
-
-    /**
-     * Update the specified user's role.
-     */
-    public function update(Request $request, User $user)
-    {
-        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
-            abort(403, 'Unauthorized access.');
-        }
-
-        $request->validate([
-            'role' => 'required|string|in:superadmin,admin,supervisor,editor,support,user,null',
-        ]);
-
-        $role = $request->input('role') === 'null' ? null : $request->input('role');
-        $user->update(['role' => $role]);
-
-        return redirect()->back()->with('success', 'User role updated successfully.');
     }
 }

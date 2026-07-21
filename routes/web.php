@@ -6,22 +6,7 @@ use Inertia\Inertia;
 
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/migrate-db-temp', function() {
-    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
-    return 'migrated and seeded';
-});
-
-
-
-Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
-Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
-Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
-
-// Reviews
-Route::post('/products/{product}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])
-    ->middleware('auth')
-    ->name('reviews.store');
-
+// Auth routes
 use App\Http\Controllers\AuthController;
 
 Route::middleware('guest')->group(function () {
@@ -43,6 +28,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+// Admin routes
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
@@ -79,14 +65,13 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
     
     // Banner Settings
-    Route::get('/settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('settings.banner');
-    Route::post('/settings/banner', [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('admin.settings.banner.update');
+    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
     
     // SEO Settings
     Route::get('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
     Route::post('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'store'])->name('seo.store');
 
-    // Restored CMS Modules
+    // CMS Modules
     Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'destroy']);
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
@@ -99,26 +84,85 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     
     // Staff & RBAC
     Route::resource('staff', \App\Http\Controllers\Admin\StaffController::class)->except(['show']);
+
+    // Feature Flags (Logistics Platform)
+    Route::get('feature-flags', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'index'])->name('feature-flags.index');
+    Route::patch('feature-flags/{featureFlag}', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'update'])->name('feature-flags.update');
+
+    // Marketplaces (Logistics Platform)
+    Route::resource('marketplaces', \App\Http\Controllers\Admin\MarketplaceAdminController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
-Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
-Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
-Route::patch('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{item}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
+// Storefront routes (gated by feature flags via middleware)
+Route::middleware(['storefront'])->group(function () {
+    Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
+    Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
+    Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
 
-Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
+    // Reviews
+    Route::post('/products/{product}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])
+        ->middleware('auth')
+        ->name('reviews.store');
 
-// Quick Checkout routes
-Route::post('/api/coupons/validate', [\App\Http\Controllers\QuickCheckoutController::class, 'validateCoupon'])->name('api.coupons.validate');
-Route::post('/checkout/quick', [\App\Http\Controllers\QuickCheckoutController::class, 'store'])->name('checkout.quick.store');
+    Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{item}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
 
-// Stripe Routes
-Route::get('/checkout/stripe', [\App\Http\Controllers\StripeCheckoutController::class, 'createSession'])->name('checkout.stripe');
-Route::get('/checkout/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('checkout.success');
-Route::get('/checkout/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('checkout.cancel');
+    Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
+
+    // Quick Checkout routes
+    Route::post('/api/coupons/validate', [\App\Http\Controllers\QuickCheckoutController::class, 'validateCoupon'])->name('api.coupons.validate');
+    Route::post('/checkout/quick', [\App\Http\Controllers\QuickCheckoutController::class, 'store'])->name('checkout.quick.store');
+
+    // Stripe Routes
+    Route::get('/checkout/stripe', [\App\Http\Controllers\StripeCheckoutController::class, 'createSession'])->name('checkout.stripe');
+    Route::get('/checkout/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('checkout.cancel');
+});
 
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/pages/{slug}', [\App\Http\Controllers\PageController::class, 'show'])->name('page.show');
+
+// Logistics Platform Public Routes
+Route::get('/how-it-works', [\App\Http\Controllers\LogisticsController::class, 'howItWorks'])->name('how-it-works');
+Route::get('/shipping-rates', [\App\Http\Controllers\LogisticsController::class, 'shippingRates'])->name('shipping-rates');
+Route::get('/warehouses', [\App\Http\Controllers\LogisticsController::class, 'warehouses'])->name('warehouses');
+Route::get('/track', [\App\Http\Controllers\LogisticsController::class, 'track'])->name('track');
+Route::get('/contact', [\App\Http\Controllers\LogisticsController::class, 'contact'])->name('contact');
+Route::get('/logistics/import', [\App\Http\Controllers\ProductImportController::class, 'index'])->name('logistics.import.index');
+Route::post('/logistics/import/preview', [\App\Http\Controllers\ProductImportController::class, 'preview'])->name('logistics.import.preview');
+Route::post('/logistics/import/confirm', [\App\Http\Controllers\ProductImportController::class, 'confirm'])->name('logistics.import.confirm');
+Route::get('/logistics/imports/{importJob}', [\App\Http\Controllers\ProductImportController::class, 'show'])->name('logistics.import.show');
+Route::post('/logistics/imports/{importJob}/retry', [\App\Http\Controllers\ProductImportController::class, 'retry'])->name('logistics.import.retry');
+
+Route::get('/migrate-logistics', function () {
+    if (request('key') !== 'logistics2026') abort(403);
+    Artisan::call('migrate', ['--force' => true]);
+    
+    // Seed essential pages so they show up in CMS
+    $pages = [
+        ['title' => 'Home', 'slug' => 'home'],
+        ['title' => 'Blog', 'slug' => 'blog'],
+        ['title' => 'Shop', 'slug' => 'shop']
+    ];
+    foreach ($pages as $p) {
+        if (!\App\Models\Page::where('slug', $p['slug'])->exists()) {
+            \App\Models\Page::create([
+                'title' => $p['title'],
+                'slug' => $p['slug'],
+                'content' => '',
+                'is_published' => true,
+                'seo_title' => $p['title'],
+                'seo_description' => ''
+            ]);
+        }
+    }
+    
+    return "Database migrated and core pages seeded successfully. You can return to the site.";
+});
+
+// Localization

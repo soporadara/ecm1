@@ -41,6 +41,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             StoreSeeder::class,
+            FeatureFlagSeeder::class,
+            MarketplaceSeeder::class,
         ]);
     }
 }

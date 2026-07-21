@@ -52,12 +52,12 @@ interface Props {
 }
 
 const statusColors: Record<string, string> = {
-    pending: 'bg-amber-100 text-amber-700',
-    processing: 'bg-blue-100 text-blue-700',
-    shipped: 'bg-indigo-100 text-indigo-700',
-    completed: 'bg-green-100 text-green-700',
-    cancelled: 'bg-red-100 text-red-700',
-    refunded: 'bg-gray-100 text-gray-600',
+    pending: 'bg-admin-warning/10 text-admin-warning',
+    processing: 'bg-admin-primary/10 text-admin-primary',
+    shipped: 'bg-admin-secondary/10 text-admin-secondary',
+    completed: 'bg-admin-success/10 text-admin-success',
+    cancelled: 'bg-admin-danger/10 text-admin-danger',
+    refunded: 'bg-admin-surface-muted text-admin-text-muted',
 };
 
 function StatCard({
@@ -78,32 +78,32 @@ function StatCard({
     color?: string;
 }) {
     const colorMap: Record<string, string> = {
-        indigo: 'bg-indigo-50 text-indigo-600',
-        green: 'bg-green-50 text-green-600',
-        amber: 'bg-amber-50 text-amber-600',
-        red: 'bg-red-50 text-red-600',
-        blue: 'bg-blue-50 text-blue-600',
+        indigo: 'bg-admin-primary/10 text-admin-primary',
+        green: 'bg-admin-success/10 text-admin-success',
+        amber: 'bg-admin-warning/10 text-admin-warning',
+        red: 'bg-admin-danger/10 text-admin-danger',
+        blue: 'bg-admin-secondary/10 text-admin-secondary',
     };
 
     return (
-        <div className="bg-white rounded-xl border border-slate-200 p-5 flex items-start gap-4 hover:shadow-sm transition-shadow">
-            <div className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 ${colorMap[color] || colorMap.indigo}`}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-6 flex items-start gap-4 hover:-translate-y-0.5 hover:shadow-md hover:shadow-admin-border/50 shadow-sm shadow-admin-border/20 transition-all duration-200">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorMap[color] || colorMap.indigo}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={icon} />
                 </svg>
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-slate-500 mb-1">{label}</p>
-                <p className="text-2xl font-bold text-slate-900 leading-none">{value}</p>
+                <p className="text-sm font-medium text-admin-text-muted mb-1">{label}</p>
+                <p className="text-3xl font-bold text-admin-text tracking-tight leading-none">{value}</p>
                 {(trend !== undefined || sub) && (
-                    <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-2 mt-2">
                         {trend !== undefined && (
-                            <span className={`text-xs font-medium flex items-center gap-0.5 ${trend >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            <span className={`text-xs font-semibold flex items-center gap-1 ${trend >= 0 ? 'text-admin-success' : 'text-admin-danger'}`}>
                                 {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
                             </span>
                         )}
-                        {trendLabel && <span className="text-xs text-slate-400">{trendLabel}</span>}
-                        {sub && <span className="text-xs text-slate-400">{sub}</span>}
+                        {trendLabel && <span className="text-xs font-medium text-admin-text-muted">{trendLabel}</span>}
+                        {sub && <span className="text-xs font-medium text-admin-text-muted">{sub}</span>}
                     </div>
                 )}
             </div>
@@ -137,12 +137,12 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
             <Head title="Dashboard — Rafel CMS" />
 
             {/* Period Filter */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-end justify-between mb-8">
                 <div>
-                    <h1 className="text-xl font-bold text-slate-900">Store Overview</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">All times shown in Cambodia Time (GMT+7)</p>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Store Overview</h1>
+                    <p className="text-sm text-admin-text-muted mt-1">All times shown in Cambodia Time (GMT+7)</p>
                 </div>
-                <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1 gap-1">
+                <div className="flex items-center bg-admin-surface border border-admin-border/60 rounded-xl p-1 gap-1 shadow-sm shadow-admin-border/20">
                     {[
                         { label: '7D', value: '7' },
                         { label: '30D', value: '30' },
@@ -151,10 +151,10 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
                         <button
                             key={p.value}
                             onClick={() => changePeriod(p.value)}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                            className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
                                 period === p.value
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'text-slate-600 hover:bg-slate-100'
+                                    ? 'bg-admin-primary text-white shadow-sm shadow-admin-primary/30'
+                                    : 'text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text'
                             }`}
                         >
                             {p.label}
@@ -220,19 +220,19 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
 
             {/* Revenue Chart */}
             {revenue_chart.length > 0 && (
-                <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
-                    <h2 className="text-sm font-semibold text-slate-700 mb-4">Revenue Over Time</h2>
+                <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-6 mb-8 shadow-sm shadow-admin-border/20">
+                    <h2 className="text-lg font-bold text-admin-text tracking-tight mb-6">Revenue Over Time</h2>
                     <div className="w-full overflow-hidden">
                         <svg
                             viewBox={`0 0 ${chartWidth} ${chartHeight + 10}`}
-                            className="w-full"
+                            className="w-full drop-shadow-sm"
                             preserveAspectRatio="none"
-                            style={{ height: 80 }}
+                            style={{ height: 100 }}
                         >
                             <defs>
                                 <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                                    <stop offset="0%" stopColor="var(--admin-primary, #0F9F84)" stopOpacity="0.2" />
+                                    <stop offset="100%" stopColor="var(--admin-primary, #0F9F84)" stopOpacity="0" />
                                 </linearGradient>
                             </defs>
                             {areaPoints && (
@@ -242,14 +242,14 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
                                 <polyline
                                     points={points}
                                     fill="none"
-                                    stroke="#6366f1"
-                                    strokeWidth="2"
+                                    stroke="var(--admin-primary, #0F9F84)"
+                                    strokeWidth="3"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                 />
                             )}
                         </svg>
-                        <div className="flex justify-between mt-2 text-xs text-slate-400">
+                        <div className="flex justify-between mt-3 text-sm font-medium text-admin-text-muted">
                             {revenue_chart.length > 0 && <span>{revenue_chart[0]?.date}</span>}
                             {revenue_chart.length > 1 && <span>{revenue_chart[revenue_chart.length - 1]?.date}</span>}
                         </div>
@@ -260,42 +260,42 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
             {/* Bottom Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recent Orders */}
-                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                        <h2 className="text-sm font-semibold text-slate-700">Recent Orders</h2>
-                        <Link href="/admin/orders" className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            View all →
+                <div className="lg:col-span-2 bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-admin-border">
+                        <h2 className="text-lg font-bold text-admin-text tracking-tight">Recent Orders</h2>
+                        <Link href="/admin/orders" className="text-sm text-admin-primary hover:text-admin-primary-hover font-semibold transition-colors">
+                            View all &rarr;
                         </Link>
                     </div>
                     {recent_orders.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400">
-                            <svg className="w-8 h-8 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="text-center py-12 text-admin-text-muted">
+                            <svg className="w-10 h-10 mx-auto mb-3 text-admin-border" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
-                            <p className="text-sm">No orders yet</p>
+                            <p className="text-sm font-medium">No orders yet</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-slate-100">
-                                        <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Order</th>
-                                        <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Customer</th>
-                                        <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
-                                        <th className="text-right px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Total</th>
+                                    <tr className="border-b border-admin-border bg-admin-surface-muted/50">
+                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
+                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer</th>
+                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
+                                        <th className="text-right px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50">
+                                <tbody className="divide-y divide-admin-border/50">
                                     {recent_orders.map(order => (
-                                        <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-5 py-3 font-medium text-indigo-600">{order.number}</td>
-                                            <td className="px-5 py-3 text-slate-700">{order.customer}</td>
-                                            <td className="px-5 py-3">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
+                                        <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                            <td className="px-6 py-4 font-semibold text-admin-primary">{order.number}</td>
+                                            <td className="px-6 py-4 font-medium text-admin-text">{order.customer}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusColors[order.status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
                                                     {order.status}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3 text-right font-semibold text-slate-800">{formatCurrency(order.total)}</td>
+                                            <td className="px-6 py-4 text-right font-bold text-admin-text tracking-tight">{formatCurrency(order.total)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -307,21 +307,21 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
                 {/* Side Panel */}
                 <div className="space-y-6">
                     {/* Low Stock */}
-                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                            <h2 className="text-sm font-semibold text-slate-700">Low Stock</h2>
-                            <Link href="/admin/products" className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                                Manage →
+                    <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-admin-border">
+                            <h2 className="text-lg font-bold text-admin-text tracking-tight">Low Stock</h2>
+                            <Link href="/admin/products" className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors">
+                                Manage &rarr;
                             </Link>
                         </div>
                         {low_stock_products.length === 0 ? (
-                            <div className="px-5 py-6 text-center text-slate-400 text-sm">All products are well stocked ✓</div>
+                            <div className="px-6 py-8 text-center text-admin-text-muted text-sm font-medium">All products are well stocked ✓</div>
                         ) : (
-                            <ul className="divide-y divide-slate-50">
+                            <ul className="divide-y divide-admin-border/50">
                                 {low_stock_products.map(p => (
-                                    <li key={p.id} className="flex items-center justify-between px-5 py-3">
-                                        <span className="text-sm text-slate-700 truncate flex-1">{p.name}</span>
-                                        <span className={`text-xs font-bold ml-3 px-2 py-0.5 rounded-full ${p.stock === 0 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
+                                    <li key={p.id} className="flex items-center justify-between px-6 py-4">
+                                        <span className="text-sm font-medium text-admin-text truncate flex-1">{p.name}</span>
+                                        <span className={`text-xs font-bold ml-3 px-3 py-1 rounded-full tracking-wide uppercase ${p.stock === 0 ? 'bg-admin-danger/10 text-admin-danger' : 'bg-admin-warning/10 text-admin-warning'}`}>
                                             {p.stock === 0 ? 'Out' : `${p.stock} left`}
                                         </span>
                                     </li>
@@ -332,19 +332,19 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
 
                     {/* Top Products */}
                     {top_products.length > 0 && (
-                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                            <div className="px-5 py-4 border-b border-slate-100">
-                                <h2 className="text-sm font-semibold text-slate-700">Top Products</h2>
+                        <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
+                            <div className="px-6 py-5 border-b border-admin-border">
+                                <h2 className="text-lg font-bold text-admin-text tracking-tight">Top Products</h2>
                             </div>
-                            <ul className="divide-y divide-slate-50">
+                            <ul className="divide-y divide-admin-border/50">
                                 {top_products.map((p, i) => (
-                                    <li key={p.id} className="flex items-center gap-3 px-5 py-3">
-                                        <span className="text-xs font-bold text-slate-400 w-4">{i + 1}</span>
+                                    <li key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-admin-surface-muted/30 transition-colors">
+                                        <span className="text-sm font-bold text-admin-text-muted/60 w-5 text-center">{i + 1}</span>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-slate-700 truncate">{p.name}</p>
-                                            <p className="text-xs text-slate-400">{p.sold} sold</p>
+                                            <p className="text-sm font-medium text-admin-text truncate">{p.name}</p>
+                                            <p className="text-xs font-medium text-admin-text-muted mt-0.5">{p.sold} sold</p>
                                         </div>
-                                        <span className="text-sm font-semibold text-slate-800">${Number(p.revenue).toFixed(0)}</span>
+                                        <span className="text-sm font-bold text-admin-text tracking-tight">${Number(p.revenue).toFixed(0)}</span>
                                     </li>
                                 ))}
                             </ul>

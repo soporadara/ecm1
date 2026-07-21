@@ -43,7 +43,7 @@ export default function Edit({ popup }: Props) {
                 <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">Edit Popup: {popup.title}</h1>
             </div>
 
-            <form onSubmit={submit} className="space-y-6 max-w-2xl bg-white dark:bg-gray-900 p-6 shadow sm:rounded-md">
+            <form onSubmit={submit} className="space-y-6 w-full bg-white dark:bg-gray-900 p-6 shadow sm:rounded-md">
                 <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Internal Title

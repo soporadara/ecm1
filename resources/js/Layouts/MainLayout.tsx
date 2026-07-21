@@ -26,7 +26,7 @@ const languageCodes: Record<string, string> = {
 };
 
 export default function MainLayout({ children, title, description }: Props) {
-    const { global_nav, cart }: any = usePage().props;
+    const { auth, global_nav, cart }: any = usePage().props;
     const { currentCurrency } = useCurrency();
     const { url } = usePage();
     const isHome = url === '/';
@@ -117,6 +117,7 @@ export default function MainLayout({ children, title, description }: Props) {
                 categories={categories}
                 brands={brands}
                 collections={collections}
+                auth={auth}
             />
             
             <CartDrawer 
@@ -142,31 +143,32 @@ export default function MainLayout({ children, title, description }: Props) {
                     <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between relative">
                         {/* Left: Navigation Menus */}
                         <nav className="flex items-center space-x-6 text-[13px] font-bold text-brand-dark dark:text-gray-300 w-1/3 h-full">
-                            {menus && menus.length > 0 ? (
-                                menus.find((m: any) => m.location === 'header' || m.name === 'Main Menu')?.items.map((item: any) => (
-                                    <div key={item.id} className="flex items-center h-full group static cursor-pointer">
-                                        <Link href={item.url} className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
-                                            {item.title}
-                                            {item.url === '/shop' && <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>}
-                                        </Link>
-                                        {item.url === '/shop' && <MegaMenu categories={categories} brands={brands} collections={collections} />}
-                                    </div>
-                                ))
-                            ) : (
-                                <>
-                                    <Link href="/" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.home')}</Link>
-                                    <div className="flex items-center h-full group static cursor-pointer">
-                                        <Link href="/shop" className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
-                                            {t('nav.shop')}
-                                            <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                        </Link>
-                                        <MegaMenu categories={categories} brands={brands} collections={collections} />
-                                    </div>
-                                    <Link href="/pages/about-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.about')}</Link>
-                                    <Link href="/blog" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.blog')}</Link>
-                                    <Link href="/pages/contact-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.contact')}</Link>
-                                </>
-                            )}
+                            {(() => {
+                                const headerMenu = menus?.find((m: any) => m.location === 'header' || m.name === 'Main Menu');
+                                if (headerMenu && headerMenu.items && headerMenu.items.length > 0) {
+                                    return headerMenu.items.map((item: any) => {
+                                        if (item.url === '/shop' || item.url === '/pages/shop') return null;
+                                        return (
+                                            <div key={item.id} className="flex items-center h-full group static cursor-pointer">
+                                                <Link href={item.url} className="hover:text-brand-primary transition-colors flex items-center gap-1 uppercase tracking-wider h-full">
+                                                    {item.title}
+                                                    {item.url === '/shop' && <svg className="w-3 h-3 text-gray-400 group-hover:text-brand-primary transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>}
+                                                </Link>
+                                                {item.url === '/shop' && <MegaMenu categories={categories} brands={brands} collections={collections} />}
+                                            </div>
+                                        );
+                                    });
+                                }
+                                
+                                return (
+                                    <>
+                                        <Link href="/" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.home')}</Link>
+                                        <Link href="/pages/about-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.about')}</Link>
+                                        <Link href="/blog" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.blog')}</Link>
+                                        <Link href="/pages/contact-us" className="hover:text-brand-primary transition-colors flex items-center h-full uppercase tracking-wider">{t('nav.contact')}</Link>
+                                    </>
+                                );
+                            })()}
                         </nav>
                         
                         {/* Center: Logo */}

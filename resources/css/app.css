@@ -16,6 +16,42 @@
     --color-brand-dark: #111111;
     --color-brand-gray: #666666;
     --color-brand-light: #f5f5f5;
+
+    /* CMS Redesign Tokens */
+    --color-admin-bg: var(--admin-bg);
+    --color-admin-surface: var(--admin-surface);
+    --color-admin-surface-muted: var(--admin-surface-muted);
+    --color-admin-text: var(--admin-text);
+    --color-admin-text-muted: var(--admin-text-muted);
+    --color-admin-border: var(--admin-border);
+    --color-admin-primary: var(--admin-primary);
+    --color-admin-primary-hover: var(--admin-primary-hover);
+    --color-admin-secondary: var(--admin-secondary);
+}
+
+@layer base {
+    :root {
+        --admin-bg: #F6F7F9;
+        --admin-surface: #FFFFFF;
+        --admin-surface-muted: #F1F3F5;
+        --admin-text: #172033;
+        --admin-text-muted: #778196;
+        --admin-border: #E5E8ED;
+        --admin-primary: #0F9F84;
+        --admin-primary-hover: #0B866F;
+        --admin-secondary: #FF9B42;
+    }
+    .dark {
+        --admin-bg: #111815;
+        --admin-surface: #19221E;
+        --admin-surface-muted: #212D27;
+        --admin-text: #F3F7F5;
+        --admin-text-muted: #AEB9B3;
+        --admin-border: #2D3933;
+        --admin-primary: #28B99B;
+        --admin-primary-hover: #36C8A9;
+        --admin-secondary: #F4A259;
+    }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

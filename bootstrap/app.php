@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'is_admin' => \App\Http\Middleware\IsAdmin::class,
+            'storefront' => \App\Http\Middleware\CheckStorefrontEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

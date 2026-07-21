@@ -12,11 +12,11 @@ export default function Index({ orders }: any) {
     };
 
     const statusColors: any = {
-        'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500',
-        'processing': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-        'shipped': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-        'delivered': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-        'cancelled': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+        'pending': 'bg-admin-warning/10 text-admin-warning',
+        'processing': 'bg-admin-primary/10 text-admin-primary',
+        'shipped': 'bg-admin-secondary/10 text-admin-secondary',
+        'delivered': 'bg-admin-success/10 text-admin-success',
+        'cancelled': 'bg-admin-danger/10 text-admin-danger',
     };
 
     return (
@@ -25,61 +25,61 @@ export default function Index({ orders }: any) {
 
             <div className="mb-6 flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders Management</h1>
-                    <p className="text-sm text-gray-500 mt-1">View and manage customer orders.</p>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Orders Management</h1>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">View and manage customer orders.</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl overflow-hidden border border-admin-border/50">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-medium border-b border-gray-200 dark:border-gray-700">
+                        <thead className="bg-admin-surface-muted/50 text-admin-text-muted font-bold border-b border-admin-border">
                             <tr>
-                                <th className="px-6 py-4">Order ID</th>
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4">Customer</th>
-                                <th className="px-6 py-4">Total</th>
-                                <th className="px-6 py-4">Payment</th>
-                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Order ID</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Date</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Customer</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Total</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Payment</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody className="divide-y divide-admin-border/50">
                             {orders.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-admin-text-muted font-medium">
                                         No orders found.
                                     </td>
                                 </tr>
                             ) : (
                                 orders.data.map((order: any) => (
-                                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/25 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                        <td className="px-6 py-4 font-semibold text-admin-primary">
                                             #{order.id.toString().padStart(5, '0')}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                                        <td className="px-6 py-4 text-admin-text-muted font-medium whitespace-nowrap">
                                             {new Date(order.created_at).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-gray-900 dark:text-white">{order.user?.name || 'Guest'}</p>
-                                            <p className="text-xs text-gray-500">{order.shipping_phone}</p>
+                                            <p className="font-semibold text-admin-text">{order.user?.name || 'Guest'}</p>
+                                            <p className="text-xs font-medium text-admin-text-muted mt-0.5">{order.shipping_phone}</p>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-900 dark:text-white font-bold">
+                                        <td className="px-6 py-4 text-admin-text font-bold tracking-tight">
                                             ${parseFloat(order.total_amount).toFixed(2)}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 uppercase">
+                                        <td className="px-6 py-4 text-admin-text-muted font-medium uppercase text-xs tracking-wider">
                                             {order.payment_method}
                                         </td>
                                         <td className="px-6 py-4">
                                             <select 
                                                 value={order.status}
                                                 onChange={(e) => updateStatus(order.id, e.target.value)}
-                                                className={`text-xs font-bold rounded-full border-gray-300 dark:border-gray-600 focus:ring-0 ${statusColors[order.status]} bg-transparent`}
+                                                className={`text-xs font-bold rounded-full border-none focus:ring-2 focus:ring-admin-primary focus:outline-none px-3 py-1 uppercase tracking-wide cursor-pointer ${statusColors[order.status]}`}
                                             >
-                                                <option value="pending" className="text-gray-900">Pending</option>
-                                                <option value="processing" className="text-gray-900">Processing</option>
-                                                <option value="shipped" className="text-gray-900">Shipped</option>
-                                                <option value="delivered" className="text-gray-900">Delivered</option>
-                                                <option value="cancelled" className="text-gray-900">Cancelled</option>
+                                                <option value="pending" className="text-admin-text bg-admin-surface">Pending</option>
+                                                <option value="processing" className="text-admin-text bg-admin-surface">Processing</option>
+                                                <option value="shipped" className="text-admin-text bg-admin-surface">Shipped</option>
+                                                <option value="delivered" className="text-admin-text bg-admin-surface">Delivered</option>
+                                                <option value="cancelled" className="text-admin-text bg-admin-surface">Cancelled</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -92,8 +92,8 @@ export default function Index({ orders }: any) {
 
             {/* Pagination */}
             {orders.total > orders.per_page && (
-                <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="text-sm text-gray-500">
+                <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="text-sm font-medium text-admin-text-muted">
                         Showing {orders.from} to {orders.to} of {orders.total} results
                     </div>
                     <div className="flex gap-2">
@@ -101,7 +101,11 @@ export default function Index({ orders }: any) {
                             <Link
                                 key={idx}
                                 href={link.url || '#'}
-                                className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${link.active ? 'bg-brand-primary text-white border-brand-primary' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                className={`px-4 py-2 border rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                    link.active 
+                                        ? 'bg-admin-primary text-white border-admin-primary shadow-sm shadow-admin-primary/20' 
+                                        : 'bg-admin-surface text-admin-text-muted border-admin-border hover:bg-admin-surface-muted hover:text-admin-text'
+                                }`}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
                             />
                         ))}

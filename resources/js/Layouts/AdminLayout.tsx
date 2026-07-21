@@ -309,11 +309,11 @@ export default function AdminLayout({ children, title, actions }: Props) {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="min-h-screen bg-admin-bg flex">
             {/* Desktop Sidebar */}
             <aside
                 className={`
-                    hidden md:flex flex-col fixed left-0 top-0 h-full z-40 bg-slate-900 transition-all duration-300 ease-in-out
+                    hidden md:flex flex-col fixed left-0 top-0 h-full z-40 bg-admin-primary transition-all duration-300 ease-in-out
                     ${collapsed ? 'w-16' : 'w-60'}
                 `}
             >
@@ -340,7 +340,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* Mobile Sidebar */}
             <aside
                 className={`
-                    fixed left-0 top-0 h-full w-64 z-50 bg-slate-900 transition-transform duration-300 ease-in-out md:hidden
+                    fixed left-0 top-0 h-full w-64 z-50 bg-admin-primary transition-transform duration-300 ease-in-out md:hidden
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >

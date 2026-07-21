@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('feature_flags', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->string('label');
+            $table->text('description')->nullable();
+            $table->string('group')->default('general');
+            $table->boolean('value')->default(false);
+            $table->boolean('is_admin_editable')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('feature_flags');
+    }
+};

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FeatureFlags;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
@@ -11,6 +12,13 @@ use Inertia\Inertia;
 
 class CartController extends Controller
 {
+    protected function checkFlag(): void
+    {
+        if (FeatureFlags::disabled('storefront_cart_enabled')) {
+            abort(404, 'The shopping cart is not currently available.');
+        }
+    }
+
     protected function getCart()
     {
         $sessionId = Session::getId();
@@ -33,6 +41,7 @@ class CartController extends Controller
 
     public function index()
     {
+        $this->checkFlag();
         return Inertia::render('Cart/Index', [
             'cart' => $this->getCart()
         ]);
@@ -40,6 +49,7 @@ class CartController extends Controller
 
     public function store(Request $request)
     {
+        $this->checkFlag();
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'product_variant_id' => 'nullable|exists:product_variants,id',

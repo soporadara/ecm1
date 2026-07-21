@@ -2,70 +2,150 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Banner;
 use App\Models\Product;
 use App\Models\HomePageSection;
+use App\Models\Marketplace;
+use App\Helpers\FeatureFlags;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Database\QueryException;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $sections = HomePageSection::where('is_active', true)->orderBy('sort_order')->get();
-        
-        $allProductIds = collect();
-        
-        foreach ($sections as $section) {
-            $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
-            if ($content && isset($content['product_ids'])) {
-                $allProductIds = $allProductIds->merge($content['product_ids']);
-            }
+        // 1. Fetch Logistics Data
+        try {
+            $marketplaces = Marketplace::where('is_enabled', true)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn($m) => [
+                    'id'          => $m->id,
+                    'name'        => $m->name,
+                    'slug'        => $m->slug,
+                    'logo'        => $m->logo,
+                    'brand_color' => $m->brand_color,
+                    'website_url' => $m->website_url,
+                    'android_app_url' => $m->android_app_url,
+                    'ios_app_url'     => $m->ios_app_url,
+                    'description' => $m->description,
+                    'status'      => $m->status,
+                    'maintenance_message' => $m->maintenance_message,
+                ]);
+        } catch (QueryException $e) {
+            $marketplaces = [];
         }
 
-        // Add some random/trending products for sections that don't specify explicit IDs
-        $trendingProducts = Product::with(['images', 'variants'])->where('is_featured', true)->take(8)->get();
-        $popularProducts = Product::with(['images', 'variants'])->inRandomOrder()->take(12)->get();
+        $featureFlags = FeatureFlags::allAsMap();
+        $storefrontEnabled = $featureFlags['storefront_products_enabled'] ?? false;
+
+        // 2. Fetch CMS/Storefront Data (Original logic)
+        $sections = HomePageSection::where('is_active', true)->orderBy('sort_order')->get();
         
-        $allProductIds = $allProductIds->merge($trendingProducts->pluck('id'))
-                                       ->merge($popularProducts->pluck('id'))
-                                       ->unique();
-
-        $products = Product::with(['images', 'variants'])
-            ->whereIn('id', $allProductIds)
-            ->get()
-            ->keyBy('id');
-
-        // Transform sections to include their hydrated products
-        $mappedSections = $sections->map(function ($section) use ($products, $trendingProducts, $popularProducts) {
-            $data = $section->toArray();
-            $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
-            $content = $content ?? [];
-            $data['content'] = $content;
-
-            if (isset($content['product_ids'])) {
-                $data['products'] = collect($content['product_ids'])
-                    ->map(fn($id) => $products->get($id))
-                    ->filter()
-                    ->values();
-            } else {
-                // Populate default products for specific dynamic sections
-                if ($section->type === 'trending') {
-                    $data['products'] = $trendingProducts;
-                } elseif (in_array($section->type, ['popular_tabs', 'recommended', 'best_sellers', 'limited_stock', 'customer_favorites'])) {
-                    $data['products'] = $popularProducts->shuffle()->take(4)->values();
-                } else {
-                    $data['products'] = [];
+        $mappedSections = collect();
+        
+        // Only load products if the storefront is enabled in feature flags
+        if ($storefrontEnabled) {
+            $allProductIds = collect();
+            
+            foreach ($sections as $section) {
+                $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
+                if ($content && isset($content['product_ids'])) {
+                    $allProductIds = $allProductIds->merge($content['product_ids']);
                 }
             }
 
-            return $data;
-        });
+            // Add some random/trending products for sections that don't specify explicit IDs
+            $trendingProducts = Product::with(['images', 'variants'])->where('is_featured', true)->take(8)->get();
+            $popularProducts = Product::with(['images', 'variants'])->inRandomOrder()->take(12)->get();
+            
+            $allProductIds = $allProductIds->merge($trendingProducts->pluck('id'))
+                                           ->merge($popularProducts->pluck('id'))
+                                           ->unique();
+
+            $products = Product::with(['images', 'variants'])
+                ->whereIn('id', $allProductIds)
+                ->get()
+                ->keyBy('id');
+
+            // Transform sections to include their hydrated products
+            $mappedSections = $sections->map(function ($section) use ($products, $trendingProducts, $popularProducts) {
+                $data = $section->toArray();
+                $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
+                $content = $content ?? [];
+                $data['content'] = $content;
+
+                if (isset($content['product_ids'])) {
+                    $data['products'] = collect($content['product_ids'])
+                        ->map(fn($id) => $products->get($id))
+                        ->filter()
+                        ->values();
+                } else {
+                    // Populate default products for specific dynamic sections
+                    if ($section->type === 'trending') {
+                        $data['products'] = $trendingProducts;
+                    } elseif (in_array($section->type, ['popular_tabs', 'recommended', 'best_sellers', 'limited_stock', 'customer_favorites'])) {
+                        $data['products'] = $popularProducts->shuffle()->take(4)->values();
+                    } else {
+                        $data['products'] = [];
+                    }
+                }
+
+                return $data;
+            });
+        } else {
+            // Storefront is disabled, still pass sections (like the hero banner) but strip products
+            $mappedSections = $sections->map(function ($section) {
+                $data = $section->toArray();
+                $content = is_string($section->content) ? json_decode($section->content, true) : $section->content;
+                $data['content'] = $content ?? [];
+                $data['products'] = [];
+                return $data;
+            });
+        }
         
         $activePopup = \App\Models\Popup::where('is_active', true)->latest()->first();
         
+        // Fetch active banners
+        $banners = Banner::with(['desktopMedia', 'mobileMedia'])
+            ->where('is_active', true)
+            ->where(function($query) {
+                $query->whereNull('start_date')->orWhere('start_date', '<=', now());
+            })
+            ->where(function($query) {
+                $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+            })
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn($banner) => [
+                'id' => $banner->id,
+                'title_en' => $banner->title_en,
+                'title_km' => $banner->title_km,
+                'eyebrow_en' => $banner->eyebrow_en,
+                'eyebrow_km' => $banner->eyebrow_km,
+                'description_en' => $banner->description_en,
+                'description_km' => $banner->description_km,
+                'primary_button_label' => $banner->primary_button_label,
+                'primary_button_url' => $banner->primary_button_url,
+                'fallback_color' => $banner->fallback_color,
+                'text_position' => $banner->text_position,
+                'content_alignment' => $banner->content_alignment,
+                'theme_variant' => $banner->theme_variant,
+                'desktop_image_url' => $banner->desktopMedia ? asset('storage/' . $banner->desktopMedia->path) : null,
+                'mobile_image_url' => $banner->mobileMedia ? asset('storage/' . $banner->mobileMedia->path) : null,
+            ]);
+
+        // Fetch the Home page from the pages table to use its SEO data
+        $homePage = \App\Models\Page::where('slug', 'home')->first();
+        
         return Inertia::render('Home', [
-            'sections' => $mappedSections,
-            'popup' => $activePopup
+            'banners'      => $banners,
+            'sections'     => $mappedSections,
+            'popup'        => $activePopup,
+            'marketplaces' => $marketplaces,
+            'featureFlags' => $featureFlags,
+            'page'         => $homePage,
         ]);
     }
 }

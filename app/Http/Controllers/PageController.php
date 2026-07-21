@@ -14,6 +14,10 @@ class PageController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
+        if ($page->is_private) {
+            abort(404);
+        }
+
         return Inertia::render('Page/Show', [
             'page' => $page
         ]);

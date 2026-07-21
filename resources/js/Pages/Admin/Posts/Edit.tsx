@@ -36,7 +36,7 @@ export default function Edit({ post }: any) {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+            <form onSubmit={handleSubmit} className="space-y-6 w-full">
                 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden p-6 space-y-6">
                     

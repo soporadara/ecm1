@@ -27,6 +27,16 @@ class User extends Authenticatable
         'avatar',
         'is_admin',
         'role',
+        // Logistics / Firebase fields (added in logistics migration)
+        'firebase_uid',
+        'member_code',
+        'phone_e164',
+        'phone_verified_at',
+        'preferred_language',
+        'preferred_currency',
+        'firebase_provider',
+        'account_status',
+        'last_login_at',
     ];
 
     /**
@@ -37,6 +47,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'firebase_uid', // Never expose Firebase UID to the frontend
     ];
 
     /**
@@ -48,12 +59,47 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'phone_verified_at' => 'datetime',
+            'last_login_at'     => 'datetime',
+            'password'          => 'hashed',
+            'is_admin'          => 'boolean',
         ];
     }
+
+    // ─── Relationships ───────────────────────────────────────────────
 
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    // ─── Business Logic Helpers ──────────────────────────────────────
+
+    /**
+     * Check if the user has a verified phone number.
+     */
+    public function hasVerifiedPhone(): bool
+    {
+        return $this->phone_verified_at !== null && $this->phone_e164 !== null;
+    }
+
+    /**
+     * Check if the user account is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->account_status === 'active';
+    }
+
+    /**
+     * Generate a unique member code, e.g. CUS45359.
+     */
+    public static function generateMemberCode(): string
+    {
+        do {
+            $code = 'CUS' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
+        } while (self::where('member_code', $code)->exists());
+
+        return $code;
     }
 }

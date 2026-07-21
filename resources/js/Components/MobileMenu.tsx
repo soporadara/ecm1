@@ -55,28 +55,7 @@ export default function MobileMenu({ isOpen, onClose, categories, brands, collec
                             <Link href="/" className="block px-6 py-4 hover:text-brand-primary hover:bg-gray-50 transition-colors" onClick={onClose}>Home</Link>
                         </li>
                         
-                        <li className="border-b border-gray-100">
-                            <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => toggleDropdown('shop')}>
-                                <span>Shop</span>
-                                <svg className={`w-4 h-4 transition-transform ${openDropdown === 'shop' ? 'rotate-180 text-brand-primary' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            </div>
-                            
-                            <div className={`overflow-hidden transition-all duration-300 bg-gray-50 ${openDropdown === 'shop' ? 'max-h-[800px] py-2' : 'max-h-0'}`}>
-                                <Link href="/shop" className="block px-10 py-2.5 text-sm text-brand-primary font-bold hover:text-red-600 transition-colors capitalize" onClick={onClose}>
-                                    View All Products
-                                </Link>
-                                {categories?.map((cat) => (
-                                    <Link 
-                                        key={cat.id} 
-                                        href={`/shop?category=${cat.slug}`} 
-                                        className="block px-10 py-2.5 text-sm text-gray-600 hover:text-brand-primary transition-colors capitalize" 
-                                        onClick={onClose}
-                                    >
-                                        {cat.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        </li>
+
 
                         <li className="border-b border-gray-100">
                             <div className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => toggleDropdown('collections')}>

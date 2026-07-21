@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\HomePageSection;
+use App\Models\Banner;
+use App\Models\Media;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -12,58 +13,147 @@ class BannerController extends Controller
 {
     public function index()
     {
-        $heroSection = HomePageSection::where('type', 'hero')->first();
-        
-        return Inertia::render('Admin/Settings/Banner', [
-            'banner' => $heroSection ? [
-                'id' => $heroSection->id,
-                'title' => $heroSection->title,
-                'subtitle' => $heroSection->subtitle,
-                'content_data' => $heroSection->content,
-                'is_active' => $heroSection->is_active,
-            ] : null,
+        $banners = Banner::with(['desktopMedia', 'mobileMedia'])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn($banner) => [
+                'id' => $banner->id,
+                'internal_name' => $banner->internal_name,
+                'title_en' => $banner->title_en,
+                'is_active' => $banner->is_active,
+                'sort_order' => $banner->sort_order,
+                'desktop_image_url' => $banner->desktopMedia ? asset('storage/' . $banner->desktopMedia->path) : null,
+            ]);
+
+        return Inertia::render('Admin/Banners/Index', [
+            'banners' => $banners,
         ]);
     }
 
-    public function update(Request $request)
+    public function create()
     {
-        $request->validate([
-            'title' => 'nullable|string',
-            'subtitle' => 'nullable|string',
-            'media_type' => 'required|in:image,video',
-            'media_source' => 'required|in:url,upload',
-            'media_url' => 'nullable|string',
-            'media_file' => 'nullable|file|mimes:jpeg,png,jpg,webp,mp4,webm|max:51200', // max 50MB
-            'button_text' => 'nullable|string',
-            'button_link' => 'nullable|string',
+        $media = Media::latest()->get()->map(fn($m) => [
+            'id' => $m->id,
+            'name' => $m->name,
+            'url' => asset('storage/' . $m->path),
         ]);
 
-        $heroSection = HomePageSection::firstOrCreate(
-            ['type' => 'hero'],
-            ['sort_order' => 1]
-        );
+        return Inertia::render('Admin/Banners/Create', [
+            'mediaLibrary' => $media,
+        ]);
+    }
 
-        $contentData = $heroSection->content ?? [];
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'internal_name' => 'required|string|max:255',
+            'eyebrow_en' => 'nullable|string|max:255',
+            'eyebrow_km' => 'nullable|string|max:255',
+            'title_en' => 'nullable|string|max:255',
+            'title_km' => 'nullable|string|max:255',
+            'description_en' => 'nullable|string',
+            'description_km' => 'nullable|string',
+            'primary_button_label' => 'nullable|string|max:255',
+            'primary_button_url' => 'nullable|string|max:255',
+            'secondary_button_label' => 'nullable|string|max:255',
+            'secondary_button_url' => 'nullable|string|max:255',
+            'desktop_image' => 'nullable|image|max:5120',
+            'mobile_image' => 'nullable|image|max:5120',
+            'fallback_color' => 'nullable|string|max:20',
+            'text_position' => 'required|in:left,center,right',
+            'content_alignment' => 'required|in:top,center,bottom',
+            'theme_variant' => 'required|in:light,dark',
+            'open_in_new_tab' => 'boolean',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
 
-        // Handle File Upload
-        if ($request->media_source === 'upload' && $request->hasFile('media_file')) {
-            $path = $request->file('media_file')->store('banners', 'public');
-            $contentData['media_url'] = '/storage/' . $path;
-        } elseif ($request->media_source === 'url' && $request->filled('media_url')) {
-            $contentData['media_url'] = $request->media_url;
+        if ($request->hasFile('desktop_image')) {
+            $path = $request->file('desktop_image')->store('banners', 'public');
+            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
+            $validated['desktop_media_id'] = $media->id;
         }
 
-        $contentData['media_type'] = $request->media_type;
-        $contentData['media_source'] = $request->media_source;
-        $contentData['button_text'] = $request->button_text;
-        $contentData['button_link'] = $request->button_link;
+        if ($request->hasFile('mobile_image')) {
+            $path = $request->file('mobile_image')->store('banners', 'public');
+            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
+            $validated['mobile_media_id'] = $media->id;
+        }
 
-        $heroSection->update([
-            'title' => $request->title,
-            'subtitle' => $request->subtitle,
-            'content' => $contentData,
+        unset($validated['desktop_image']);
+        unset($validated['mobile_image']);
+
+        Banner::create($validated);
+
+        return redirect()->route('admin.banners.index')->with('success', 'Banner created successfully.');
+    }
+
+    public function edit(Banner $banner)
+    {
+        $media = Media::latest()->get()->map(fn($m) => [
+            'id' => $m->id,
+            'name' => $m->name,
+            'url' => asset('storage/' . $m->path),
         ]);
 
-        return back()->with('success', 'Banner updated successfully.');
+        return Inertia::render('Admin/Banners/Edit', [
+            'banner' => $banner,
+            'mediaLibrary' => $media,
+        ]);
+    }
+
+    public function update(Request $request, Banner $banner)
+    {
+        $validated = $request->validate([
+            'internal_name' => 'required|string|max:255',
+            'eyebrow_en' => 'nullable|string|max:255',
+            'eyebrow_km' => 'nullable|string|max:255',
+            'title_en' => 'nullable|string|max:255',
+            'title_km' => 'nullable|string|max:255',
+            'description_en' => 'nullable|string',
+            'description_km' => 'nullable|string',
+            'primary_button_label' => 'nullable|string|max:255',
+            'primary_button_url' => 'nullable|string|max:255',
+            'secondary_button_label' => 'nullable|string|max:255',
+            'secondary_button_url' => 'nullable|string|max:255',
+            'desktop_image' => 'nullable|image|max:5120',
+            'mobile_image' => 'nullable|image|max:5120',
+            'fallback_color' => 'nullable|string|max:20',
+            'text_position' => 'required|in:left,center,right',
+            'content_alignment' => 'required|in:top,center,bottom',
+            'theme_variant' => 'required|in:light,dark',
+            'open_in_new_tab' => 'boolean',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        if ($request->hasFile('desktop_image')) {
+            $path = $request->file('desktop_image')->store('banners', 'public');
+            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
+            $validated['desktop_media_id'] = $media->id;
+        }
+
+        if ($request->hasFile('mobile_image')) {
+            $path = $request->file('mobile_image')->store('banners', 'public');
+            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
+            $validated['mobile_media_id'] = $media->id;
+        }
+
+        unset($validated['desktop_image']);
+        unset($validated['mobile_image']);
+
+        $banner->update($validated);
+
+        return redirect()->route('admin.banners.index')->with('success', 'Banner updated successfully.');
+    }
+
+    public function destroy(Banner $banner)
+    {
+        $banner->delete();
+        return redirect()->route('admin.banners.index')->with('success', 'Banner deleted successfully.');
     }
 }

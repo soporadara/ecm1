@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FeatureFlags;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
+    protected function checkFlag(): void
+    {
+        if (FeatureFlags::disabled('storefront_checkout_enabled')) {
+            abort(404, 'Checkout is not currently available.');
+        }
+    }
+
     protected function getCart($loadImages = false)
     {
         $sessionId = Session::getId();
@@ -27,10 +35,11 @@ class CheckoutController extends Controller
 
     public function index()
     {
+        $this->checkFlag();
         $cart = $this->getCart(true);
 
         if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('shop.index')->with('error', 'Your cart is empty');
+            return redirect()->route('home')->with('error', 'Your cart is empty');
         }
 
         return Inertia::render('Checkout/Index', [
@@ -40,6 +49,7 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
+        $this->checkFlag();
         $request->validate([
             'shipping_address' => 'required|string|max:255',
             'shipping_province' => 'required|string|max:100',

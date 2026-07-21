@@ -25,7 +25,7 @@ export default function CouponCreate() {
         <AdminLayout title="New Coupon">
             <Head title="New Coupon — Rafel CMS" />
 
-            <div className="max-w-lg">
+            <div className="w-full">
                 <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Link href="/admin/coupons" className="hover:text-indigo-600 dark:hover:text-indigo-400">Coupons</Link>
                     <span>/</span>

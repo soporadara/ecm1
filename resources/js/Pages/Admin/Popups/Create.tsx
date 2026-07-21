@@ -34,7 +34,7 @@ export default function Create() {
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">Create New Popup</h1>
             </div>
 
-            <form onSubmit={submit} className="space-y-6 max-w-2xl bg-white dark:bg-gray-800 p-6 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
+            <form onSubmit={submit} className="space-y-6 w-full bg-white dark:bg-gray-800 p-6 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
                 <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Internal Title (e.g. Summer Sale)
