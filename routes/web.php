@@ -28,9 +28,16 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+Route::middleware('auth')->group(function () {
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+});
+
 // Admin routes
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editAdmin'])->name('profile.edit');
     
 
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
@@ -98,6 +105,11 @@ Route::middleware(['storefront'])->group(function () {
     Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
     Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
     Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
+
+    // Customer Profile
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editCustomer'])->name('profile.edit');
+    });
 
     // Reviews
     Route::post('/products/{product}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])

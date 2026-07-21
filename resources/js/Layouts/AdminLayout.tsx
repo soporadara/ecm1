@@ -218,16 +218,6 @@ export default function AdminLayout({ children, title, actions }: Props) {
             href: '/admin/menus',
             icon: <Icon d="M4 6h16M4 12h16M4 18h7" />,
         }] : []),
-        ...(hasPermission('themes.view') ? [{
-            label: 'Banner Settings',
-            href: '/admin/settings/banner',
-            icon: <Icon d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />,
-        }] : []),
-        ...(hasPermission('promotions.view') ? [{
-            label: 'Popups & Ads',
-            href: '/admin/popups',
-            icon: <Icon d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />,
-        }] : []),
     ];
 
     const marketingNavItems: NavItem[] = [
@@ -320,15 +310,23 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* User Footer */}
             <div className={`mt-auto mb-6 mx-4 p-4 rounded-2xl border border-admin-border/50 bg-admin-surface-muted/50 ${collapsed ? 'flex justify-center' : ''}`}>
                 {collapsed ? (
-                    <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0"
+                    <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0 hover:bg-admin-primary/20 transition-colors"
                         title={auth?.user?.name}>
-                        {auth?.user?.name?.charAt(0)?.toUpperCase()}
-                    </div>
+                        {auth?.user?.avatar ? (
+                            <img src={auth.user.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            auth?.user?.name?.charAt(0)?.toUpperCase()
+                        )}
+                    </Link>
                 ) : (
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0 border border-admin-primary/20">
-                            {auth?.user?.name?.charAt(0)?.toUpperCase()}
-                        </div>
+                        <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm flex-shrink-0 border border-admin-primary/20 overflow-hidden hover:opacity-80 transition-opacity">
+                            {auth?.user?.avatar ? (
+                                <img src={auth.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                auth?.user?.name?.charAt(0)?.toUpperCase()
+                            )}
+                        </Link>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-admin-text truncate">{auth?.user?.name}</p>
                             <p className="text-xs font-semibold text-admin-text-muted truncate capitalize">{auth?.user?.role}</p>
@@ -444,10 +442,16 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                 <p className="text-[11px] font-bold text-admin-text-muted uppercase tracking-wider">Your Balance</p>
                                 <p className="text-[15px] font-bold text-admin-primary">$566.55</p>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm">
-                                {auth?.user?.name?.charAt(0)?.toUpperCase()}
-                            </div>
-                            <Icon d="M19 9l-7 7-7-7" className="w-4 h-4 text-admin-text-muted ml-1" />
+                            <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm hover:opacity-80 transition-opacity">
+                                {auth?.user?.avatar ? (
+                                    <img src={auth.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    auth?.user?.name?.charAt(0)?.toUpperCase()
+                                )}
+                            </Link>
+                            <Link href="/admin/profile" className="w-4 h-4 text-admin-text-muted ml-1 hover:text-admin-text transition-colors">
+                                <Icon d="M19 9l-7 7-7-7" />
+                            </Link>
                         </div>
                         
                         {/* Primary Page Action Slot */}

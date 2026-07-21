@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -22,11 +25,26 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        $throttleKey = Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            throw ValidationException::withMessages([
+                'email' => trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ]);
+        }
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
             return redirect()->intended('/shop')->with('success', 'Welcome back!');
         }
+
+        RateLimiter::hit($throttleKey, 300); // 5 minutes decay
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
