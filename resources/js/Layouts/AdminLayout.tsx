@@ -1,4 +1,5 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, usePage, router } from '@inertiajs/react';
 
 interface Props {
@@ -20,6 +21,67 @@ const Icon = ({ d, className = "w-5 h-5" }: { d: string; className?: string }) =
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={d} />
     </svg>
 );
+
+const PortalTooltip = ({ text, rect }: { text: string; rect: DOMRect }) => {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+        <div
+            className="fixed z-[100] px-3 py-1.5 bg-admin-text text-white text-xs font-semibold rounded-lg shadow-xl pointer-events-none whitespace-nowrap"
+            style={{
+                top: rect.top + rect.height / 2,
+                left: rect.right + 12,
+                transform: 'translateY(-50%)'
+            }}
+        >
+            <div className="absolute top-1/2 -translate-y-1/2 -left-1 border-4 border-transparent border-r-admin-text" />
+            {text}
+        </div>,
+        document.body
+    );
+};
+
+const NavItemLink = ({ item, collapsed, active }: { item: NavItem; collapsed: boolean; active: boolean }) => {
+    const [hovered, setHovered] = useState(false);
+    const [rect, setRect] = useState<DOMRect | null>(null);
+    const linkRef = useRef<HTMLAnchorElement>(null);
+
+    const handleMouseEnter = () => {
+        if (collapsed && linkRef.current) {
+            setRect(linkRef.current.getBoundingClientRect());
+            setHovered(true);
+        }
+    };
+
+    return (
+        <div 
+            onMouseEnter={handleMouseEnter} 
+            onMouseLeave={() => setHovered(false)}
+        >
+            <Link
+                ref={linkRef}
+                href={item.href}
+                className={`
+                    group flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
+                    ${collapsed ? 'justify-center' : ''}
+                    ${active
+                        ? 'bg-admin-primary text-white shadow-lg shadow-admin-primary/30'
+                        : 'text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text'
+                    }
+                `}
+            >
+                <span className="flex-shrink-0">{item.icon}</span>
+                {!collapsed && <span className="truncate">{item.label}</span>}
+                {!collapsed && active && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-80" />
+                )}
+                {!collapsed && !active && (
+                    <Icon d="M9 5l7 7-7 7" className="ml-auto w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                )}
+            </Link>
+            {hovered && collapsed && rect && <PortalTooltip text={item.label} rect={rect} />}
+        </div>
+    );
+};
 
 const NavGroup = ({
     label,
@@ -46,30 +108,12 @@ const NavGroup = ({
                 {items.map((item) => {
                     const active = isExactActive(item.href) || isActive(item.href);
                     return (
-                        <Link
+                        <NavItemLink
                             key={item.href}
-                            href={item.href}
-                            title={collapsed ? item.label : undefined}
-                            className={`
-                                flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
-                                ${collapsed ? 'justify-center' : ''}
-                                ${active
-                                    ? 'bg-admin-primary text-white shadow-lg shadow-admin-primary/30'
-                                    : 'text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text'
-                                }
-                            `}
-                        >
-                            <span className="flex-shrink-0">{item.icon}</span>
-                            {!collapsed && <span className="truncate">{item.label}</span>}
-
-
-                            {!collapsed && active && (
-                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white opacity-80" />
-                            )}
-                            {!collapsed && !active && (
-                                <Icon d="M9 5l7 7-7 7" className="ml-auto w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                            )}
-                        </Link>
+                            item={item}
+                            collapsed={collapsed}
+                            active={active}
+                        />
                     );
                 })}
             </div>
