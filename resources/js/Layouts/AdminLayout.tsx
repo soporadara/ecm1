@@ -135,6 +135,10 @@ export default function AdminLayout({ children, title, actions }: Props) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+    const storeName = general_settings?.store_name || 'Rafel';
+    const storeLogo = general_settings?.store_logo;
 
     const role = auth?.user?.role || 'customer';
     const isSuperAdmin = role === 'superadmin';
@@ -261,12 +265,18 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* Store Header */}
             <div className={`flex items-center pt-8 pb-6 ${collapsed ? 'px-4 justify-center' : 'px-8'}`}>
                 <Link href="/admin" className="flex items-center gap-4 min-w-0">
-                    <div className="w-10 h-10 bg-admin-secondary rounded-[14px] flex items-center justify-center flex-shrink-0 font-black text-white text-lg shadow-lg shadow-admin-secondary/40">
-                        R
-                    </div>
+                    {storeLogo ? (
+                        <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-white rounded-[14px] shadow-sm overflow-hidden p-1 border border-admin-border/50">
+                            <img src={storeLogo} alt={storeName} className="w-full h-full object-contain" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-admin-secondary rounded-[14px] flex items-center justify-center flex-shrink-0 font-black text-white text-lg shadow-lg shadow-admin-secondary/40 uppercase">
+                            {storeName.charAt(0)}
+                        </div>
+                    )}
                     {!collapsed && (
                         <div className="min-w-0 flex items-center">
-                            <p className="font-extrabold text-admin-text text-2xl tracking-tight truncate lowercase">rafel</p>
+                            <p className="font-extrabold text-admin-text text-2xl tracking-tight truncate lowercase">{storeName}</p>
                         </div>
                     )}
                 </Link>

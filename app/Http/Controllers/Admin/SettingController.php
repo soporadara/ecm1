@@ -42,14 +42,14 @@ class SettingController extends Controller
         if ($request->hasFile('store_logo')) {
             $logoPath = $request->file('store_logo')->store('settings', 'public');
             $settingsToSave['store_logo'] = '/storage/' . $logoPath;
-        } elseif (is_string($request->input('store_logo'))) {
+        } elseif ($request->exists('store_logo')) {
             $settingsToSave['store_logo'] = $request->input('store_logo');
         }
 
         if ($request->hasFile('store_favicon')) {
             $faviconPath = $request->file('store_favicon')->store('settings', 'public');
             $settingsToSave['store_favicon'] = '/storage/' . $faviconPath;
-        } elseif (is_string($request->input('store_favicon'))) {
+        } elseif ($request->exists('store_favicon')) {
             $settingsToSave['store_favicon'] = $request->input('store_favicon');
         }
 
