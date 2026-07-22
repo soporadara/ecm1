@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ProductImportService;
+use App\Services\ProductImport\MarketplaceProviderManager;
+use App\Services\ProductImport\MarketplaceUrlParser;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
@@ -15,11 +16,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProductImportController extends Controller
 {
-    protected ProductImportService $importService;
+    protected MarketplaceProviderManager $providerManager;
+    protected MarketplaceUrlParser $urlParser;
 
-    public function __construct(ProductImportService $importService)
+    public function __construct(MarketplaceProviderManager $providerManager, MarketplaceUrlParser $urlParser)
     {
-        $this->importService = $importService;
+        $this->providerManager = $providerManager;
+        $this->urlParser = $urlParser;
     }
 
     public function index()
@@ -34,27 +37,35 @@ class ProductImportController extends Controller
         ]);
 
         try {
-            // Validate and normalize the URL before importing
-            $normalizedUrl = trim($request->url);
-            
-            // Temporary fix: using existing mock service for now until provider is built.
-            // The existing service mocks the response array.
-            $result = $this->importService->importFromUrl($normalizedUrl);
-            
-            if (($result['status'] ?? 'completed') === 'completed' && isset($result['data'])) {
-                $result['data'] = (new ImportedProductResource($result['data']))->resolve();
-            }
+            $parsed = $this->urlParser->parse($request->url);
+            $marketplace = $parsed['marketplace'];
+            $itemId = $parsed['item_id'];
 
-            // Generate a temporary job ID for the draft state
+            $provider = $this->providerManager->getTaobaoProvider();
+            $providerName = $provider->getName();
+
+            // e.g. import:rapidapi_tmapi:taobao:628116922374:detail:v1
+            $cacheKey = "import:{$providerName}:{$marketplace}:{$itemId}:detail:v1";
+            $cacheMinutes = config('services.rapidapi.cache_minutes', 60);
+
+            $result = Cache::remember($cacheKey, now()->addMinutes($cacheMinutes), function () use ($provider, $marketplace, $itemId, $request) {
+                return [
+                    'success' => true,
+                    'status' => 'completed',
+                    'data' => $provider->getProductDetails($marketplace, $itemId, $request->url)
+                ];
+            });
+
+            // Generate a temporary job ID for the draft state to hide cache key from URL
             $jobId = uniqid('import_');
-            // Cache the FULL result so we can read the status (success/failed) in the UI
             Cache::put($jobId, $result, now()->addHours(1));
 
-            // Redirect to the GET route for showing the preview, following Inertia best practices
             return redirect()->route('logistics.import.show', ['importJob' => $jobId]);
 
+        } catch (\App\Services\ProductImport\Exceptions\MarketplaceProviderException $e) {
+            return back()->withErrors(['url' => $e->getSafeUserMessage()]);
         } catch (\Exception $e) {
-            return back()->withErrors(['url' => $e->getMessage()]);
+            return back()->withErrors(['url' => 'Failed to import product: ' . $e->getMessage()]);
         }
     }
 

@@ -41,4 +41,20 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'marketplace' => [
+        'import_enabled' => env('MARKETPLACE_IMPORT_ENABLED', true),
+        'taobao_provider' => env('TAOBAO_PROVIDER', 'rapidapi_tmapi'),
+    ],
+
+    'rapidapi' => [
+        'key' => env('RAPIDAPI_KEY'),
+        'host' => env('RAPIDAPI_HOST'),
+        'item_detail_url' => env('RAPIDAPI_ITEM_DETAIL_URL'),
+        'item_description_url' => env('RAPIDAPI_ITEM_DESCRIPTION_URL'),
+        'timeout_seconds' => env('RAPIDAPI_TIMEOUT_SECONDS', 20),
+        'connect_timeout_seconds' => env('RAPIDAPI_CONNECT_TIMEOUT_SECONDS', 8),
+        'retry_times' => env('RAPIDAPI_RETRY_TIMES', 2),
+        'cache_minutes' => env('RAPIDAPI_CACHE_MINUTES', 60),
+    ],
+
 ];
