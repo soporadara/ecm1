@@ -12,22 +12,57 @@ export default function StaffIndex({ staff }: any) {
         <AdminLayout title="Staff & Roles">
             <Head title="Staff Management" />
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Staff Management</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage backend users and their roles</p>
                 </div>
                 <Link
                     href="/admin/staff/create"
-                    className="bg-brand-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-secondary transition-colors inline-flex items-center"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-primary px-5 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-secondary"
                 >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                     Add Staff Member
                 </Link>
             </div>
 
+            <div className="space-y-3 md:hidden">
+                {staff.data.map((user: any) => (
+                    <article key={user.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary/10 text-lg font-black text-brand-primary">
+                                {user.name.charAt(0)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <h2 className="truncate text-base font-black text-gray-950 dark:text-white">{user.name}</h2>
+                                <p className="truncate text-sm font-semibold text-gray-500 dark:text-gray-400">{user.email}</p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {user.roles.map((role: any) => (
+                                        <span key={role.id} className="rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-black text-brand-primary">
+                                            {role.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-2">
+                            <Link href={`/admin/staff/${user.id}/edit`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 text-sm font-black text-gray-700 transition hover:-translate-y-0.5 hover:border-brand-primary hover:text-brand-primary dark:border-gray-700 dark:text-gray-200">
+                                Edit
+                            </Link>
+                            <button
+                                onClick={() => deleteStaff(user.id)}
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-50 text-sm font-black text-red-600 transition hover:-translate-y-0.5 hover:bg-red-100 disabled:opacity-50"
+                                disabled={user.id === 1}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </article>
+                ))}
+            </div>
+
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">

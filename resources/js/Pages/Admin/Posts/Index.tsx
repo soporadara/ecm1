@@ -1,9 +1,12 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
-export default function Index({ posts }: any) {
+export default function Index({ posts, filters = {} }: any) {
     const { delete: destroy } = useForm();
+    const [from, setFrom] = useState(filters.from || '');
+    const [to, setTo] = useState(filters.to || '');
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this post?')) {
@@ -12,6 +15,10 @@ export default function Index({ posts }: any) {
                 onSuccess: () => toast.success('Post deleted successfully.')
             });
         }
+    };
+    const applyFilters = (event: React.FormEvent) => {
+        event.preventDefault();
+        router.get('/admin/posts', { from, to }, { preserveState: true, replace: true });
     };
 
     return (
@@ -33,6 +40,18 @@ export default function Index({ posts }: any) {
                     New Post
                 </Link>
             </div>
+
+            <form onSubmit={applyFilters} className="mb-6 flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-end">
+                <label className="text-sm font-bold text-gray-600 dark:text-gray-300">
+                    From
+                    <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="mt-1 block rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+                </label>
+                <label className="text-sm font-bold text-gray-600 dark:text-gray-300">
+                    To
+                    <input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="mt-1 block rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+                </label>
+                <button className="min-h-11 rounded-xl bg-brand-primary px-5 text-sm font-black uppercase tracking-wider text-white transition hover:-translate-y-0.5 hover:bg-brand-secondary">Filter Dates</button>
+            </form>
 
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="overflow-x-auto">
@@ -78,7 +97,7 @@ export default function Index({ posts }: any) {
                                             {post.is_published ? (
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                                    Published
+                                                    {post.scheduled_at && new Date(post.scheduled_at) > new Date() ? 'Scheduled' : 'Published'}
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">

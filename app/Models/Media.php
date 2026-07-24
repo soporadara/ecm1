@@ -13,6 +13,8 @@ class Media extends Model
         'size',
         'path',
         'alt',
-        'user_id'
+        'user_id',
+        'is_demo',
+        'demo_batch_id',
     ];
 }

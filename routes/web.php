@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,22 +13,62 @@ use App\Http\Controllers\AuthController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
-    
-    // Google Auth
-    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
-    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
-
-    // Password Reset
-    Route::get('/forgot-password', [\App\Http\Controllers\PasswordResetController::class, 'showForgotForm'])->name('password.request');
-    Route::post('/forgot-password', [\App\Http\Controllers\PasswordResetController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/reset-password/{token}', [\App\Http\Controllers\PasswordResetController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [\App\Http\Controllers\PasswordResetController::class, 'resetPassword'])->name('password.update');
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::get('/cms/login', [AuthController::class, 'showCmsLogin'])->name('cms.login');
+    Route::post('/cms/login', [AuthController::class, 'cmsLogin'])->name('cms.login.store');
 });
 
+Route::post('/auth/firebase/session', [AuthController::class, 'firebaseSession'])->middleware('guest')->name('auth.firebase.session');
+Route::post('/auth/firebase/google', [AuthController::class, 'firebaseGoogle'])->middleware('guest')->name('auth.firebase.google');
+Route::post('/auth/firebase/cms', [AuthController::class, 'cmsFirebase'])->middleware('guest')->name('auth.firebase.cms');
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+Route::redirect('/cms/dashboard', '/admin')->middleware(['auth', 'is_admin']);
+
+Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
+Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
+Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
+Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
+Route::put('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{item}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
+Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    $canManageFeatureFlags = static function (?User $user): bool {
+        return (bool) $user && (
+            $user->hasRole('Super Administrator') ||
+            in_array($user->role, ['superadmin', 'super_admin'], true)
+        );
+    };
+
+    Route::get('feature-flags', function (Request $request) use ($canManageFeatureFlags) {
+        if (!$request->user()) {
+            return redirect('/login');
+        }
+
+        if (!$canManageFeatureFlags($request->user())) {
+            return redirect('/login');
+        }
+
+        return app(\App\Http\Controllers\Admin\FeatureFlagController::class)->index();
+    })->name('feature-flags.index');
+
+    Route::patch('feature-flags/{featureFlag}', function (Request $request, \App\Models\FeatureFlag $featureFlag) use ($canManageFeatureFlags) {
+        if (!$request->user()) {
+            return redirect('/login');
+        }
+
+        if (!$canManageFeatureFlags($request->user())) {
+            return redirect('/login');
+        }
+
+        return app(\App\Http\Controllers\Admin\FeatureFlagController::class)->update($request, $featureFlag);
+    })->name('feature-flags.update');
+});
 
 Route::middleware('auth')->group(function () {
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
@@ -35,35 +77,42 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::post('/cms/logout', [\App\Http\Controllers\AuthController::class, 'cmsLogout'])->name('cms.logout')->middleware('auth:admin');
+
+Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editAdmin'])->name('profile.edit');
     
 
-    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
-    Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
-    Route::patch('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('orders.update');
-    Route::resource('pages', \App\Http\Controllers\Admin\PageController::class);
-    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
-    Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class);
-    
-    // Categories
-    Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
+    // Logistics Customers & Orders
+    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['show']);
 
-    // Customers
+    Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
+    Route::match(['put', 'patch'], 'orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update');
+    Route::put('orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.status');
+
     Route::get('customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{user}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
-
-    // Brands
-    Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class)->only(['index', 'store', 'update', 'destroy']);
-
-    // Coupons
-    Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
     
-    // Media Library
-    Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
-    Route::post('media', [\App\Http\Controllers\Admin\MediaController::class, 'store'])->name('media.store');
-    Route::delete('media/{media}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+    Route::get('receipts', [\App\Http\Controllers\Admin\ReceiptController::class, 'index'])->name('receipts.index');
+    Route::get('receipts/generate/{order}', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
+    Route::get('receipts/{receipt}', [\App\Http\Controllers\Admin\ReceiptController::class, 'show'])->name('receipts.show');
+
+    // CMS & Settings
+    Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except(['show']);
+    Route::post('posts/import-doc', [\App\Http\Controllers\Admin\PostController::class, 'importDoc'])->name('posts.import-doc');
+    Route::resource('post-categories', \App\Http\Controllers\Admin\PostCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
+    Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class)->except(['show']);
+    Route::get('available-sites', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'index'])->name('available-sites.index');
+    Route::post('available-sites', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'store'])->name('available-sites.store');
+    Route::match(['put', 'patch'], 'available-sites/{marketplace}', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'update'])->name('available-sites.update');
+    Route::delete('available-sites/{marketplace}', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'destroy'])->name('available-sites.destroy');
+    Route::redirect('marketplaces', '/admin/available-sites')->name('marketplaces.index');
+    Route::redirect('content-settings/order-messages', '/admin/settings');
+    Route::redirect('contact-messages', '/admin');
+    Route::redirect('media', '/admin/settings');
     
     // Menus
     Route::resource('menus', \App\Http\Controllers\Admin\MenuController::class)->except(['create', 'show', 'edit']);
@@ -72,69 +121,46 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'updateItem'])->name('menus.items.update');
     Route::delete('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
     
-    // Banner Settings
+    // Banner management
+    Route::patch('banners/mode', [\App\Http\Controllers\Admin\BannerController::class, 'updateMode'])->name('banners.mode');
     Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
-    
-    // SEO Settings
-    Route::get('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'index'])->name('seo.index');
-    Route::post('/seo', [\App\Http\Controllers\Admin\SeoController::class, 'store'])->name('seo.store');
 
-    // CMS Modules
-    Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'destroy']);
+    // Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
-    Route::get('/themes', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('themes.index');
-    Route::get('/customize', [\App\Http\Controllers\Admin\ThemeController::class, 'customize'])->name('themes.customize');
-    Route::post('/customize', [\App\Http\Controllers\Admin\ThemeController::class, 'updateCustomize'])->name('themes.customize.update');
-
-    // User management
-    Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'update']);
     
-    // Staff & RBAC
+    // Staff & Users
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'update']);
     Route::resource('staff', \App\Http\Controllers\Admin\StaffController::class)->except(['show']);
-
-    // Feature Flags (Logistics Platform)
-    Route::get('feature-flags', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'index'])->name('feature-flags.index');
-    Route::patch('feature-flags/{featureFlag}', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'update'])->name('feature-flags.update');
-
-    // Marketplaces (Logistics Platform)
-    Route::resource('marketplaces', \App\Http\Controllers\Admin\MarketplaceAdminController::class)->only(['index', 'store', 'update', 'destroy']);
+    
+    Route::get('audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit.index');
+    Route::get('security/access-control', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'index'])->name('security.access-control');
+    Route::delete('security/access-control/{block}', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'destroy'])->name('security.access-control.destroy');
 });
 
-// Storefront routes (gated by feature flags via middleware)
-Route::middleware(['storefront'])->group(function () {
-    Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
-    Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
-    Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
-
-    // Customer Profile
+    // Logistics Customer Routes
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editCustomer'])->name('profile.edit');
+        Route::get('/profile/complete', [\App\Http\Controllers\ProfileController::class, 'showComplete'])->name('profile.complete');
+        Route::post('/profile/complete', [\App\Http\Controllers\ProfileController::class, 'storeComplete']);
+        Route::post('/profile/complete/skip', [\App\Http\Controllers\ProfileController::class, 'skipComplete'])->name('profile.complete.skip');
+        
+        Route::get('/dashboard', [\App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/account', [\App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('account');
+        Route::get('/dashboard/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('dashboard.orders');
+        Route::get('/dashboard/orders/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'show'])->name('dashboard.orders.show');
+        Route::redirect('/dashboard/track', '/my-orders')->name('dashboard.track');
+        Route::get('/my-orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('my-orders');
+        Route::get('/my-orders/{order}', [\App\Http\Controllers\Customer\OrderController::class, 'show'])->name('my-orders.show');
+        Route::redirect('/track-orders', '/my-orders')->name('track-orders');
+        Route::redirect('/order-history', '/my-orders')->name('order-history');
+        Route::get('/receipts', [\App\Http\Controllers\Customer\OrderController::class, 'index'])->name('receipts');
+        Route::get('/security', [\App\Http\Controllers\ProfileController::class, 'editCustomer'])->name('security');
+        Route::get('/attachments/{attachment}/download', [\App\Http\Controllers\Customer\OrderController::class, 'downloadAttachment'])->name('attachments.download');
+        
+        Route::get('/manual-order', [\App\Http\Controllers\Customer\ManualOrderController::class, 'create'])->name('manual-order.create');
+        Route::post('/manual-order', [\App\Http\Controllers\Customer\ManualOrderController::class, 'store']);
     });
-
-    // Reviews
-    Route::post('/products/{product}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])
-        ->middleware('auth')
-        ->name('reviews.store');
-
-    Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
-    Route::patch('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{item}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
-
-    Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
-
-    // Quick Checkout routes
-    Route::post('/api/coupons/validate', [\App\Http\Controllers\QuickCheckoutController::class, 'validateCoupon'])->name('api.coupons.validate');
-    Route::post('/checkout/quick', [\App\Http\Controllers\QuickCheckoutController::class, 'store'])->name('checkout.quick.store');
-
-    // Stripe Routes
-    Route::get('/checkout/stripe', [\App\Http\Controllers\StripeCheckoutController::class, 'createSession'])->name('checkout.stripe');
-    Route::get('/checkout/success', [\App\Http\Controllers\StripeCheckoutController::class, 'success'])->name('checkout.success');
-    Route::get('/checkout/cancel', [\App\Http\Controllers\StripeCheckoutController::class, 'cancel'])->name('checkout.cancel');
-});
-
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
@@ -160,7 +186,6 @@ Route::get('/migrate-logistics', function () {
     $pages = [
         ['title' => 'Home', 'slug' => 'home'],
         ['title' => 'Blog', 'slug' => 'blog'],
-        ['title' => 'Shop', 'slug' => 'shop']
     ];
     foreach ($pages as $p) {
         if (!\App\Models\Page::where('slug', $p['slug'])->exists()) {
@@ -179,3 +204,18 @@ Route::get('/migrate-logistics', function () {
 });
 
 // Localization
+Route::get('/seed-test-blog', function () {
+    $post = \App\Models\Post::updateOrCreate(
+        ['slug' => 'why-every-plumber-needs-a-1-ton-mini-excavator-in-their-fleet'],
+        [
+            'title' => 'Why Every Plumber Needs a 1-Ton Mini Excavator in Their Fleet',
+            'content' => 'In one scenario where a customer calls with a broken sewer pipe, and you need to fix it fast. But if your team has to dig by hand in a tiny backyard, it takes hours. The work is hard, labor costs go up, and a job that should be done by noon ends up taking two full days.
+Now, imagine doing that exact same job with a mini excavator.',
+            'image' => 'https://img.miniexcavator.org/ebay/Website-Team/Class3-4June/20-june/b2-01.webp',
+            'is_published' => true,
+            'published_at' => now(),
+            'user_id' => null
+        ]
+    );
+    return "Blog post seeded: " . $post->id . ". You can now visit /blog to see it.";
+});

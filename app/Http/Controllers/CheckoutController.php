@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\FeatureFlags;
 use App\Models\Cart;
+use App\Models\FeatureFlag;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class CheckoutController extends Controller
 {
     protected function checkFlag(): void
     {
-        if (FeatureFlags::disabled('storefront_checkout_enabled')) {
+        if (FeatureFlag::where('name', 'storefront_checkout_enabled')->exists() && FeatureFlags::disabled('storefront_checkout_enabled')) {
             abort(404, 'Checkout is not currently available.');
         }
     }

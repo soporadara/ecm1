@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
+import { getPopupCreativeSize } from '../lib/popupCreativeSizes';
 
 interface PopupData {
     id: number;
     title: string;
+    badge_text: string | null;
     heading: string | null;
     description: string | null;
     link_url: string | null;
+    button_label: string | null;
+    accent_color: string | null;
     image_path: string | null;
+    creative_size: string | null;
 }
 
 interface PromoPopupProps {
@@ -16,9 +21,11 @@ interface PromoPopupProps {
 
 export default function PromoPopup({ popup }: PromoPopupProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [imageFailed, setImageFailed] = useState(false);
 
     useEffect(() => {
         if (!popup) return;
+        setImageFailed(false);
 
         // For testing purposes, we check session storage so it resets when they close the tab,
         // rather than local storage which persists forever.
@@ -40,6 +47,11 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
 
     if (!isOpen || !popup) return null;
 
+    const creativeSize = getPopupCreativeSize(popup.creative_size);
+    const modalMaxWidth = creativeSize.value === 'portrait_1080x1920' ? 'max-w-md' : creativeSize.value === 'square_1280x1280' ? 'max-w-2xl' : 'max-w-5xl';
+    const creativeStyle = { aspectRatio: `${creativeSize.width} / ${creativeSize.height}` };
+    const hasImage = Boolean(popup.image_path && !imageFailed);
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -49,45 +61,54 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
             ></div>
             
             {/* Modal */}
-            <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden max-w-lg w-full transform transition-all duration-500 scale-100 opacity-100 flex flex-col z-[101]">
+            <div className={`relative z-[101] w-full ${modalMaxWidth} transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-500 opacity-100 dark:bg-gray-900`}>
                 <button 
                     onClick={handleClose}
-                    className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 dark:bg-black/40 dark:hover:bg-black/60 backdrop-blur-md rounded-full p-2 text-gray-800 dark:text-white transition-colors z-10"
+                    className="absolute right-4 top-4 z-10 rounded-full bg-white/80 p-2 text-gray-800 shadow-sm backdrop-blur-md transition-colors hover:bg-white dark:bg-black/50 dark:text-white dark:hover:bg-black/70"
+                    aria-label="Close promotion"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                {popup.image_path && (
-                    <div className="w-full h-48 sm:h-64 relative">
-                        <img src={popup.image_path} alt={popup.title} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="relative max-h-[88vh] w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={creativeStyle}>
+                    {hasImage ? (
+                        <img src={popup.image_path || ''} alt={popup.title} className="absolute inset-0 h-full w-full object-cover" onError={() => setImageFailed(true)} />
+                    ) : (
+                        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${popup.accent_color || '#ff4c3b'}, #021d35)` }} />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+
+                    <div className="absolute inset-x-0 bottom-0 p-6 text-center text-white sm:p-10">
+                        {popup.badge_text && (
+                            <span className="mx-auto mb-5 inline-flex w-fit rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-white" style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}>
+                                {popup.badge_text}
+                            </span>
+                        )}
+                        {popup.heading && (
+                            <h2 className="text-3xl font-black leading-tight text-white sm:text-4xl font-serif">
+                                {popup.heading}
+                            </h2>
+                        )}
+
+                        {popup.description && (
+                            <p className="mx-auto mt-5 max-w-md text-base font-semibold leading-7 text-white/85">
+                                {popup.description}
+                            </p>
+                        )}
+
+                        {popup.link_url && (
+                            <Link
+                                href={popup.link_url}
+                                onClick={handleClose}
+                                className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-8 text-sm font-black uppercase tracking-widest text-white shadow-lg transition hover:brightness-95 sm:mx-auto sm:w-auto"
+                                style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}
+                            >
+                                {popup.button_label || 'Shop Now'}
+                            </Link>
+                        )}
                     </div>
-                )}
-
-                <div className={`p-8 text-center ${!popup.image_path ? 'pt-12' : ''}`}>
-                    {popup.heading && (
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 font-serif">
-                            {popup.heading}
-                        </h2>
-                    )}
-                    
-                    {popup.description && (
-                        <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                            {popup.description}
-                        </p>
-                    )}
-
-                    {popup.link_url && (
-                        <Link 
-                            href={popup.link_url}
-                            onClick={handleClose}
-                            className="inline-block w-full sm:w-auto bg-brand-primary text-white font-bold uppercase tracking-widest text-sm px-8 py-4 rounded hover:bg-brand-secondary transition-colors shadow-lg shadow-brand-primary/30"
-                        >
-                            Explore Now
-                        </Link>
-                    )}
                 </div>
             </div>
         </div>

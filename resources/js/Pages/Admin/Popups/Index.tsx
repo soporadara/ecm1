@@ -1,99 +1,116 @@
-import React from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Megaphone, Pencil, Plus, Trash2 } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { getPopupCreativeSize } from '@/lib/popupCreativeSizes';
 
 interface Popup {
     id: number;
     title: string;
+    badge_text: string | null;
     heading: string | null;
+    description: string | null;
+    link_url: string | null;
+    button_label: string | null;
+    accent_color: string | null;
+    creative_size: string | null;
+    image_url: string | null;
     is_active: boolean;
+    starts_at: string | null;
+    ends_at: string | null;
     created_at: string;
 }
 
 interface Props {
     popups: {
         data: Popup[];
-        links: any[];
     };
 }
 
+function PopupThumbnail({ popup }: { popup: Popup }) {
+    const [failed, setFailed] = useState(false);
+    const creativeSize = getPopupCreativeSize(popup.creative_size);
+
+    return (
+        <div className="relative min-h-44 bg-admin-surface-muted">
+            {popup.image_url && !failed ? (
+                <img src={popup.image_url} alt={popup.title} className="h-full w-full object-cover" onError={() => setFailed(true)} />
+            ) : (
+                <div className="flex h-full min-h-44 items-center justify-center text-admin-text-muted">
+                    <Megaphone className="h-8 w-8" aria-hidden="true" />
+                </div>
+            )}
+            <span className="absolute bottom-3 left-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-black text-white backdrop-blur">
+                {creativeSize.dimensions}
+            </span>
+        </div>
+    );
+}
+
 export default function Index({ popups }: Props) {
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this popup?')) {
-            router.delete(route('admin.popups.destroy', id), {
-                onSuccess: () => toast.success('Popup deleted successfully'),
-                onError: () => toast.error('Failed to delete popup'),
-            });
-        }
+    const deletePopup = (popup: Popup) => {
+        if (!window.confirm(`Delete popup ad "${popup.title}"?`)) return;
+        router.delete(`/admin/popups/${popup.id}`, { preserveScroll: true });
     };
 
     return (
-        <AdminLayout title="Popups & Ads">
-            <Head title="Popups & Ads — Rafel CMS" />
+        <AdminLayout title="Pop-up Ads">
+            <Head title="Pop-up Ads - CMS" />
 
-            <div className="mb-6 flex justify-between items-end">
-                <div>
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">Popups & Ads</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage promotional popups, sales, and announcements.</p>
+            <div className="mx-auto max-w-7xl">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-black text-admin-text">Pop-up Ads</h1>
+                        <p className="mt-1 text-sm font-semibold text-admin-text-muted">Create homepage popups with discount text, image, button, and schedule.</p>
+                    </div>
+                    <Link href="/admin/popups/create" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-admin-primary px-5 text-sm font-black text-white shadow-lg shadow-admin-primary/20">
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        New Pop-up Ad
+                    </Link>
                 </div>
-                <Link
-                    href={route('admin.popups.create')}
-                    className="inline-flex items-center justify-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-                >
-                    Add Popup
-                </Link>
-            </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                            <tr>
-                                <th scope="col" className="px-6 py-4 font-semibold">Internal Title</th>
-                                <th scope="col" className="px-6 py-4 font-semibold">Heading</th>
-                                <th scope="col" className="px-6 py-4 font-semibold text-center">Status</th>
-                                <th scope="col" className="px-6 py-4 font-semibold">Created</th>
-                                <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {popups.data.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm">No popups found.</td>
-                                </tr>
-                            )}
-                            {popups.data.map((popup) => (
-                                <tr key={popup.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                        {popup.title}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {popup.heading || '-'}
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${popup.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                            {popup.is_active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                                        {new Date(popup.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-3">
-                                            <Link href={route('admin.popups.edit', popup.id)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium">
+                {popups.data.length === 0 ? (
+                    <div className="rounded-2xl border border-admin-border bg-admin-surface p-12 text-center shadow-sm">
+                        <Megaphone className="mx-auto h-10 w-10 text-admin-text-muted" aria-hidden="true" />
+                        <h2 className="mt-4 text-lg font-black text-admin-text">No pop-up ads yet</h2>
+                        <p className="mt-2 text-sm font-semibold text-admin-text-muted">Add a promotion like a discount offer, service announcement, or seasonal campaign.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-5 lg:grid-cols-2">
+                        {popups.data.map((popup) => (
+                            <article key={popup.id} className="overflow-hidden rounded-2xl border border-admin-border bg-admin-surface shadow-sm">
+                                <div className="grid sm:grid-cols-[11rem_1fr]">
+                                    <PopupThumbnail popup={popup} />
+                                    <div className="p-5">
+                                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                                            <span className={`rounded-full px-2.5 py-1 text-xs font-black ${popup.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                {popup.is_active ? 'Active' : 'Inactive'}
+                                            </span>
+                                            {popup.badge_text && (
+                                                <span className="rounded-full px-2.5 py-1 text-xs font-black text-white" style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}>
+                                                    {popup.badge_text}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <h2 className="text-lg font-black text-admin-text">{popup.title}</h2>
+                                        <p className="mt-1 text-sm font-bold text-admin-text">{popup.heading || 'No public heading'}</p>
+                                        <p className="mt-2 line-clamp-2 text-sm text-admin-text-muted">{popup.description || 'No description set.'}</p>
+                                        <div className="mt-5 flex flex-wrap justify-end gap-3">
+                                            <Link href={`/admin/popups/${popup.id}/edit`} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-admin-border px-4 text-sm font-black text-admin-text">
+                                                <Pencil className="h-4 w-4" aria-hidden="true" />
                                                 Edit
                                             </Link>
-                                            <button onClick={() => handleDelete(popup.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium">
+                                            <button type="button" onClick={() => deletePopup(popup)} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-sm font-black text-red-700">
+                                                <Trash2 className="h-4 w-4" aria-hidden="true" />
                                                 Delete
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );

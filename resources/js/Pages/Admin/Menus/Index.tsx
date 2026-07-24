@@ -268,12 +268,12 @@ export default function MenusIndex({ menus, pages = [] }: any) {
                                         <div>
                                             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Label</label>
                                             <input type="text" value={itemForm.data.label} onChange={e => itemForm.setData('label', e.target.value)}
-                                                className="w-full text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Shop All" required />
+                                                className="w-full text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="Request Quote" required />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">URL / Path</label>
                                             <input type="text" value={itemForm.data.url} onChange={e => itemForm.setData('url', e.target.value)}
-                                                className="w-full text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="/shop" required />
+                                                className="w-full text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500" placeholder="/manual-order" required />
                                         </div>
                                         <div className="col-span-2 flex justify-end">
                                             <button type="submit" disabled={itemForm.processing} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">

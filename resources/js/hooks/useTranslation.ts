@@ -1,35 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import en from '../locales/en.json';
-import zhCN from '../locales/zh-CN.json';
 import km from '../locales/km.json';
 import vi from '../locales/vi.json';
-import ko from '../locales/ko.json';
-import ja from '../locales/ja.json';
-import id from '../locales/id.json';
 
 const translations: Record<string, any> = {
     'en': en,
-    'zh-CN': zhCN,
     'km': km,
     'vi': vi,
-    'ko': ko,
-    'ja': ja,
-    'id': id,
 };
 
 // Global state to sync all hook instances
 const languageCodeMap: Record<string, string> = {
-    'English': 'en',
-    'Chinese': 'zh-CN',
+    'ភាសាខ្មែរ': 'km',
     'Khmer': 'km',
+    'English': 'en',
+    'Tiếng Việt': 'vi',
     'Vietnamese': 'vi',
-    'Korean': 'ko',
-    'Japanese': 'ja',
-    'Indonesian': 'id'
 };
 
 const savedLang = localStorage.getItem('language');
-let currentLanguage = savedLang ? (languageCodeMap[savedLang] || 'en') : 'en';
+let currentLanguage = savedLang ? (languageCodeMap[savedLang] || savedLang) : 'km';
+if (!translations[currentLanguage]) currentLanguage = 'km';
 const listeners = new Set<() => void>();
 
 export function useTranslation() {
@@ -57,7 +48,15 @@ export function useTranslation() {
             if (value && value[k] !== undefined) {
                 value = value[k];
             } else {
-                return key;
+                value = translations.km;
+                for (const fallbackKey of keys) {
+                    if (value && value[fallbackKey] !== undefined) {
+                        value = value[fallbackKey];
+                    } else {
+                        return key;
+                    }
+                }
+                return value || key;
             }
         }
         return value || key;
@@ -66,6 +65,7 @@ export function useTranslation() {
     const changeLanguage = (newLang: string) => {
         if (translations[newLang]) {
             currentLanguage = newLang;
+            localStorage.setItem('language', newLang);
             listeners.forEach(listener => listener());
         }
     };

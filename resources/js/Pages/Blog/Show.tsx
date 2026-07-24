@@ -2,7 +2,9 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 
-export default function Show({ post, relatedPosts }: any) {
+export default function Show({ post, relatedPosts, categories = [] }: any) {
+    const galleryImages = (post.images || []).filter((image: string) => image && image !== post.image);
+
     return (
         <MainLayout>
             <Head>
@@ -47,42 +49,22 @@ export default function Show({ post, relatedPosts }: any) {
                                     </div>
                                 )}
 
+                                {galleryImages.length > 0 && (
+                                    <div className="grid gap-3 px-8 pt-6 sm:grid-cols-2">
+                                        {galleryImages.map((image: string) => (
+                                            <img key={image} src={image} alt={post.title} className="h-56 w-full rounded-xl border border-gray-100 object-cover dark:border-gray-800" />
+                                        ))}
+                                    </div>
+                                )}
+
                                 {/* Content */}
                                 <div className="p-8">
                                     <div 
                                         className="prose prose-lg dark:prose-invert prose-brand max-w-none text-gray-800 dark:text-gray-300 leading-relaxed font-light"
                                         dangerouslySetInnerHTML={{ __html: post.content }}
                                     />
-                                    
-                                    {/* Author Bio Box */}
-                                    <div className="mt-16 bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
-                                        <div className="w-20 h-20 shrink-0 rounded-full bg-brand-primary/20 flex items-center justify-center text-3xl font-bold text-brand-primary">
-                                            {(post.user?.name || 'A').charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{post.user ? post.user.name : 'Admin'}</h4>
-                                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                                Dedicated to bringing you the best fashion advice, industry news, and style tips. Follow our journey to discover your true personal style.
-                                            </p>
-                                        </div>
-                                    </div>
                                 </div>
                             </article>
-
-                            {/* Comments Section (Mocked) */}
-                            <div className="mt-12 bg-white dark:bg-[#0a1b2a] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">Write a Comment</h3>
-                                <form className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <input type="text" placeholder="Your Name" className="w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary" />
-                                        <input type="email" placeholder="Your Email" className="w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary" />
-                                    </div>
-                                    <textarea rows={5} placeholder="Your Comment..." className="w-full rounded-md border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary"></textarea>
-                                    <button type="button" className="bg-brand-primary text-white font-bold uppercase tracking-widest text-sm px-8 py-3 rounded hover:bg-brand-secondary transition-colors">
-                                        Post Comment
-                                    </button>
-                                </form>
-                            </div>
                         </div>
 
                         {/* Sidebar Area */}
@@ -92,7 +74,7 @@ export default function Show({ post, relatedPosts }: any) {
                             <div className="bg-white dark:bg-[#0a1b2a] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                     <span className="w-1.5 h-5 bg-brand-primary rounded-full"></span>
-                                    Social Networks
+                                    Contact Channels
                                 </h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     <a href="#" className="flex items-center justify-center gap-2 bg-[#E1306C] text-white py-2 rounded font-medium text-sm hover:opacity-90 transition-opacity"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg> Instagram</a>
@@ -109,14 +91,17 @@ export default function Show({ post, relatedPosts }: any) {
                                     Categories
                                 </h3>
                                 <ul className="space-y-2">
-                                    {['Fashion Trends', 'Style Guides', 'New Arrivals', 'Company News', 'Behind the Scenes'].map((cat, i) => (
-                                        <li key={i}>
-                                            <a href="#" className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-primary transition-colors">
-                                                <span>{cat}</span>
-                                                <span className="bg-gray-100 dark:bg-gray-800 text-xs py-1 px-2 rounded font-medium">{Math.floor(Math.random() * 20) + 2}</span>
-                                            </a>
+                                    {categories.map((cat: any) => (
+                                        <li key={cat.id}>
+                                            <Link href={`/blog?category=${cat.slug}`} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-primary transition-colors">
+                                                <span>{cat.name}</span>
+                                                <span className="bg-gray-100 dark:bg-gray-800 text-xs py-1 px-2 rounded font-medium">{cat.posts_count}</span>
+                                            </Link>
                                         </li>
                                     ))}
+                                    {categories.length === 0 && (
+                                        <li className="text-gray-500 text-sm italic">No categories yet.</li>
+                                    )}
                                 </ul>
                             </div>
 
@@ -158,7 +143,7 @@ export default function Show({ post, relatedPosts }: any) {
                                     Tag Cloud
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {['Fashion', 'Style', 'Accessories', 'Summer', 'Winter', 'Trends', 'Lifestyle', 'Shopping'].map((tag, i) => (
+                                    {['Logistics', 'Manual Order', 'Delivery', 'Sourcing', 'Warehouse', 'Payments', 'Receipts', 'Support'].map((tag, i) => (
                                         <a key={i} href="#" className="inline-block border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-brand-primary hover:text-white hover:border-brand-primary dark:hover:bg-brand-primary transition-colors text-xs font-medium px-3 py-1.5 rounded">
                                             {tag}
                                         </a>
@@ -169,8 +154,8 @@ export default function Show({ post, relatedPosts }: any) {
                             {/* Newsletter / Promo */}
                             <div className="bg-brand-secondary rounded-xl p-8 text-center text-white relative overflow-hidden">
                                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                                <h3 className="text-2xl font-bold font-serif mb-2 relative z-10">Join Our Newsletter</h3>
-                                <p className="text-sm text-gray-300 mb-6 relative z-10">Get the latest fashion news and exclusive offers directly to your inbox.</p>
+                                <h3 className="text-2xl font-bold font-serif mb-2 relative z-10">Get Logistics Updates</h3>
+                                <p className="text-sm text-gray-300 mb-6 relative z-10">Receive new shipping guides, sourcing tips, and service updates.</p>
                                 <form className="relative z-10" onSubmit={(e) => e.preventDefault()}>
                                     <input type="email" placeholder="Email Address" className="w-full text-black px-4 py-3 rounded mb-3 text-sm focus:ring-2 focus:ring-brand-primary" />
                                     <button type="button" className="w-full bg-brand-primary text-white font-bold uppercase tracking-widest text-xs px-4 py-3 rounded hover:bg-brand-primary/90 transition-colors">

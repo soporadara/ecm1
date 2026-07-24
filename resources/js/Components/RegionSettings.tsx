@@ -1,106 +1,165 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useCurrency } from '../Contexts/CurrencyContext';
 
+type LanguageCode = 'km' | 'en' | 'vi';
+
 interface RegionSettingsProps {
-    isOpen: boolean;
-    onClose: () => void;
-    language: string;
-    languages: string[];
-    changeLanguage: (lang: string) => void;
+    language: LanguageCode;
+    changeLanguage: (lang: LanguageCode) => void;
+    variant?: 'header' | 'drawer';
+    tone?: 'light' | 'dark';
 }
 
-export default function RegionSettings({ isOpen, onClose, language, languages, changeLanguage }: RegionSettingsProps) {
+const languages: Array<{ code: LanguageCode; flag: string; label: string }> = [
+    { code: 'km', flag: '🇰🇭', label: 'ភាសាខ្មែរ' },
+    { code: 'en', flag: '🇬🇧', label: 'English' },
+    { code: 'vi', flag: '🇻🇳', label: 'Tiếng Việt' },
+];
+
+const currencies = [
+    { code: 'USD' as const, symbol: '$', label: 'United States Dollar' },
+    { code: 'VND' as const, symbol: '₫', label: 'Vietnamese Dong' },
+];
+
+export default function RegionSettings({ language, changeLanguage, variant = 'header', tone = 'dark' }: RegionSettingsProps) {
     const { currentCurrency, setCurrentCurrency } = useCurrency();
-    
-    // Local state for the form so we only apply on Save
-    const [selectedLang, setSelectedLang] = useState(language);
-    const [selectedCurr, setSelectedCurr] = useState(currentCurrency);
-    const modalRef = useRef<HTMLDivElement>(null);
+    const [openMenu, setOpenMenu] = useState<'language' | 'currency' | null>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const languageButtonRef = useRef<HTMLButtonElement>(null);
+    const currencyButtonRef = useRef<HTMLButtonElement>(null);
+    const languageMenuId = useId();
+    const currencyMenuId = useId();
 
-    // Sync form with actual state when opened
-    useEffect(() => {
-        if (isOpen) {
-            setSelectedLang(language);
-            setSelectedCurr(currentCurrency);
-        }
-    }, [isOpen, language, currentCurrency]);
+    const selectedLanguage = languages.find((item) => item.code === language) || languages[0];
+    const selectedCurrency = currencies.find((item) => item.code === currentCurrency) || currencies[0];
+    const isDrawer = variant === 'drawer';
+    const transparentLightText = tone === 'light' && !isDrawer;
 
-    // Handle outside click to close
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                onClose();
+        const handlePointerDown = (event: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setOpenMenu(null);
             }
         };
 
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.addEventListener('mousedown', handleClickOutside);
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                const lastOpen = openMenu;
+                setOpenMenu(null);
+                if (lastOpen === 'language') languageButtonRef.current?.focus();
+                if (lastOpen === 'currency') currencyButtonRef.current?.focus();
+            }
         };
-    }, [isOpen, onClose]);
 
-    if (!isOpen) return null;
+        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openMenu]);
 
-    const handleSave = () => {
-        changeLanguage(selectedLang);
-        setCurrentCurrency(selectedCurr);
-        onClose();
-    };
+    const triggerClass = [
+        'inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 active:scale-[0.98] motion-reduce:active:scale-100',
+        isDrawer
+            ? 'bg-gray-50 text-gray-900 hover:bg-white dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800'
+            : transparentLightText
+                ? 'text-white hover:bg-white/12'
+                : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
+    ].join(' ');
+
+    const menuClass = [
+        'z-[120] min-w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white p-1 shadow-2xl outline-none transition dark:border-gray-700 dark:bg-gray-900',
+        isDrawer ? 'relative mt-2 w-full' : 'absolute right-0 top-full mt-3',
+    ].join(' ');
 
     return (
-        <div 
-            ref={modalRef}
-            className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden z-50 p-5 font-sans"
-        >
-            <div className="mb-4">
-                <label className="block text-sm text-gray-500 mb-2">Country</label>
-                <div className="relative">
-                    <select 
-                        value={selectedCurr}
-                        onChange={(e) => setSelectedCurr(e.target.value)}
-                        className="w-full appearance-none bg-white border border-gray-200 rounded-md py-2 pl-10 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                    >
-                        <option value="USD">United States - USD ($)</option>
-                        <option value="KHR">Cambodia - KHR (៛)</option>
-                        <option value="CNY">China - CNY (¥)</option>
-                    </select>
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        {selectedCurr === 'USD' && <span className="text-lg">🇺🇸</span>}
-                        {selectedCurr === 'KHR' && <span className="text-lg">🇰🇭</span>}
-                        {selectedCurr === 'CNY' && <span className="text-lg">🇨🇳</span>}
-                    </div>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mb-6">
-                <label className="block text-sm text-gray-500 mb-2">Language / ភាសា / 语言</label>
-                <div className="relative">
-                    <select 
-                        value={selectedLang}
-                        onChange={(e) => setSelectedLang(e.target.value)}
-                        className="w-full appearance-none bg-white border border-gray-200 rounded-md py-2 px-4 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                    >
-                        {languages.map((lang) => (
-                            <option key={lang} value={lang}>{lang}</option>
+        <div ref={wrapperRef} className={isDrawer ? 'space-y-4' : 'relative flex items-center gap-2'}>
+            <div className={isDrawer ? 'relative' : 'relative'}>
+                {isDrawer && <p className="mb-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Language</p>}
+                <button
+                    ref={languageButtonRef}
+                    type="button"
+                    aria-haspopup="listbox"
+                    aria-expanded={openMenu === 'language'}
+                    aria-controls={languageMenuId}
+                    className={triggerClass}
+                    onClick={() => setOpenMenu(openMenu === 'language' ? null : 'language')}
+                >
+                    <span aria-hidden="true">{selectedLanguage.flag}</span>
+                    <span>{selectedLanguage.label}</span>
+                    <ChevronDown className={`h-4 w-4 transition ${openMenu === 'language' ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+                {openMenu === 'language' && (
+                    <div id={languageMenuId} role="listbox" aria-label="Select language" className={menuClass}>
+                        {languages.map((item) => (
+                            <button
+                                key={item.code}
+                                type="button"
+                                role="option"
+                                aria-selected={language === item.code}
+                                aria-current={language === item.code ? 'true' : undefined}
+                                onClick={() => {
+                                    changeLanguage(item.code);
+                                    setOpenMenu(null);
+                                    languageButtonRef.current?.focus();
+                                }}
+                                className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 ${
+                                    language === item.code
+                                        ? 'bg-brand-primary/10 text-brand-primary'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2"><span aria-hidden="true">{item.flag}</span>{item.label}</span>
+                                {language === item.code && <Check className="h-4 w-4" aria-hidden="true" />}
+                            </button>
                         ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" /></svg>
                     </div>
-                </div>
+                )}
             </div>
 
-            <button 
-                onClick={handleSave}
-                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors text-sm"
-            >
-                Save
-            </button>
+            <div className={isDrawer ? 'relative' : 'relative'}>
+                {isDrawer && <p className="mb-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Currency</p>}
+                <button
+                    ref={currencyButtonRef}
+                    type="button"
+                    aria-haspopup="listbox"
+                    aria-expanded={openMenu === 'currency'}
+                    aria-controls={currencyMenuId}
+                    className={triggerClass}
+                    onClick={() => setOpenMenu(openMenu === 'currency' ? null : 'currency')}
+                >
+                    <span>{selectedCurrency.symbol}</span>
+                    <span>{selectedCurrency.code}</span>
+                    <ChevronDown className={`h-4 w-4 transition ${openMenu === 'currency' ? 'rotate-180' : ''}`} aria-hidden="true" />
+                </button>
+                {openMenu === 'currency' && (
+                    <div id={currencyMenuId} role="listbox" aria-label="Select currency" className={menuClass}>
+                        {currencies.map((item) => (
+                            <button
+                                key={item.code}
+                                type="button"
+                                role="option"
+                                aria-selected={currentCurrency === item.code}
+                                onClick={() => {
+                                    setCurrentCurrency(item.code);
+                                    setOpenMenu(null);
+                                    currencyButtonRef.current?.focus();
+                                }}
+                                className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 ${
+                                    currentCurrency === item.code
+                                        ? 'bg-brand-primary/10 text-brand-primary'
+                                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800'
+                                }`}
+                            >
+                                <span>{item.symbol} {item.label} — {item.code}</span>
+                                {currentCurrency === item.code && <Check className="h-4 w-4" aria-hidden="true" />}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

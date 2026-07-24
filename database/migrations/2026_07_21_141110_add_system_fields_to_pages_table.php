@@ -12,10 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
-            $table->boolean('is_system')->default(false)->after('is_published');
-            $table->boolean('is_private')->default(false)->after('is_system');
-            $table->boolean('show_in_navigation')->default(true)->after('is_private');
-            $table->boolean('is_deletable')->default(true)->after('show_in_navigation');
+            if (!Schema::hasColumn('pages', 'is_system')) {
+                $table->boolean('is_system')->default(false)->after('is_published');
+            }
+            if (!Schema::hasColumn('pages', 'is_private')) {
+                $table->boolean('is_private')->default(false)->after('is_system');
+            }
+            if (!Schema::hasColumn('pages', 'show_in_navigation')) {
+                $table->boolean('show_in_navigation')->default(true)->after('is_private');
+            }
+            if (!Schema::hasColumn('pages', 'is_deletable')) {
+                $table->boolean('is_deletable')->default(true)->after('show_in_navigation');
+            }
         });
     }
 

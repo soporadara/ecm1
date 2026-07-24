@@ -13,6 +13,7 @@ use App\Models\ProductImage;
 use App\Models\HomePageSection;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class StoreSeeder extends Seeder
@@ -400,6 +401,17 @@ class StoreSeeder extends Seeder
             'is_published' => true,
         ]);
 
+        $postAuthor = User::firstOrCreate(
+            ['email' => 'store-seeder@example.test'],
+            [
+                'name' => 'Store Seeder',
+                'password' => null,
+                'email_verified_at' => now(),
+                'role' => 'admin',
+                'is_admin' => true,
+            ]
+        );
+
         // 8. Create Demo Blog Posts
         for ($i = 1; $i <= 5; $i++) {
             Post::create([
@@ -411,7 +423,7 @@ class StoreSeeder extends Seeder
                 'seo_description' => 'A deep dive into upcoming fashion trends.',
                 'is_published' => true,
                 'published_at' => now()->subDays($i * 2),
-                'user_id' => 1 // Assuming Admin user is ID 1
+                'user_id' => $postAuthor->id,
             ]);
         }
     }

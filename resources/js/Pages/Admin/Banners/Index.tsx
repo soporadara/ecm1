@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { FormEvent, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
-export default function Index({ banners }: any) {
+export default function Index({ banners, bannerMode = 'slideshow' }: any) {
+    const [mode, setMode] = useState(bannerMode);
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this banner?')) {
             router.delete(`/admin/banners/${id}`, {
                 onSuccess: () => toast.success('Banner deleted successfully.')
             });
         }
+    };
+
+    const saveMode = (event: FormEvent) => {
+        event.preventDefault();
+        router.patch('/admin/banners/mode', { home_banner_mode: mode }, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Homepage banner mode updated.'),
+        });
     };
 
     return (
@@ -19,12 +28,28 @@ export default function Index({ banners }: any) {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-admin-text tracking-tight">Hero Banners</h1>
-                    <p className="text-sm font-medium text-admin-text-muted mt-1">Manage storefront homepage hero banners.</p>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">Manage the four storefront homepage hero banners.</p>
                 </div>
                 <Link href="/admin/banners/create" className="px-5 py-2.5 bg-admin-primary text-white rounded-xl font-bold text-sm hover:bg-admin-primary-hover shadow-sm transition-all duration-200">
                     + Create Banner
                 </Link>
             </div>
+
+            <form onSubmit={saveMode} className="mb-6 flex flex-col gap-4 rounded-2xl border border-admin-border/50 bg-admin-surface p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 className="text-base font-black text-admin-text">Homepage banner behavior</h2>
+                    <p className="mt-1 text-sm font-semibold text-admin-text-muted">Slideshow auto-plays. Normal keeps the image still and lets customers click previous or next.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <select value={mode} onChange={(event) => setMode(event.target.value)} className="min-h-11 rounded-xl border border-admin-border bg-admin-surface px-4 text-sm font-bold text-admin-text">
+                        <option value="slideshow">Slideshow</option>
+                        <option value="normal">Normal with arrows</option>
+                    </select>
+                    <button className="min-h-11 rounded-xl bg-admin-primary px-5 text-sm font-black text-white shadow-sm shadow-admin-primary/20 transition hover:-translate-y-0.5 hover:bg-admin-primary-hover">
+                        Save Mode
+                    </button>
+                </div>
+            </form>
 
             <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl border border-admin-border/50 overflow-hidden">
                 <table className="w-full text-left border-collapse">

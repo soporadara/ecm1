@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Product;
 use App\Models\HomePageSection;
 use App\Models\Marketplace;
+use App\Models\Setting;
 use App\Helpers\FeatureFlags;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,15 +19,27 @@ class HomeController extends Controller
         // 1. Fetch Logistics Data
         try {
             $marketplaces = Marketplace::where('is_enabled', true)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+                })
+                ->where(function ($query) {
+                    $query->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                })
                 ->orderBy('sort_order')
                 ->get()
                 ->map(fn($m) => [
                     'id'          => $m->id,
                     'name'        => $m->name,
+                    'name_km'     => $m->name_km,
+                    'name_en'     => $m->name_en,
+                    'name_vi'     => $m->name_vi,
                     'slug'        => $m->slug,
-                    'logo'        => $m->logo,
+                    'logo'        => $m->icon_path ? asset('storage/' . $m->icon_path) : ($m->logo ?: $m->icon_source_url),
                     'brand_color' => $m->brand_color,
                     'website_url' => $m->website_url,
+                    'alt_text'    => $m->alt_text,
+                    'open_in_new_tab' => $m->open_in_new_tab ?? true,
                     'android_app_url' => $m->android_app_url,
                     'ios_app_url'     => $m->ios_app_url,
                     'description' => $m->description,
@@ -105,7 +118,24 @@ class HomeController extends Controller
             });
         }
         
-        $activePopup = \App\Models\Popup::where('is_active', true)->latest()->first();
+        $activePopup = \App\Models\Popup::where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($query) {
+                $query->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+            })
+            ->latest()
+            ->first();
+
+        $popupData = $activePopup ? [
+            ...$activePopup->toArray(),
+            'image_path' => $activePopup->image_path
+                ? (str_starts_with($activePopup->image_path, 'http') || str_starts_with($activePopup->image_path, '/storage/')
+                    ? $activePopup->image_path
+                    : asset('storage/' . $activePopup->image_path))
+                : null,
+        ] : null;
         
         // Fetch active banners
         $banners = Banner::with(['desktopMedia', 'mobileMedia'])
@@ -117,6 +147,7 @@ class HomeController extends Controller
                 $query->whereNull('end_date')->orWhere('end_date', '>=', now());
             })
             ->orderBy('sort_order')
+            ->take(4)
             ->get()
             ->map(fn($banner) => [
                 'id' => $banner->id,
@@ -132,6 +163,7 @@ class HomeController extends Controller
                 'text_position' => $banner->text_position,
                 'content_alignment' => $banner->content_alignment,
                 'theme_variant' => $banner->theme_variant,
+                'header_theme' => $banner->header_theme ?? $banner->theme_variant ?? 'dark',
                 'desktop_image_url' => $banner->desktopMedia ? asset('storage/' . $banner->desktopMedia->path) : null,
                 'mobile_image_url' => $banner->mobileMedia ? asset('storage/' . $banner->mobileMedia->path) : null,
             ]);
@@ -141,8 +173,9 @@ class HomeController extends Controller
         
         return Inertia::render('Home', [
             'banners'      => $banners,
+            'bannerMode'   => Setting::where('group', 'general')->where('key', 'home_banner_mode')->value('value') ?: 'slideshow',
             'sections'     => $mappedSections,
-            'popup'        => $activePopup,
+            'popup'        => $popupData,
             'marketplaces' => $marketplaces,
             'featureFlags' => $featureFlags,
             'page'         => $homePage,

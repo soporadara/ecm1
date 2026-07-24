@@ -90,11 +90,11 @@ class AcceptanceTest extends TestCase
 
         // 5. SUPER ADMIN: Update Order
         $response = $this->actingAs($admin)->patch('/admin/orders/' . $order->id, [
-            'status' => 'processing'
+            'status' => 'in_progress'
         ]);
         
         $order->refresh();
-        $this->assertEquals('processing', $order->status, "Failed: Order status not updated");
+        $this->assertEquals('in_progress', $order->status, "Failed: Order status not updated");
         echo "Step 9 & 10 (Admin Order Status Update): Passed\n";
 
         echo "\n=== ALL ACCEPTANCE TESTS PASSED ===\n";

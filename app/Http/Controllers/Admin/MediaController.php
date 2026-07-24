@@ -42,7 +42,7 @@ class MediaController extends Controller
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
                     'path' => $path,
-                    'user_id' => auth()->id(),
+                    'user_id' => auth('admin')->id(),
                 ]);
             }
             return back()->with('success', 'Media uploaded successfully.');

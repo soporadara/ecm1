@@ -88,11 +88,7 @@ export default function Index({ pages }: any) {
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-4">
                                             <Link href={`/admin/pages/${page.id}/edit`} className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors">Edit</Link>
-                                            {page.is_deletable ? (
-                                                <button onClick={() => handleDelete(page.id)} className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors">Delete</button>
-                                            ) : (
-                                                <button disabled className="text-sm font-semibold text-admin-text-muted/50 cursor-not-allowed transition-colors" title="System page cannot be deleted">Delete</button>
-                                            )}
+                                            <button onClick={() => handleDelete(page.id)} className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors">Delete</button>
                                         </td>
                                     </tr>
                                 ))

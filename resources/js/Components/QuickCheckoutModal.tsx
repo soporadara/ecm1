@@ -8,7 +8,7 @@ import { useForm, usePage } from '@inertiajs/react';
 export default function QuickCheckoutModal({ isOpen, onClose, product, variant, quantity }: any) {
     const { auth } = usePage().props as any;
     const [couponCode, setCouponCode] = useState('');
-    const [couponDiscount, setCouponDiscount] = useState<{type: string, value: number} | null>(null);
+    const [couponDiscount, setCouponDiscount] = useState<{ code: string; type: string; value: number } | null>(null);
     const [couponError, setCouponError] = useState('');
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 

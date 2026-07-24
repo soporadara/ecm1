@@ -13,10 +13,16 @@ class MenuController extends Controller
     public function index()
     {
         $menus = Menu::with(['items' => function($q) {
-            $q->whereNull('parent_id')->with('children');
+            $q->whereNull('parent_id')
+                ->whereNotIn('url', ['/shop', '/pages/shop'])
+                ->where('label', '!=', 'Shop')
+                ->with(['children' => function ($children) {
+                    $children->whereNotIn('url', ['/shop', '/pages/shop'])
+                        ->where('label', '!=', 'Shop');
+                }]);
         }])->get();
 
-        $pages = \App\Models\Page::select('id', 'title', 'slug')->get();
+        $pages = \App\Models\Page::where('slug', '!=', 'shop')->select('id', 'title', 'slug')->get();
 
         return Inertia::render('Admin/Menus/Index', [
             'menus' => $menus,

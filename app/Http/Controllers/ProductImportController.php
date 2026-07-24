@@ -46,7 +46,7 @@ class ProductImportController extends Controller
 
             // e.g. import:rapidapi_tmapi:taobao:628116922374:detail:v1
             $cacheKey = "import:{$providerName}:{$marketplace}:{$itemId}:detail:v1";
-            $cacheMinutes = config('services.rapidapi.cache_minutes', 60);
+            $cacheMinutes = (int) config('services.rapidapi.cache_minutes', 60);
 
             $result = Cache::remember($cacheKey, now()->addMinutes($cacheMinutes), function () use ($provider, $marketplace, $itemId, $request) {
                 return [
@@ -63,7 +63,16 @@ class ProductImportController extends Controller
             return redirect()->route('logistics.import.show', ['importJob' => $jobId]);
 
         } catch (\App\Services\ProductImport\Exceptions\MarketplaceProviderException $e) {
-            return back()->withErrors(['url' => $e->getSafeUserMessage()]);
+            $jobId = uniqid('import_');
+            Cache::put($jobId, [
+                'success' => false,
+                'status' => 'failed',
+                'error' => [
+                    'message' => $e->getSafeUserMessage(),
+                ],
+            ], now()->addHours(1));
+
+            return redirect()->route('logistics.import.show', ['importJob' => $jobId]);
         } catch (\Exception $e) {
             return back()->withErrors(['url' => 'Failed to import product: ' . $e->getMessage()]);
         }

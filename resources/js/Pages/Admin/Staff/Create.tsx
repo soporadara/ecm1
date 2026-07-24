@@ -9,12 +9,8 @@ export default function StaffCreate({ roles }: any) {
         roles: [] as string[]
     });
 
-    const toggleRole = (roleName: string) => {
-        if (data.roles.includes(roleName)) {
-            setData('roles', data.roles.filter(r => r !== roleName));
-        } else {
-            setData('roles', [...data.roles, roleName]);
-        }
+    const selectRole = (roleName: string) => {
+        setData('roles', [roleName]);
     };
 
     const submit = (e: React.FormEvent) => {
@@ -96,16 +92,24 @@ export default function StaffCreate({ roles }: any) {
                                     <label key={role.id} className="flex items-start cursor-pointer group">
                                         <div className="flex items-center h-5">
                                             <input
-                                                type="checkbox"
+                                                type="radio"
+                                                name="staff_role"
                                                 checked={data.roles.includes(role.name)}
-                                                onChange={() => toggleRole(role.name)}
-                                                className="w-4 h-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary dark:border-gray-600 dark:bg-gray-700"
+                                                onChange={() => selectRole(role.name)}
+                                                className="h-5 w-5 border-gray-300 text-brand-primary focus:ring-brand-primary dark:border-gray-600 dark:bg-gray-700"
                                             />
                                         </div>
                                         <div className="ml-3 text-sm">
                                             <span className="font-medium text-gray-900 dark:text-gray-200 group-hover:text-brand-primary transition-colors">
                                                 {role.name}
                                             </span>
+                                            <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                                {role.name === 'Super Administrator' && 'Full control of CMS, staff, roles, security, and all content.'}
+                                                {role.name === 'Administrator' && 'Daily operations, content, orders, customers, settings, and reports.'}
+                                                {role.name === 'Logistics' && 'Orders, customers, delivery progress, and receipts.'}
+                                                {role.name === 'Content Manager' && 'Pages, blogs, banners, available sites, menus, and pop-up ads.'}
+                                                {role.name === 'Support' && 'Customer lookup and order viewing for support work.'}
+                                            </p>
                                         </div>
                                     </label>
                                 ))}
@@ -114,11 +118,14 @@ export default function StaffCreate({ roles }: any) {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+                    <div className="mt-8 flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 dark:border-gray-700 sm:flex-row sm:justify-end">
+                        <Link href="/admin/staff" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-black text-gray-700 transition hover:-translate-y-0.5 hover:border-brand-primary hover:text-brand-primary dark:border-gray-700 dark:text-gray-200">
+                            Cancel
+                        </Link>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="bg-brand-primary text-white px-6 py-2 rounded-md font-medium hover:bg-brand-secondary transition-colors disabled:opacity-50"
+                            className="min-h-11 rounded-xl bg-brand-primary px-6 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-secondary disabled:opacity-50"
                         >
                             {processing ? 'Creating...' : 'Create Staff Member'}
                         </button>

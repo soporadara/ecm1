@@ -41,6 +41,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'firebase' => [
+        'credentials_file' => env('FIREBASE_CREDENTIALS'),
+    ],
+
     'marketplace' => [
         'import_enabled' => env('MARKETPLACE_IMPORT_ENABLED', true),
         'taobao_provider' => env('TAOBAO_PROVIDER', 'rapidapi_tmapi'),

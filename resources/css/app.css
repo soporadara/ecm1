@@ -63,6 +63,59 @@
     body {
         @apply font-sans text-brand-gray bg-white;
     }
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        @apply focus-visible:outline-none;
+    }
+
+    button,
+    [role="button"],
+    a[href][class*="rounded"],
+    a[href][class*="bg-"],
+    a[href][class*="border"] {
+        transition-duration: 180ms;
+        transition-property: background-color, border-color, color, box-shadow, filter, opacity, transform;
+        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @media (hover: hover) {
+        button:not(:disabled):not([class*="translate"]):hover,
+        [role="button"]:not([aria-disabled="true"]):not([class*="translate"]):hover,
+        a[href][class*="rounded"]:not([class*="translate"]):hover,
+        a[href][class*="bg-"]:not([class*="translate"]):hover,
+        a[href][class*="border"]:not([class*="translate"]):hover {
+            filter: saturate(1.08);
+            transform: translateY(-2px);
+        }
+    }
+
+    button:not(:disabled):not([class*="translate"]):active,
+    [role="button"]:not([aria-disabled="true"]):not([class*="translate"]):active,
+    a[href][class*="rounded"]:not([class*="translate"]):active,
+    a[href][class*="bg-"]:not([class*="translate"]):active,
+    a[href][class*="border"]:not([class*="translate"]):active {
+        transform: translateY(0) scale(0.985);
+    }
+}
+
+@layer utilities {
+    .btn-motion {
+        @apply transition duration-200 ease-out hover:-translate-y-px hover:shadow-md active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* Admin CMS Form Controls — higher specificity to override Tailwind utilities */
@@ -118,4 +171,111 @@ input[type="checkbox"],
 input[type="radio"] {
     padding: 0 !important;
     border-radius: 0.25rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    min-width: 1.25rem !important;
+    accent-color: var(--color-brand-primary) !important;
+    cursor: pointer !important;
+}
+
+.customer-auth-modal input[type="text"],
+.customer-auth-modal input[type="email"],
+.customer-auth-modal input[type="password"] {
+    border-color: #e2e8f0 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 1rem !important;
+    padding: 0 1.25rem !important;
+    height: 52px !important;
+}
+
+.customer-auth-modal input.auth-input-left-icon {
+    padding-left: 4rem !important;
+}
+
+.customer-auth-modal input.auth-input-has-action {
+    padding-right: 3.75rem !important;
+}
+
+.customer-auth-modal input[type="text"]::placeholder,
+.customer-auth-modal input[type="email"]::placeholder,
+.customer-auth-modal input[type="password"]::placeholder {
+    color: #94a3b8 !important;
+}
+
+.customer-auth-modal input[type="text"]:focus,
+.customer-auth-modal input[type="email"]:focus,
+.customer-auth-modal input[type="password"]:focus {
+    border-color: var(--color-brand-primary) !important;
+    box-shadow: 0 0 0 4px rgba(255, 73, 61, 0.14) !important;
+}
+
+.dark .customer-auth-modal input[type="text"],
+.dark .customer-auth-modal input[type="email"],
+.dark .customer-auth-modal input[type="password"] {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+.auth-page input[type="text"],
+.auth-page input[type="email"],
+.auth-page input[type="password"] {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    border-radius: 1rem !important;
+    padding-left: 3rem !important;
+    padding-right: 1rem !important;
+}
+
+.cms-login-page input[type="email"],
+.cms-login-page input[type="password"],
+.cms-login-page input[type="text"] {
+    border-color: #e2e8f0 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 1rem !important;
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+}
+
+.cms-login-page.cms-login-dark input[type="email"],
+.cms-login-page.cms-login-dark input[type="password"],
+.cms-login-page.cms-login-dark input[type="text"] {
+    border-color: rgba(148, 163, 184, 0.24) !important;
+    background-color: #1f2937 !important;
+    color: #f8fafc !important;
+}
+
+.auth-page input[type="text"]::placeholder,
+.auth-page input[type="email"]::placeholder,
+.auth-page input[type="password"]::placeholder,
+.cms-login-page input[type="email"]::placeholder,
+.cms-login-page input[type="password"]::placeholder,
+.cms-login-page input[type="text"]::placeholder {
+    color: #cbd5e1 !important;
+}
+
+.cms-login-page.cms-login-dark input[type="email"]::placeholder,
+.cms-login-page.cms-login-dark input[type="password"]::placeholder,
+.cms-login-page.cms-login-dark input[type="text"]::placeholder {
+    color: #64748b !important;
+}
+
+.auth-page input[type="text"]:focus,
+.auth-page input[type="email"]:focus,
+.auth-page input[type="password"]:focus,
+.cms-login-page input[type="email"]:focus,
+.cms-login-page input[type="password"]:focus,
+.cms-login-page input[type="text"]:focus {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.45) !important;
+}
+
+.cms-login-page.cms-login-dark input[type="email"]:focus,
+.cms-login-page.cms-login-dark input[type="password"]:focus,
+.cms-login-page.cms-login-dark input[type="text"]:focus {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.22) !important;
 }

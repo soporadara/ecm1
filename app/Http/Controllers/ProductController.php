@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FeatureFlags;
+use App\Models\FeatureFlag;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +12,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        if (FeatureFlags::disabled('storefront_products_enabled')) {
+        if (FeatureFlag::where('name', 'storefront_products_enabled')->exists() && FeatureFlags::disabled('storefront_products_enabled')) {
             return redirect()->route('home');
         }
 
@@ -108,7 +109,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        if (FeatureFlags::disabled('storefront_products_enabled')) {
+        if (FeatureFlag::where('name', 'storefront_products_enabled')->exists() && FeatureFlags::disabled('storefront_products_enabled')) {
             return redirect()->route('home');
         }
 

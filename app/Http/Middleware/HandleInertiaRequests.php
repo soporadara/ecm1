@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Helpers\FeatureFlags;
+use App\Services\CustomerProfileCompletionService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -52,12 +53,17 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
+        $isAdminRoute = $request->is('admin') || $request->is('admin/*') || $request->is('cms/*');
+        $activeUser = $isAdminRoute ? auth('admin')->user() : auth('web')->user();
+
         return [
             ...parent::share($request),
-            'auth' => [
-                'user' => $request->user() ? array_merge($request->user()->toArray(), [
-                    'roles' => $request->user()->getRoleNames(),
-                    'permissions' => $request->user()->getAllPermissions()->pluck('name'),
+            'auth' => fn () => [
+                'user' => $activeUser ? array_merge($activeUser->toArray(), [
+                    'roles' => $activeUser->getRoleNames(),
+                    'permissions' => $activeUser->getAllPermissions()->pluck('name'),
+                    'profile_missing_fields' => $activeUser->is_admin ? [] : app(CustomerProfileCompletionService::class)->missingFields($activeUser),
+                    'profile_is_complete' => $activeUser->is_admin ? true : app(CustomerProfileCompletionService::class)->isComplete($activeUser),
                 ]) : null,
             ],
             'flash' => [
@@ -69,7 +75,10 @@ class HandleInertiaRequests extends Middleware
                 'brands' => \App\Models\Brand::take(6)->get(),
                 'collections' => \App\Models\Collection::where('is_active', true)->take(6)->get(),
                 'menus' => \Illuminate\Support\Facades\Schema::hasTable('menus') 
-                    ? \App\Models\Menu::with(['items' => fn($q) => $q->whereNull('parent_id')->with('children')])->get() 
+                    ? \App\Models\Menu::where('is_active', true)
+                        ->with(['items' => fn($q) => $q->whereNull('parent_id')->orderBy('order')->with('children')])
+                        ->orderBy('id')
+                        ->get() 
                     : [],
             ],
             'seo_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')

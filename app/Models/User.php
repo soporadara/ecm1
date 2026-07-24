@@ -22,21 +22,42 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'contact_email',
         'password',
         'google_id',
         'avatar',
+        'avatar_path',
+        'avatar_source_url',
         'is_admin',
         'role',
-        // Logistics / Firebase fields (added in logistics migration)
+        // Logistics / Firebase fields
         'firebase_uid',
-        'member_code',
+        'customer_code',
         'phone_e164',
+        'telegram_username',
+        'whatsapp_number',
+        'messenger_contact',
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'province',
+        'postal_code',
+        'country_code',
+        'address_notes',
+        'profile_completed_at',
+        'profile_onboarding_skipped_at',
+        'profile_completion_reminder_dismissed_at',
         'phone_verified_at',
+        'preferred_locale',
         'preferred_language',
         'preferred_currency',
+        'authentication_provider',
+        'must_change_password',
         'firebase_provider',
         'account_status',
         'last_login_at',
+        'is_demo',
+        'demo_batch_id',
     ];
 
     /**
@@ -60,9 +81,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
+            'profile_completed_at' => 'datetime',
+            'profile_onboarding_skipped_at' => 'datetime',
+            'profile_completion_reminder_dismissed_at' => 'datetime',
             'last_login_at'     => 'datetime',
             'password'          => 'hashed',
             'is_admin'          => 'boolean',
+            'must_change_password' => 'boolean',
         ];
     }
 
@@ -92,13 +117,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Generate a unique member code, e.g. CUS45359.
+     * Generate a unique customer code, e.g. CUS-2026-000001.
      */
-    public static function generateMemberCode(): string
+    public static function generateCustomerCode(): string
     {
         do {
-            $code = 'CUS' . str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
-        } while (self::where('member_code', $code)->exists());
+            $year = date('Y');
+            $code = 'CUS-' . $year . '-' . str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+        } while (self::where('customer_code', $code)->exists());
 
         return $code;
     }

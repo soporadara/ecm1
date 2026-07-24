@@ -13,8 +13,15 @@ createInertiaApp({
     resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
+        const initialPageProps = props.initialPage.props as any;
+        const defaultCurrency =
+            initialPageProps?.auth?.user?.preferred_currency ||
+            initialPageProps?.general_settings?.default_currency ||
+            initialPageProps?.general_settings?.currency ||
+            'USD';
+
         root.render(
-            <CurrencyProvider>
+            <CurrencyProvider defaultCurrency={defaultCurrency}>
                 <App {...props} />
             </CurrencyProvider>
         );

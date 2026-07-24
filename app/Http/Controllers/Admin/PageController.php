@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MenuItem;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -57,7 +58,7 @@ class PageController extends Controller
 
     public function index()
     {
-        $pages = Page::latest()->paginate(15);
+        $pages = Page::whereNotIn('slug', ['shop', 'about', 'about-us'])->latest()->paginate(15);
         
         return Inertia::render('Admin/Pages/Index', [
             'pages' => $pages
@@ -144,9 +145,10 @@ class PageController extends Controller
 
     public function destroy(Page $page)
     {
-        if (!$page->is_deletable) {
-            return redirect()->route('admin.pages.index')->with('error', 'This system page cannot be deleted.');
-        }
+        MenuItem::whereIn('url', [
+            '/pages/' . $page->slug,
+            '/' . $page->slug,
+        ])->delete();
 
         $page->delete();
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Media;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -22,12 +23,28 @@ class BannerController extends Controller
                 'title_en' => $banner->title_en,
                 'is_active' => $banner->is_active,
                 'sort_order' => $banner->sort_order,
+                'header_theme' => $banner->header_theme ?? $banner->theme_variant ?? 'dark',
                 'desktop_image_url' => $banner->desktopMedia ? asset('storage/' . $banner->desktopMedia->path) : null,
             ]);
 
         return Inertia::render('Admin/Banners/Index', [
             'banners' => $banners,
+            'bannerMode' => Setting::where('group', 'general')->where('key', 'home_banner_mode')->value('value') ?: 'slideshow',
         ]);
+    }
+
+    public function updateMode(Request $request)
+    {
+        $validated = $request->validate([
+            'home_banner_mode' => 'required|in:slideshow,normal',
+        ]);
+
+        Setting::updateOrCreate(
+            ['group' => 'general', 'key' => 'home_banner_mode'],
+            ['value' => $validated['home_banner_mode']]
+        );
+
+        return back()->with('success', 'Homepage banner mode updated.');
     }
 
     public function create()
@@ -63,6 +80,7 @@ class BannerController extends Controller
             'text_position' => 'required|in:left,center,right',
             'content_alignment' => 'required|in:top,center,bottom',
             'theme_variant' => 'required|in:light,dark',
+            'header_theme' => 'nullable|in:light,dark,auto',
             'open_in_new_tab' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
@@ -124,6 +142,7 @@ class BannerController extends Controller
             'text_position' => 'required|in:left,center,right',
             'content_alignment' => 'required|in:top,center,bottom',
             'theme_variant' => 'required|in:light,dark',
+            'header_theme' => 'nullable|in:light,dark,auto',
             'open_in_new_tab' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',

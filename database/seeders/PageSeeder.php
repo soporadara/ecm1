@@ -12,7 +12,6 @@ class PageSeeder extends Seeder
         $pages = [
             ['title' => 'Home', 'slug' => 'home'],
             ['title' => 'Blog', 'slug' => 'blog'],
-            ['title' => 'Shop', 'slug' => 'shop'],
         ];
 
         foreach ($pages as $p) {

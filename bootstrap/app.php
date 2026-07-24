@@ -10,10 +10,19 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        \App\Console\Commands\DemoSeedCommand::class,
+        \App\Console\Commands\DemoResetCommand::class,
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+        $middleware->redirectGuestsTo(function ($request) {
+            return $request->is('admin') || $request->is('admin/*') || $request->is('cms') || $request->is('cms/*')
+                ? route('cms.login')
+                : route('login');
+        });
         $middleware->alias([
             'is_admin' => \App\Http\Middleware\IsAdmin::class,
             'storefront' => \App\Http\Middleware\CheckStorefrontEnabled::class,

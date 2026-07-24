@@ -4,6 +4,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "test": "npm run typecheck",
+        "typecheck": "tsc --noEmit",
         "build": "vite build"
     },
     "devDependencies": {
@@ -32,7 +34,10 @@
         "@tiptap/pm": "^3.28.0",
         "@tiptap/react": "^3.28.0",
         "@tiptap/starter-kit": "^3.28.0",
+        "firebase": "^12.16.0",
+        "i18next": "^26.3.6",
         "lucide-react": "^1.25.0",
-        "react-hot-toast": "^2.6.0"
+        "react-hot-toast": "^2.6.0",
+        "react-i18next": "^17.0.11"
     }
 }

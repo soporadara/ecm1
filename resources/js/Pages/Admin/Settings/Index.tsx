@@ -12,6 +12,20 @@ interface SettingsProps {
         store_address?: string;
         store_logo?: string;
         store_favicon?: string;
+        about_title?: string;
+        about_text?: string;
+        social_1_name?: string;
+        social_1_url?: string;
+        social_1_icon?: string;
+        social_2_name?: string;
+        social_2_url?: string;
+        social_2_icon?: string;
+        social_3_name?: string;
+        social_3_url?: string;
+        social_3_icon?: string;
+        social_4_name?: string;
+        social_4_url?: string;
+        social_4_icon?: string;
     };
 }
 
@@ -20,8 +34,22 @@ export default function GeneralSettings({ settings }: SettingsProps) {
         store_name: settings.store_name || 'Rafel',
         support_email: settings.support_email || 'support@rafel.com',
         support_phone: settings.support_phone || '',
-        currency: settings.currency || 'USD',
+        currency: settings.currency === 'VND' ? 'VND' : 'USD',
         store_address: settings.store_address || '',
+        about_title: settings.about_title || 'About our company',
+        about_text: settings.about_text || '',
+        social_1_name: settings.social_1_name || 'Telegram',
+        social_1_url: settings.social_1_url || '',
+        social_1_icon: settings.social_1_icon || 'MessageCircle',
+        social_2_name: settings.social_2_name || 'Facebook',
+        social_2_url: settings.social_2_url || '',
+        social_2_icon: settings.social_2_icon || 'Facebook',
+        social_3_name: settings.social_3_name || 'Instagram',
+        social_3_url: settings.social_3_url || '',
+        social_3_icon: settings.social_3_icon || 'Instagram',
+        social_4_name: settings.social_4_name || 'TikTok',
+        social_4_url: settings.social_4_url || '',
+        social_4_icon: settings.social_4_icon || 'Music',
         store_logo: settings.store_logo || '' as File | string | null,
         store_favicon: settings.store_favicon || '' as File | string | null,
     });
@@ -73,9 +101,7 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                     required
                                 >
                                     <option value="USD">USD ($)</option>
-                                    <option value="EUR">EUR (€)</option>
-                                    <option value="GBP">GBP (£)</option>
-                                    <option value="KHR">KHR (៛)</option>
+                                    <option value="VND">VND (₫)</option>
                                 </select>
                                 {errors.currency && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.currency}</p>}
                             </div>
@@ -115,6 +141,66 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                             {errors.store_address && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_address}</p>}
                         </div>
 
+                        <section className="rounded-2xl border border-gray-100 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-900/40">
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white">Contact Page About Text</h2>
+                            <p className="mt-1 text-sm font-semibold text-gray-500 dark:text-gray-400">This appears on the Contact Us page under the contact cards.</p>
+                            <div className="mt-5 grid gap-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">About title</label>
+                                    <input
+                                        type="text"
+                                        value={data.about_title}
+                                        onChange={e => setData('about_title', e.target.value)}
+                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Short company description</label>
+                                    <textarea
+                                        value={data.about_text}
+                                        onChange={e => setData('about_text', e.target.value)}
+                                        rows={4}
+                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="rounded-2xl border border-gray-100 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-900/40">
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white">Social Links</h2>
+                            <p className="mt-1 text-sm font-semibold text-gray-500 dark:text-gray-400">Set the name, link, and icon label for each social channel.</p>
+                            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                                {[1, 2, 3, 4].map((index) => (
+                                    <div key={index} className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+                                        <p className="mb-3 text-sm font-black text-gray-900 dark:text-white">Social {index}</p>
+                                        <div className="grid gap-3 sm:grid-cols-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Name"
+                                                value={(data as any)[`social_${index}_name`]}
+                                                onChange={e => setData(`social_${index}_name` as any, e.target.value)}
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            />
+                                            <input
+                                                type="url"
+                                                placeholder="https://..."
+                                                value={(data as any)[`social_${index}_url`]}
+                                                onChange={e => setData(`social_${index}_url` as any, e.target.value)}
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:col-span-2 sm:text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Icon name"
+                                                value={(data as any)[`social_${index}_icon`]}
+                                                onChange={e => setData(`social_${index}_icon` as any, e.target.value)}
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:col-span-3 sm:text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Logo (Header)</label>
@@ -146,7 +232,7 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                 </div>
                                 {logoPreview && (
                                     <div className="mt-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
-                                        <img src={logoPreview} alt="Store Logo" className="h-12 object-contain" />
+                                        <img src={logoPreview} alt="Store Logo" className="h-20 object-contain" />
                                     </div>
                                 )}
                                 {errors.store_logo && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_logo}</p>}
@@ -182,7 +268,7 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                 </div>
                                 {faviconPreview && (
                                     <div className="mt-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 inline-block">
-                                        <img src={faviconPreview} alt="Store Favicon" className="h-8 object-contain" />
+                                        <img src={faviconPreview} alt="Store Favicon" className="h-14 object-contain" />
                                     </div>
                                 )}
                                 {errors.store_favicon && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.store_favicon}</p>}
