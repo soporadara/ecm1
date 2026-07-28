@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ClipboardList, HelpCircle, Home, Moon, PackageCheck, ReceiptText, Shield, Sun, UserRound, X } from 'lucide-react';
+import { ClipboardList, PhoneCall, Home, Moon, PackageCheck, ReceiptText, Shield, Sun, UserRound, X } from 'lucide-react';
 import RegionSettings from './RegionSettings';
 import { signOutFirebase } from '../lib/firebase';
 import { useTranslation } from '../hooks/useTranslation';
@@ -18,12 +18,13 @@ interface MobileMenuProps {
     toggleDarkMode: () => void;
     storeName: string;
     storeLogo?: string;
+    pages?: any[];
 }
 
 const navItems = [
     { label: 'Home', labelKey: 'nav.home', href: '/', icon: Home },
     { label: 'Manual Order', labelKey: 'nav.manual_order', href: '/manual-order', icon: ClipboardList },
-    { label: 'Contact', labelKey: 'nav.contact', href: '/contact', icon: HelpCircle },
+    { label: 'Contact', labelKey: 'nav.contact', href: '/contact', icon: PhoneCall },
 ];
 
 const accountItems = [
@@ -33,15 +34,24 @@ const accountItems = [
     { label: 'My Orders', labelKey: 'nav.my_orders', href: '/my-orders', icon: PackageCheck },
     { label: 'Receipts', labelKey: 'nav.receipts', href: '/receipts', icon: ReceiptText },
     { label: 'Security', labelKey: 'nav.security', href: '/security', icon: Shield },
-    { label: 'Contact Support', labelKey: 'nav.contact_support', href: '/contact', icon: HelpCircle },
+    { label: 'Contact Support', labelKey: 'nav.contact_support', href: '/contact', icon: PhoneCall },
 ];
 
-export default function MobileMenu({ isOpen, onClose, onLoginClick, auth, language, changeLanguage, isDarkMode, toggleDarkMode, storeName, storeLogo }: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onClose, onLoginClick, auth, language, changeLanguage, isDarkMode, toggleDarkMode, storeName, storeLogo, pages = [] }: MobileMenuProps) {
     const { url } = usePage();
     const { t } = useTranslation();
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const isCmsUser = Boolean(auth?.user?.is_admin) || ['admin', 'super_admin', 'logistics', 'content', 'support'].includes(auth?.user?.role);
     const customerUser = auth?.user && !isCmsUser ? auth.user : null;
+
+    const getPageTitle = (slug: string, defaultLabel: string) => {
+        const p = pages?.find((p: any) => p.slug === slug);
+        if (p) {
+            const key = `title_${language}`;
+            return p[key] || p.title || defaultLabel;
+        }
+        return defaultLabel;
+    };
 
     useEffect(() => {
         if (!isOpen) return;
@@ -112,38 +122,44 @@ export default function MobileMenu({ isOpen, onClose, onLoginClick, auth, langua
                 </div>
 
                 <div className="flex-1 overflow-y-auto bg-gray-50/70 px-4 py-4 dark:bg-gray-900/40">
-                    <nav aria-label="Mobile primary navigation" className="rounded-3xl border border-gray-100 bg-white p-2 shadow-sm dark:border-gray-800 dark:bg-gray-950">
-                        {navItems.map((item) => {
-                            if (item.href === '/manual-order' && !customerUser && onLoginClick) {
+                    <nav aria-label="Mobile primary navigation" className="space-y-1 rounded-3xl border border-gray-100 bg-white p-2 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+                            {navItems.map((item) => {
+                                let displayLabel = translatedLabel(item.labelKey, item.label);
+                                if (item.href === '/') displayLabel = getPageTitle('home', item.label);
+                                if (item.href === '/contact') displayLabel = getPageTitle('contact-us', item.label);
+
+                                if (item.href === '/manual-order' && !customerUser && onLoginClick) {
+                                    return (
+                                        <button
+                                            key={item.href}
+                                            type="button"
+                                            onClick={() => { onClose(); onLoginClick(); }}
+                                            className={`group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 ${
+                                                isActive(item.href) ? 'bg-brand-primary/10 text-brand-primary' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                            }`}
+                                        >
+                                            <item.icon className="h-5 w-5 opacity-70 transition-transform group-hover:scale-110" />
+                                            {displayLabel}
+                                        </button>
+                                    );
+                                }
                                 return (
-                                    <button
+                                    <Link
                                         key={item.href}
-                                        type="button"
-                                        onClick={() => { onClose(); onLoginClick(); }}
-                                        className={`flex w-full min-h-[3.25rem] items-center gap-3 rounded-2xl px-4 text-sm font-black uppercase tracking-wider transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 text-gray-800 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-900`}
+                                        href={item.href}
+                                        onClick={onClose}
+                                        aria-current={isActive(item.href) ? 'page' : undefined}
+                                        className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 ${
+                                            isActive(item.href)
+                                                ? 'bg-brand-primary/10 text-brand-primary'
+                                                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                        }`}
                                     >
-                                        <item.icon className="h-5 w-5" aria-hidden="true" />
-                                        {translatedLabel(item.labelKey, item.label)}
-                                    </button>
+                                        <item.icon className="h-5 w-5 opacity-70 transition-transform group-hover:scale-110" />
+                                        {displayLabel}
+                                    </Link>
                                 );
-                            }
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={onClose}
-                                    aria-current={isActive(item.href) ? 'page' : undefined}
-                                    className={`flex min-h-[3.25rem] items-center gap-3 rounded-2xl px-4 text-sm font-black uppercase tracking-wider transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 ${
-                                        isActive(item.href)
-                                            ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20'
-                                            : 'text-gray-800 hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-900'
-                                    }`}
-                                >
-                                    <item.icon className="h-5 w-5" aria-hidden="true" />
-                                    {translatedLabel(item.labelKey, item.label)}
-                                </Link>
-                            );
-                        })}
+                            })}
                     </nav>
 
                     <div className="mt-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-950">

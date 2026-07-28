@@ -28,6 +28,43 @@ export default function Profile() {
     const [showSmsModal, setShowSmsModal] = useState(false);
     const [smsCode, setSmsCode] = useState('');
 
+    // Email PIN Verification Flow
+    const [isChangingEmail, setIsChangingEmail] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
+    const [showEmailPinModal, setShowEmailPinModal] = useState(false);
+    const [emailPin, setEmailPin] = useState('');
+    const [isSendingPin, setIsSendingPin] = useState(false);
+    const [isVerifyingPin, setIsVerifyingPin] = useState(false);
+
+    const sendEmailPin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newEmail || newEmail === user.email) return;
+        
+        setIsSendingPin(true);
+        router.post('/profile/send-pin', { new_email: newEmail }, {
+            preserveScroll: true,
+            onSuccess: () => setShowEmailPinModal(true),
+            onFinish: () => setIsSendingPin(false)
+        });
+    };
+
+    const verifyEmailPin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (emailPin.length !== 6) return;
+
+        setIsVerifyingPin(true);
+        router.post('/profile/verify-pin', { pin: emailPin }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowEmailPinModal(false);
+                setIsChangingEmail(false);
+                setNewEmail('');
+                setEmailPin('');
+            },
+            onFinish: () => setIsVerifyingPin(false)
+        });
+    };
+
     const submitForm = () => {
         put('/profile', {
             preserveScroll: true,
@@ -171,14 +208,45 @@ export default function Profile() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Locked login email</label>
-                                <input
-                                    type="email"
-                                    value={user.email}
-                                    disabled
-                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                />
-                                <p className="mt-1 text-xs text-gray-500">Your login email is protected and cannot be changed from this page.</p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Login Email</label>
+                                {!isChangingEmail ? (
+                                    <div className="flex gap-4 items-start">
+                                        <div className="flex-1">
+                                            <input
+                                                type="email"
+                                                value={user.email}
+                                                disabled
+                                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                            />
+                                            {user.email_verified_at && <p className="mt-2 text-xs text-brand-primary flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Verified</p>}
+                                        </div>
+                                        <button type="button" onClick={() => setIsChangingEmail(true)} className="px-4 py-3 text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition">Change</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="flex gap-4 items-start">
+                                            <div className="flex-1">
+                                                <input
+                                                    type="email"
+                                                    placeholder="Enter new email address"
+                                                    value={newEmail}
+                                                    onChange={e => setNewEmail(e.target.value)}
+                                                    className="w-full bg-white dark:bg-black border border-brand-primary rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary"
+                                                />
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={sendEmailPin} 
+                                                disabled={!newEmail || newEmail === user.email || isSendingPin}
+                                                className="px-4 py-3 text-sm font-bold bg-brand-primary text-white hover:bg-brand-secondary rounded-xl transition disabled:opacity-50"
+                                            >
+                                                {isSendingPin ? 'Sending...' : 'Send PIN'}
+                                            </button>
+                                            <button type="button" onClick={() => setIsChangingEmail(false)} className="px-4 py-3 text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition">Cancel</button>
+                                        </div>
+                                        <p className="text-xs text-gray-500">We will send a 6-digit verification code to this new email to confirm it belongs to you.</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -323,6 +391,49 @@ export default function Profile() {
                                     {processing ? 'Verifying...' : 'Verify & Save'}
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Email PIN Verification Modal */}
+            {showEmailPinModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl relative">
+                        <button 
+                            onClick={() => setShowEmailPinModal(false)}
+                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Verify New Email</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mt-2">We sent a 6-digit code to <span className="font-bold text-gray-900 dark:text-white">{newEmail}</span>.</p>
+                        </div>
+
+                        <form onSubmit={verifyEmailPin}>
+                            <input
+                                type="text"
+                                maxLength={6}
+                                value={emailPin}
+                                onChange={e => setEmailPin(e.target.value.replace(/\D/g, ''))}
+                                placeholder="000000"
+                                className="w-full text-center text-3xl tracking-[0.5em] font-mono bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all mb-6"
+                                required
+                            />
+                            
+                            <button
+                                type="submit"
+                                disabled={emailPin.length !== 6 || isVerifyingPin}
+                                className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold py-4 rounded-xl transition disabled:opacity-50"
+                            >
+                                {isVerifyingPin ? 'Verifying...' : 'Verify & Save Email'}
+                            </button>
                         </form>
                     </div>
                 </div>

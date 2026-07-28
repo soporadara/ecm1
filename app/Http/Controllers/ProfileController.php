@@ -21,6 +21,10 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail,
             'status' => session('status'),
             'isGoogleOnly' => ($request->user()->authentication_provider ?? $request->user()->firebase_provider) === 'google' && blank($request->user()->password),
+            'hasGoogleLinked' => \Illuminate\Support\Facades\DB::table('staff_login_providers')
+                ->where('user_id', $request->user()->id)
+                ->where('provider', 'google')
+                ->exists(),
         ]);
     }
 
@@ -248,5 +252,131 @@ class ProfileController extends Controller
         }
 
         return back()->with('success', 'Profile picture updated successfully.');
+    }
+
+    /**
+     * Send a 6-digit PIN to a new email address.
+     */
+    public function sendPin(Request $request)
+    {
+        $request->validate([
+            'new_email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($request->user()->id)],
+        ]);
+
+        $pin = (string) random_int(100000, 999999);
+
+        // Delete any existing unused PINs for this user
+        \Illuminate\Support\Facades\DB::table('email_verifications')->where('user_id', $request->user()->id)->delete();
+
+        \Illuminate\Support\Facades\DB::table('email_verifications')->insert([
+            'user_id' => $request->user()->id,
+            'new_email' => $request->input('new_email'),
+            'pin' => $pin,
+            'expires_at' => now()->addMinutes(15),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        \Illuminate\Support\Facades\Mail::to($request->input('new_email'))->send(new \App\Mail\VerificationPinMail($pin));
+
+        return back()->with('success', 'A 6-digit verification code has been sent to ' . $request->input('new_email') . '.');
+    }
+
+    /**
+     * Verify the 6-digit PIN and update the email.
+     */
+    public function verifyPin(Request $request, CustomerProfileCompletionService $completion)
+    {
+        $request->validate([
+            'pin' => ['required', 'string', 'size:6'],
+        ]);
+
+        $record = \Illuminate\Support\Facades\DB::table('email_verifications')
+            ->where('user_id', $request->user()->id)
+            ->where('pin', $request->input('pin'))
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$record) {
+            return back()->withErrors(['pin' => 'The verification code is invalid or has expired.']);
+        }
+
+        $request->user()->update([
+            'email' => $record->new_email,
+            'email_verified_at' => now(),
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('email_verifications')->where('id', $record->id)->delete();
+
+        $completion->markCompleted($request->user()->fresh());
+
+        return back()->with('success', 'Your login email has been updated successfully!');
+    }
+
+    /**
+     * Link Google Account for CMS Login
+     */
+    public function linkGoogle(Request $request, \App\Services\FirebaseAuthService $firebaseAuth)
+    {
+        $validated = $request->validate([
+            'id_token' => ['required', 'string'],
+        ]);
+
+        try {
+            $claims = $firebaseAuth->verifiedClaims($validated['id_token'], $request);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['google' => 'We could not verify your Google account.']);
+        }
+
+        $email = $claims['email'] ?? null;
+        if (!$email || !($claims['email_verified'] ?? false) || ($claims['provider'] ?? null) !== 'google.com') {
+            return back()->withErrors(['google' => 'Your Google account must have a verified email.']);
+        }
+
+        $user = $request->user();
+
+        \Illuminate\Support\Facades\DB::table('staff_login_providers')->updateOrInsert(
+            [
+                'provider' => 'google',
+                'authorized_email' => mb_strtolower($email),
+            ],
+            [
+                'user_id' => $user->id,
+                'is_enabled' => true,
+                'updated_at' => now(),
+            ]
+        );
+
+        $user->forceFill([
+            'firebase_provider' => 'google',
+            'firebase_uid' => $claims['uid'] ?? $user->firebase_uid,
+        ])->save();
+
+        return back()->with('success', 'Your Google account has been successfully linked.');
+    }
+
+    /**
+     * Unlink Google Account for CMS Login
+     */
+    public function unlinkGoogle(Request $request)
+    {
+        $user = $request->user();
+
+        if (blank($user->password)) {
+            return back()->withErrors(['google' => 'You must set a password before unlinking your Google account.']);
+        }
+
+        \Illuminate\Support\Facades\DB::table('staff_login_providers')
+            ->where('user_id', $user->id)
+            ->where('provider', 'google')
+            ->delete();
+
+        $user->forceFill([
+            'authentication_provider' => 'password',
+            'firebase_provider' => null,
+            'firebase_uid' => null,
+        ])->save();
+
+        return back()->with('success', 'Your Google account has been unlinked.');
     }
 }

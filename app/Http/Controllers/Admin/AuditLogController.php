@@ -27,4 +27,14 @@ class AuditLogController extends Controller
             'logs' => $logs,
         ]);
     }
+
+    public function clear()
+    {
+        $user = auth()->user();
+        abort_unless($user->role === 'super_admin' || $user->role === 'superadmin' || $user->hasRole('Super Administrator'), 403, 'Only super admins can clear logs.');
+
+        AuditLog::truncate();
+
+        return back()->with('success', 'Audit logs cleared successfully.');
+    }
 }

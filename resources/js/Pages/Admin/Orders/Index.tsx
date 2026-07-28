@@ -36,7 +36,7 @@ export default function Index({ orders, filters = {}, statuses = [], paymentStat
             <Head title="Logistics Orders - Admin" />
 
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
+                <div className="hidden lg:block">
                     <h1 className="text-2xl font-bold text-admin-text tracking-tight">Logistics Orders</h1>
                     <p className="text-sm font-medium text-admin-text-muted mt-1">Manage Manual Orders, pricing, customer IDs, and fulfillment status.</p>
                 </div>
@@ -61,7 +61,7 @@ export default function Index({ orders, filters = {}, statuses = [], paymentStat
 
             <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl overflow-hidden border border-admin-border/50">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                    <table className="w-full text-sm text-left whitespace-nowrap">
                         <thead className="bg-admin-surface-muted/50 text-admin-text-muted font-bold border-b border-admin-border">
                             <tr>
                                 <th className="px-6 py-4 tracking-wider uppercase text-xs">Order</th>

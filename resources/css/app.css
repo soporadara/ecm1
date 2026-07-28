@@ -141,6 +141,11 @@ textarea {
     transition: all 0.2s ease !important;
 }
 
+/* Helper to override the !important padding for search inputs with left icons */
+input[type="text"].pl-10, input[type="search"].pl-10, input[type="text"].pl-11, input[type="search"].pl-11, input[type="text"].pl-9, input[type="search"].pl-9 {
+    padding-left: 2.5rem !important;
+}
+
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,

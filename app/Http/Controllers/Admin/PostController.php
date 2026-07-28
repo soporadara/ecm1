@@ -13,7 +13,7 @@ class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $posts = Post::with('user')
+        $posts = Post::with(['user', 'category'])
             ->when($request->filled('from'), fn ($query) => $query->whereDate('published_at', '>=', $request->input('from')))
             ->when($request->filled('to'), fn ($query) => $query->whereDate('published_at', '<=', $request->input('to')))
             ->latest()

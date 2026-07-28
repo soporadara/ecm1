@@ -55,14 +55,15 @@ export default function CmsLogin() {
 
     const continueWithGoogle = async () => {
         setGoogleLoading(true);
-        setGoogleError(null);
-
         try {
             const result = await signInWithGooglePopupOrRedirect();
-            if (!result?.user) return;
-            await completeCmsGoogleLogin(await result.user.getIdToken());
+            if (result?.user) {
+                await completeCmsGoogleLogin(await result.user.getIdToken());
+            } else {
+                setGoogleLoading(false);
+            }
         } catch (error: any) {
-            setGoogleError(error?.response?.data?.errors?.id_token?.[0] || 'We could not verify your staff account.');
+            setGoogleError('Failed to sign in with Google');
             setGoogleLoading(false);
         }
     };
@@ -160,7 +161,7 @@ export default function CmsLogin() {
                             <label className="block">
                                 <span className={`mb-1.5 flex items-center justify-between gap-4 text-sm font-black ${lightMode ? 'text-slate-600' : 'text-slate-200'}`}>
                                     Password
-                                    <span className="text-xs font-black text-blue-500">Forgot?</span>
+                                    <Link href="/forgot-password" className="text-xs font-black text-blue-500 hover:underline transition-colors hover:text-blue-400">Forgot?</Link>
                                 </span>
                                 <span className="relative block">
                                     <span className={`pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 ${lightMode ? 'text-slate-500' : 'text-slate-400'}`}>

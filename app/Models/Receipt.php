@@ -25,6 +25,11 @@ class Receipt extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function manualOrder(): BelongsTo
+    {
+        return $this->belongsTo(ManualOrder::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

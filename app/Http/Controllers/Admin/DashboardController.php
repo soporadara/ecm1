@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\Product;
+use App\Models\ManualOrder;
+use App\Models\ManualOrderItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,53 +14,27 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $period = $request->get('period', '30');
+        $date = $request->get('date', now()->timezone('Asia/Phnom_Penh')->format('Y-m-d'));
 
-        $days = match ($period) {
-            '7' => 7,
-            '30' => 30,
-            '90' => 90,
-            default => 30,
-        };
+        $totalCustomers = User::where('is_admin', false)->whereDate('created_at', $date)->count();
+        $totalManualOrders = ManualOrder::whereDate('created_at', $date)->count();
+        $totalProductsSold = ManualOrderItem::whereHas('manualOrder', function($q) use ($date) {
+            $q->whereDate('created_at', $date);
+        })->sum('quantity');
+        $totalRevenue = ManualOrder::whereDate('created_at', $date)->where('payment_status', 'paid')->sum('total_amount');
+        
+        $pendingOrders = ManualOrder::whereDate('created_at', $date)->where('status', 'pending')->count();
+        $inProgressOrders = ManualOrder::whereDate('created_at', $date)->whereIn('status', ['processing', 'packed', 'shipping'])->count();
+        $deliveredOrders = ManualOrder::whereDate('created_at', $date)->where('status', 'delivered')->count();
+        
+        $unpaidOrders = ManualOrder::whereDate('created_at', $date)->where('payment_status', 'unpaid')->count();
+        $paidOrders = ManualOrder::whereDate('created_at', $date)->where('payment_status', 'paid')->count();
 
-        $since = now()->subDays($days);
-
-        // Revenue & Orders — column is total_amount
-        $revenueData = Order::where('created_at', '>=', $since)
-            ->whereIn('status', ['completed', 'processing', 'shipped'])
-            ->selectRaw('SUM(total_amount) as revenue, COUNT(*) as count')
-            ->first();
-
-        $totalRevenue = $revenueData->revenue ?? 0;
-        $totalOrders = $revenueData->count ?? 0;
-
-        // Previous period for comparison
-        $prevSince = now()->subDays($days * 2);
-        $prevRevenue = Order::whereBetween('created_at', [$prevSince, $since])
-            ->whereIn('status', ['completed', 'processing', 'shipped'])
-            ->sum('total_amount') ?? 0;
-
-        $revenueGrowth = $prevRevenue > 0 ? round((($totalRevenue - $prevRevenue) / $prevRevenue) * 100, 1) : 0;
-
-        // Customers
-        $newCustomers = User::where('created_at', '>=', $since)->where('is_admin', false)->count();
-
-        // Average Order Value
-        $aov = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
-
-        // Pending orders
-        $pendingOrders = Order::where('status', 'pending')->count();
-
-        // Low stock
-        $lowStock = Product::where('stock', '<=', 5)->where('stock', '>', 0)->count();
-        $outOfStock = Product::where('stock', 0)->count();
-
-        // Total products
-        $totalProducts = Product::count();
-
-        // Revenue by day chart — using total_amount
-        $revenueChart = Order::where('created_at', '>=', $since)
-            ->whereIn('status', ['completed', 'processing', 'shipped'])
+        // Revenue by day chart (for the selected day, we can just show the hours or keep it as day)
+        // If they pick a single date, showing a chart for 1 point is weird, but we will leave it grouping by date for now,
+        // so it will just be a single point.
+        $revenueChart = ManualOrder::whereDate('created_at', $date)
+            ->where('payment_status', 'paid')
             ->selectRaw("DATE(CONVERT_TZ(created_at, '+00:00', '+07:00')) as date, SUM(total_amount) as revenue, COUNT(*) as orders")
             ->groupBy('date')
             ->orderBy('date')
@@ -71,59 +45,40 @@ class DashboardController extends Controller
                 'orders' => (int) $row->orders,
             ]);
 
-        // Recent Orders
-        $recentOrders = Order::with('user')
+        // Recent Orders on that date
+        $recentOrders = ManualOrder::with('user')
+            ->whereDate('created_at', $date)
             ->latest()
             ->take(8)
             ->get()
             ->map(fn($order) => [
                 'id' => $order->id,
-                'number' => '#' . str_pad($order->id, 5, '0', STR_PAD_LEFT),
+                'number' => $order->order_number,
                 'customer' => $order->user?->name ?? 'Guest',
+                'customer_code' => $order->user?->customer_code ?? 'N/A',
                 'total' => (float) $order->total_amount,
                 'status' => $order->status,
+                'payment_status' => $order->payment_status,
                 'created_at' => $order->created_at->timezone('Asia/Phnom_Penh')->format('d M Y, H:i'),
             ]);
 
-        // Low stock products
-        $lowStockProducts = Product::where('stock', '<=', 5)
-            ->orderBy('stock')
-            ->take(5)
-            ->get()
-            ->map(fn($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'stock' => $p->stock,
-                'slug' => $p->slug,
-            ]);
-
-        // Top products — order_items uses price * quantity (no total column)
-        $topProducts = DB::table('order_items')
-            ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->where('order_items.created_at', '>=', $since)
-            ->selectRaw('products.id, products.name, products.slug, SUM(order_items.quantity) as sold, SUM(order_items.price * order_items.quantity) as revenue')
-            ->groupBy('products.id', 'products.name', 'products.slug')
-            ->orderByDesc('sold')
-            ->take(5)
-            ->get();
-
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'revenue' => (float) $totalRevenue,
-                'revenue_growth' => $revenueGrowth,
-                'orders' => (int) $totalOrders,
-                'pending_orders' => (int) $pendingOrders,
-                'new_customers' => (int) $newCustomers,
-                'aov' => (float) $aov,
-                'low_stock' => (int) $lowStock,
-                'out_of_stock' => (int) $outOfStock,
-                'total_products' => (int) $totalProducts,
+                'total_customers' => $totalCustomers,
+                'total_manual_orders' => $totalManualOrders,
+                'total_products_sold' => (int) $totalProductsSold,
+                'total_revenue' => (float) $totalRevenue,
+                
+                'pending_orders' => $pendingOrders,
+                'in_progress_orders' => $inProgressOrders,
+                'delivered_orders' => $deliveredOrders,
+                
+                'unpaid_orders' => $unpaidOrders,
+                'paid_orders' => $paidOrders,
             ],
             'revenue_chart' => $revenueChart,
             'recent_orders' => $recentOrders,
-            'low_stock_products' => $lowStockProducts,
-            'top_products' => $topProducts,
-            'period' => $period,
+            'date' => $date,
         ]);
     }
 }

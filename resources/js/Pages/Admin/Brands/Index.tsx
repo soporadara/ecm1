@@ -51,12 +51,12 @@ export default function BrandsIndex({ brands }: { brands: Brand[] }) {
     };
 
     return (
-        <AdminLayout
+        <AdminLayout 
             title="Brands"
             actions={
                 <button
                     onClick={() => setShowCreate(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center justify-center bg-admin-primary text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover hover:-translate-y-0.5 transition-all duration-200"
                 >
                     + New Brand
                 </button>
@@ -64,34 +64,36 @@ export default function BrandsIndex({ brands }: { brands: Brand[] }) {
         >
             <Head title="Brands — Rafel CMS" />
 
-            <div className="mb-6">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Brands</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{brands.length} brands in your store</p>
+            <div className="hidden sm:flex sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Brands</h1>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">{brands.length} brands in your store</p>
+                </div>
             </div>
 
             {/* Create Modal */}
             {showCreate && (
-                <div className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 border border-gray-100 dark:border-gray-700">
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">New Brand</h2>
+                <div className="fixed inset-0 bg-admin-surface-muted/80 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+                    <div className="bg-admin-surface rounded-2xl shadow-xl w-full max-w-md p-6 border border-admin-border/50">
+                        <h2 className="text-lg font-black text-admin-text mb-4">New Brand</h2>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Brand Name</label>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-1.5">Brand Name</label>
                                 <input type="text" value={createForm.data.name} onChange={e => createForm.setData('name', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+                                    className="h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20" required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Logo URL</label>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-1.5">Logo URL</label>
                                 <input type="text" value={createForm.data.logo} onChange={e => createForm.setData('logo', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://..." />
+                                    className="h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20" placeholder="https://..." />
                             </div>
-                            <div className="flex gap-3 pt-2">
+                            <div className="flex gap-3 pt-4">
                                 <button type="submit" disabled={createForm.processing}
-                                    className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+                                    className="px-5 py-2.5 bg-admin-primary text-white text-sm font-bold rounded-xl shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover transition-all disabled:opacity-50">
                                     Create Brand
                                 </button>
                                 <button type="button" onClick={() => setShowCreate(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    className="px-5 py-2.5 text-sm font-bold text-admin-text border border-admin-border rounded-xl hover:bg-admin-surface-muted transition-colors">
                                     Cancel
                                 </button>
                             </div>
@@ -100,73 +102,75 @@ export default function BrandsIndex({ brands }: { brands: Brand[] }) {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
-                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                        <tr>
-                            <th className="px-5 py-3 font-semibold">Brand</th>
-                            <th className="px-5 py-3 font-semibold text-center">Products</th>
-                            <th className="px-5 py-3 font-semibold text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {brands.length === 0 && (
-                            <tr><td colSpan={3} className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm">No brands yet.</td></tr>
-                        )}
-                        {brands.map(b => (
-                            <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                <td className="px-5 py-3">
-                                    <div className="flex items-center gap-3">
-                                        {b.logo ? (
-                                            <img src={b.logo} alt={b.name} className="w-8 h-8 object-contain rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 p-0.5" />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 text-xs font-bold">
-                                                {b.name.charAt(0)}
-                                            </div>
-                                        )}
-                                        <span className="font-medium text-gray-900 dark:text-white">{b.name}</span>
-                                    </div>
-                                </td>
-                                <td className="px-5 py-3 text-center text-gray-600 dark:text-gray-300">{b.products_count}</td>
-                                <td className="px-5 py-3 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <button onClick={() => { setEditing(b); editForm.setData({ name: b.name, logo: b.logo ?? '' }); }}
-                                            className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            Edit
-                                        </button>
-                                        <button onClick={() => handleDelete(b.id)}
-                                            className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
+            <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl overflow-hidden border border-admin-border/50">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left whitespace-nowrap">
+                        <thead className="bg-admin-surface-muted/50 text-admin-text-muted font-bold border-b border-admin-border">
+                            <tr>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs">Brand</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs text-center">Products</th>
+                                <th className="px-6 py-4 tracking-wider uppercase text-xs text-right">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-admin-border/50">
+                            {brands.length === 0 && (
+                                <tr><td colSpan={3} className="text-center py-10 text-admin-text-muted font-medium text-sm">No brands yet.</td></tr>
+                            )}
+                            {brands.map(b => (
+                                <tr key={b.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            {b.logo ? (
+                                                <img src={b.logo} alt={b.name} className="w-8 h-8 object-contain rounded-lg bg-admin-surface-muted border border-admin-border/50 shadow-sm p-0.5" />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-lg bg-admin-surface-muted flex items-center justify-center text-admin-text-muted text-xs font-bold border border-admin-border/50 shadow-sm">
+                                                    {b.name.charAt(0)}
+                                                </div>
+                                            )}
+                                            <span className="font-semibold text-admin-text">{b.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center font-bold text-admin-text">{b.products_count}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-3">
+                                            <button onClick={() => { setEditing(b); editForm.setData({ name: b.name, logo: b.logo ?? '' }); }}
+                                                className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors">
+                                                Edit
+                                            </button>
+                                            <button onClick={() => handleDelete(b.id)}
+                                                className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Edit Modal */}
             {editing && (
-                <div className="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6 border border-gray-100 dark:border-gray-700">
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Edit Brand</h2>
+                <div className="fixed inset-0 bg-admin-surface-muted/80 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+                    <div className="bg-admin-surface rounded-2xl shadow-xl w-full max-w-md p-6 border border-admin-border/50">
+                        <h2 className="text-lg font-black text-admin-text mb-4">Edit Brand</h2>
                         <form onSubmit={handleEdit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Brand Name</label>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-1.5">Brand Name</label>
                                 <input type="text" value={editForm.data.name} onChange={e => editForm.setData('name', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+                                    className="h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20" required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Logo URL</label>
+                                <label className="block text-sm font-bold text-admin-text-muted mb-1.5">Logo URL</label>
                                 <input type="text" value={editForm.data.logo} onChange={e => editForm.setData('logo', e.target.value)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                    className="h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20" />
                             </div>
-                            <div className="flex gap-3 pt-2">
+                            <div className="flex gap-3 pt-4">
                                 <button type="submit" disabled={editForm.processing}
-                                    className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50">Save</button>
+                                    className="px-5 py-2.5 bg-admin-primary text-white text-sm font-bold rounded-xl shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover transition-all disabled:opacity-50">Save</button>
                                 <button type="button" onClick={() => setEditing(null)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+                                    className="px-5 py-2.5 text-sm font-bold text-admin-text border border-admin-border rounded-xl hover:bg-admin-surface-muted transition-colors">Cancel</button>
                             </div>
                         </form>
                     </div>

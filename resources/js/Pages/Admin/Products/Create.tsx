@@ -150,8 +150,8 @@ export default function Create({ categories, brands, collections }: any) {
                             <textarea rows={2} value={data.short_description} onChange={e => setData('short_description', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"></textarea>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Description (HTML Supported)</label>
-                            <textarea rows={6} value={data.description} onChange={e => setData('description', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"></textarea>
+                            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Full Description (HTML Supported)</label>
+                            <textarea rows={6} value={data.description} onChange={e => setData('description', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 px-4 py-3 text-sm shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 dark:text-white"></textarea>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100 dark:border-gray-700">
@@ -160,16 +160,16 @@ export default function Create({ categories, brands, collections }: any) {
                                 <input type="text" value={data.material} onChange={e => setData('material', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary" placeholder="e.g. 100% Cotton" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Care Instructions</label>
-                                <input type="text" value={data.care_instructions} onChange={e => setData('care_instructions', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary" />
+                                <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Care Instructions</label>
+                                <input type="text" value={data.care_instructions} onChange={e => setData('care_instructions', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 px-4 py-3 text-sm shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 dark:text-white" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shipping Info</label>
-                                <input type="text" value={data.shipping_info} onChange={e => setData('shipping_info', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary" />
+                                <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Shipping Info</label>
+                                <input type="text" value={data.shipping_info} onChange={e => setData('shipping_info', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 px-4 py-3 text-sm shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 dark:text-white" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Return Info</label>
-                                <input type="text" value={data.return_info} onChange={e => setData('return_info', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary" />
+                                <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Return Info</label>
+                                <input type="text" value={data.return_info} onChange={e => setData('return_info', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 px-4 py-3 text-sm shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 dark:text-white" />
                             </div>
                         </div>
                     </div>

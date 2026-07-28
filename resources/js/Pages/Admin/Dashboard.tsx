@@ -2,38 +2,26 @@ import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '../../Layouts/AdminLayout';
 
 interface Stats {
-    revenue: number;
-    revenue_growth: number;
-    orders: number;
+    total_customers: number;
+    total_manual_orders: number;
+    total_products_sold: number;
+    total_revenue: number;
     pending_orders: number;
-    new_customers: number;
-    aov: number;
-    low_stock: number;
-    out_of_stock: number;
-    total_products: number;
+    in_progress_orders: number;
+    delivered_orders: number;
+    unpaid_orders: number;
+    paid_orders: number;
 }
 
 interface Order {
     id: number;
     number: string;
     customer: string;
+    customer_code: string;
     total: number;
     status: string;
+    payment_status: string;
     created_at: string;
-}
-
-interface Product {
-    id: number;
-    name: string;
-    stock: number;
-    slug: string;
-}
-
-interface TopProduct {
-    id: number;
-    name: string;
-    sold: number;
-    revenue: number;
 }
 
 interface ChartPoint {
@@ -46,17 +34,22 @@ interface Props {
     stats: Stats;
     revenue_chart: ChartPoint[];
     recent_orders: Order[];
-    low_stock_products: Product[];
-    top_products: TopProduct[];
-    period: string;
+    date: string;
 }
 
 const statusColors: Record<string, string> = {
     pending: 'bg-admin-warning/10 text-admin-warning',
     processing: 'bg-admin-primary/10 text-admin-primary',
-    shipped: 'bg-admin-secondary/10 text-admin-secondary',
-    completed: 'bg-admin-success/10 text-admin-success',
+    packed: 'bg-indigo-500/10 text-indigo-500',
+    shipping: 'bg-admin-secondary/10 text-admin-secondary',
+    delivered: 'bg-admin-success/10 text-admin-success',
     cancelled: 'bg-admin-danger/10 text-admin-danger',
+};
+
+const paymentColors: Record<string, string> = {
+    unpaid: 'bg-admin-danger/10 text-admin-danger',
+    partial: 'bg-admin-warning/10 text-admin-warning',
+    paid: 'bg-admin-success/10 text-admin-success',
     refunded: 'bg-admin-surface-muted text-admin-text-muted',
 };
 
@@ -65,16 +58,12 @@ function StatCard({
     value,
     sub,
     icon,
-    trend,
-    trendLabel,
     color = 'indigo',
 }: {
     label: string;
     value: string;
     sub?: string;
     icon: string;
-    trend?: number;
-    trendLabel?: string;
     color?: string;
 }) {
     const colorMap: Record<string, string> = {
@@ -83,6 +72,7 @@ function StatCard({
         amber: 'bg-admin-warning/10 text-admin-warning',
         red: 'bg-admin-danger/10 text-admin-danger',
         blue: 'bg-admin-secondary/10 text-admin-secondary',
+        purple: 'bg-purple-500/10 text-purple-500',
     };
 
     return (
@@ -95,15 +85,9 @@ function StatCard({
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-admin-text-muted mb-1">{label}</p>
                 <p className="text-3xl font-bold text-admin-text tracking-tight leading-none">{value}</p>
-                {(trend !== undefined || sub) && (
+                {sub && (
                     <div className="flex items-center gap-2 mt-2">
-                        {trend !== undefined && (
-                            <span className={`text-xs font-semibold flex items-center gap-1 ${trend >= 0 ? 'text-admin-success' : 'text-admin-danger'}`}>
-                                {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
-                            </span>
-                        )}
-                        {trendLabel && <span className="text-xs font-medium text-admin-text-muted">{trendLabel}</span>}
-                        {sub && <span className="text-xs font-medium text-admin-text-muted">{sub}</span>}
+                        <span className="text-xs font-medium text-admin-text-muted">{sub}</span>
                     </div>
                 )}
             </div>
@@ -111,11 +95,11 @@ function StatCard({
     );
 }
 
-export default function Dashboard({ stats, revenue_chart, recent_orders, low_stock_products, top_products, period }: Props) {
+export default function Dashboard({ stats, revenue_chart, recent_orders, date }: Props) {
     const formatCurrency = (v: number) => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    const changePeriod = (p: string) => {
-        router.get('/admin', { period: p }, { preserveState: true });
+    const changeDate = (d: string) => {
+        router.get('/admin', { date: d }, { preserveState: true });
     };
 
     // Simple inline chart using SVG
@@ -133,33 +117,23 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
         : '';
 
     return (
-        <AdminLayout title="Dashboard">
-            <Head title="Dashboard — Rafel CMS" />
+        <AdminLayout title="Logistics CRM Overview">
+            <Head title="Logistics Overview — Rafel CMS" />
 
-            {/* Period Filter */}
+            {/* Date Filter */}
             <div className="flex items-end justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Store Overview</h1>
-                    <p className="text-sm text-admin-text-muted mt-1">All times shown in Cambodia Time (GMT+7)</p>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Logistics CRM Overview</h1>
+                    <p className="text-sm text-admin-text-muted mt-1">Key metrics for manual orders and customers.</p>
                 </div>
-                <div className="flex items-center bg-admin-surface border border-admin-border/60 rounded-xl p-1 gap-1 shadow-sm shadow-admin-border/20">
-                    {[
-                        { label: '7D', value: '7' },
-                        { label: '30D', value: '30' },
-                        { label: '90D', value: '90' },
-                    ].map(p => (
-                        <button
-                            key={p.value}
-                            onClick={() => changePeriod(p.value)}
-                            className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                                period === p.value
-                                    ? 'bg-admin-primary text-white shadow-sm shadow-admin-primary/30'
-                                    : 'text-admin-text-muted hover:bg-admin-surface-muted hover:text-admin-text'
-                            }`}
-                        >
-                            {p.label}
-                        </button>
-                    ))}
+                <div className="flex items-center bg-admin-surface border border-admin-border/60 rounded-xl px-4 py-2 gap-4 shadow-sm shadow-admin-border/20">
+                    <span className="text-sm font-bold text-admin-text-muted uppercase tracking-wider">Date</span>
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => changeDate(e.target.value)}
+                        className="bg-admin-surface-muted/30 border-none rounded-lg text-admin-text font-bold text-sm focus:ring-0 cursor-pointer px-3 py-1.5"
+                    />
                 </div>
             </div>
 
@@ -167,61 +141,63 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 <StatCard
                     label="Total Revenue"
-                    value={formatCurrency(stats.revenue)}
+                    value={formatCurrency(stats.total_revenue)}
                     icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    trend={stats.revenue_growth}
-                    trendLabel="vs previous period"
                     color="indigo"
                 />
                 <StatCard
-                    label="Orders"
-                    value={stats.orders.toString()}
+                    label="Customers"
+                    value={stats.total_customers.toString()}
+                    icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                    color="green"
+                />
+                <StatCard
+                    label="Manual Orders"
+                    value={stats.total_manual_orders.toString()}
                     sub={`${stats.pending_orders} pending`}
                     icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                     color="blue"
                 />
                 <StatCard
-                    label="New Customers"
-                    value={stats.new_customers.toString()}
-                    icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                    color="green"
-                />
-                <StatCard
-                    label="Avg. Order Value"
-                    value={formatCurrency(stats.aov)}
-                    icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    color="indigo"
+                    label="Products Sold"
+                    value={stats.total_products_sold.toString()}
+                    icon="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                    color="purple"
                 />
             </div>
 
-            {/* Stock Alerts */}
-            {(stats.low_stock > 0 || stats.out_of_stock > 0) && (
-                <div className="flex flex-wrap gap-3 mb-6">
-                    {stats.out_of_stock > 0 && (
-                        <Link
-                            href="/admin/products?stock=out"
-                            className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-red-100 transition-colors"
-                        >
-                            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                            {stats.out_of_stock} product{stats.out_of_stock !== 1 ? 's' : ''} out of stock
-                        </Link>
-                    )}
-                    {stats.low_stock > 0 && (
-                        <Link
-                            href="/admin/products?stock=low"
-                            className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-amber-100 transition-colors"
-                        >
-                            <span className="w-2 h-2 bg-amber-500 rounded-full" />
-                            {stats.low_stock} product{stats.low_stock !== 1 ? 's' : ''} running low
-                        </Link>
-                    )}
-                </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                    label="Pending Orders"
+                    value={stats.pending_orders.toString()}
+                    icon="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    color="amber"
+                />
+                <StatCard
+                    label="In Progress"
+                    value={stats.in_progress_orders.toString()}
+                    icon="M13 10V3L4 14h7v7l9-11h-7z"
+                    color="indigo"
+                />
+                <StatCard
+                    label="Delivered"
+                    value={stats.delivered_orders.toString()}
+                    icon="M5 13l4 4L19 7"
+                    color="green"
+                />
+                <StatCard
+                    label="Unpaid Orders"
+                    value={stats.unpaid_orders.toString()}
+                    sub={`${stats.paid_orders} paid`}
+                    icon="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    color="red"
+                />
+            </div>
 
             {/* Revenue Chart */}
             {revenue_chart.length > 0 && (
                 <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-6 mb-8 shadow-sm shadow-admin-border/20">
-                    <h2 className="text-lg font-bold text-admin-text tracking-tight mb-6">Revenue Over Time</h2>
+                    <h2 className="text-lg font-bold text-admin-text tracking-tight mb-6">Paid Revenue Over Time</h2>
                     <div className="w-full overflow-hidden">
                         <svg
                             viewBox={`0 0 ${chartWidth} ${chartHeight + 10}`}
@@ -258,99 +234,57 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, low_sto
             )}
 
             {/* Bottom Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Orders */}
-                <div className="lg:col-span-2 bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-admin-border">
-                        <h2 className="text-lg font-bold text-admin-text tracking-tight">Recent Orders</h2>
-                        <Link href="/admin/orders" className="text-sm text-admin-primary hover:text-admin-primary-hover font-semibold transition-colors">
-                            View all &rarr;
-                        </Link>
+            <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-admin-border">
+                    <h2 className="text-lg font-bold text-admin-text tracking-tight">Recent Manual Orders</h2>
+                    <Link href="/admin/logistics/orders" className="text-sm text-admin-primary hover:text-admin-primary-hover font-semibold transition-colors">
+                        View all &rarr;
+                    </Link>
+                </div>
+                {recent_orders.length === 0 ? (
+                    <div className="text-center py-12 text-admin-text-muted">
+                        <svg className="w-10 h-10 mx-auto mb-3 text-admin-border" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <p className="text-sm font-medium">No orders yet</p>
                     </div>
-                    {recent_orders.length === 0 ? (
-                        <div className="text-center py-12 text-admin-text-muted">
-                            <svg className="w-10 h-10 mx-auto mb-3 text-admin-border" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <p className="text-sm font-medium">No orders yet</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-admin-border bg-admin-surface-muted/50">
-                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
-                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer</th>
-                                        <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
-                                        <th className="text-right px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Total</th>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-admin-border bg-admin-surface-muted/50">
+                                    <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
+                                    <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer</th>
+                                    <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
+                                    <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Payment</th>
+                                    <th className="text-right px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-admin-border/50">
+                                {recent_orders.map(order => (
+                                    <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                        <td className="px-6 py-4 font-semibold text-admin-primary">{order.number}</td>
+                                        <td className="px-6 py-4 font-medium text-admin-text">
+                                            {order.customer}
+                                            <span className="block text-xs text-admin-text-muted font-normal">{order.customer_code}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusColors[order.status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
+                                                {order.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${paymentColors[order.payment_status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
+                                                {order.payment_status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-bold text-admin-text tracking-tight">{formatCurrency(order.total)}</td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-admin-border/50">
-                                    {recent_orders.map(order => (
-                                        <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-admin-primary">{order.number}</td>
-                                            <td className="px-6 py-4 font-medium text-admin-text">{order.customer}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusColors[order.status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
-                                                    {order.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right font-bold text-admin-text tracking-tight">{formatCurrency(order.total)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* Side Panel */}
-                <div className="space-y-6">
-                    {/* Low Stock */}
-                    <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-admin-border">
-                            <h2 className="text-lg font-bold text-admin-text tracking-tight">Low Stock</h2>
-                            <Link href="/admin/products" className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors">
-                                Manage &rarr;
-                            </Link>
-                        </div>
-                        {low_stock_products.length === 0 ? (
-                            <div className="px-6 py-8 text-center text-admin-text-muted text-sm font-medium">All products are well stocked ✓</div>
-                        ) : (
-                            <ul className="divide-y divide-admin-border/50">
-                                {low_stock_products.map(p => (
-                                    <li key={p.id} className="flex items-center justify-between px-6 py-4">
-                                        <span className="text-sm font-medium text-admin-text truncate flex-1">{p.name}</span>
-                                        <span className={`text-xs font-bold ml-3 px-3 py-1 rounded-full tracking-wide uppercase ${p.stock === 0 ? 'bg-admin-danger/10 text-admin-danger' : 'bg-admin-warning/10 text-admin-warning'}`}>
-                                            {p.stock === 0 ? 'Out' : `${p.stock} left`}
-                                        </span>
-                                    </li>
                                 ))}
-                            </ul>
-                        )}
+                            </tbody>
+                        </table>
                     </div>
-
-                    {/* Top Products */}
-                    {top_products.length > 0 && (
-                        <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
-                            <div className="px-6 py-5 border-b border-admin-border">
-                                <h2 className="text-lg font-bold text-admin-text tracking-tight">Top Products</h2>
-                            </div>
-                            <ul className="divide-y divide-admin-border/50">
-                                {top_products.map((p, i) => (
-                                    <li key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-admin-surface-muted/30 transition-colors">
-                                        <span className="text-sm font-bold text-admin-text-muted/60 w-5 text-center">{i + 1}</span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-admin-text truncate">{p.name}</p>
-                                            <p className="text-xs font-medium text-admin-text-muted mt-0.5">{p.sold} sold</p>
-                                        </div>
-                                        <span className="text-sm font-bold text-admin-text tracking-tight">${Number(p.revenue).toFixed(0)}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
+                )}
             </div>
         </AdminLayout>
     );

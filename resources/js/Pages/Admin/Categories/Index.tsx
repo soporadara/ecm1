@@ -45,9 +45,9 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
             actions={
                 <Link
                     href="/admin/categories/create"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center justify-center bg-admin-primary text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover hover:-translate-y-0.5 transition-all duration-200"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     New Category
@@ -56,15 +56,17 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
         >
             <Head title="Categories — Rafel CMS" />
 
-            <div className="mb-6">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Product Categories</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Organize your products into hierarchical categories.</p>
+            <div className="hidden sm:flex sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Product Categories</h1>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">Organize your products into categories and subcategories.</p>
+                </div>
             </div>
 
             {/* Search */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700 mb-4">
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl border border-admin-border/50 overflow-hidden mb-4">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-admin-border">
+                    <svg className="w-4 h-4 text-admin-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -72,77 +74,74 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
                         placeholder="Search categories..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="flex-1 outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 border-none ring-0 focus:ring-0"
+                        className="flex-1 outline-none bg-transparent text-sm font-medium text-admin-text placeholder-admin-text-muted border-none ring-0 focus:ring-0"
                     />
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+                    <span className="text-xs font-bold text-admin-text-muted">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
                 </div>
+            </div>
 
                 {/* Table */}
+                <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl border border-admin-border/50 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                    <table className="w-full text-sm text-left whitespace-nowrap">
+                        <thead className="text-xs text-admin-text-muted uppercase bg-admin-surface-muted/50 border-b border-admin-border">
                             <tr>
-                                <th className="px-5 py-3 font-semibold">Name</th>
-                                <th className="px-5 py-3 font-semibold hidden md:table-cell">Parent</th>
-                                <th className="px-5 py-3 font-semibold hidden sm:table-cell">Slug</th>
-                                <th className="px-5 py-3 font-semibold text-center">Products</th>
-                                <th className="px-5 py-3 font-semibold text-center">Status</th>
-                                <th className="px-5 py-3 font-semibold text-right">Actions</th>
+                                <th className="px-6 py-4 font-bold tracking-wider">Icon/Image</th>
+                                <th className="px-6 py-4 font-bold tracking-wider">Name</th>
+                                <th className="px-6 py-4 font-bold tracking-wider">Type</th>
+                                <th className="px-6 py-4 font-bold tracking-wider">Products</th>
+                                <th className="px-6 py-4 font-bold tracking-wider">Status</th>
+                                <th className="px-6 py-4 font-bold tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody className="divide-y divide-admin-border/50">
                             {filtered.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-12 text-gray-400 text-sm">
+                                    <td colSpan={6} className="text-center py-12 text-admin-text-muted font-medium text-sm">
                                         No categories found.
-                                        <Link href="/admin/categories/create" className="ml-2 text-indigo-600 dark:text-indigo-400 hover:underline">Create one →</Link>
+                                        <Link href="/admin/categories/create" className="ml-2 text-admin-primary hover:underline font-bold">Create one →</Link>
                                     </td>
                                 </tr>
                             )}
                             {filtered.map(cat => (
-                                <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-5 py-3">
+                                <tr key={cat.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                    <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             {cat.image ? (
-                                                <img src={cat.image} alt={cat.name} className="w-8 h-8 rounded object-cover bg-gray-100 dark:bg-gray-700" />
+                                                <img src={cat.image} alt={cat.name} className="w-8 h-8 rounded-lg object-cover bg-admin-surface-muted border border-admin-border/50 shadow-sm" />
                                             ) : (
-                                                <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                                <div className="w-8 h-8 rounded-lg bg-admin-surface-muted flex items-center justify-center text-admin-text-muted border border-admin-border/50 shadow-sm">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                                     </svg>
                                                 </div>
                                             )}
-                                            <span className="font-medium text-gray-900 dark:text-white">{cat.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-3 text-gray-500 dark:text-gray-400 hidden md:table-cell">
-                                        {cat.parent_name ?? <span className="text-gray-300 dark:text-gray-600">—</span>}
-                                    </td>
-                                    <td className="px-5 py-3 text-gray-400 dark:text-gray-500 font-mono text-xs hidden sm:table-cell">{cat.slug}</td>
-                                    <td className="px-5 py-3 text-center">
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{cat.products_count}</span>
-                                    </td>
-                                    <td className="px-5 py-3 text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    <td className="px-6 py-4 font-semibold text-admin-text">{cat.name}</td>
+                                    <td className="px-6 py-4 text-admin-text-muted font-medium">{cat.parent_name ?? <span className="text-admin-text-muted/50">Root</span>}</td>
+                                    <td className="px-6 py-4 font-bold text-admin-text">{cat.products_count}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase ${
                                             cat.is_active
-                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                                                ? 'bg-admin-success/10 text-admin-success'
+                                                : 'bg-admin-surface-muted text-admin-text-muted border border-admin-border/50'
                                         }`}>
                                             {cat.is_active ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-3 text-right">
-                                        <div className="flex items-center gap-2 justify-end">
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center gap-3 justify-end">
                                             <Link
                                                 href={`/admin/categories/${cat.id}/edit`}
-                                                className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors"
                                             >
                                                 Edit
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(cat.id)}
                                                 disabled={deleting === cat.id}
-                                                className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                                                className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors disabled:opacity-50"
                                             >
                                                 {deleting === cat.id ? '...' : 'Delete'}
                                             </button>

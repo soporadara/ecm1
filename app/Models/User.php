@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
         'contact_email',
         'password',
         'google_id',
@@ -98,6 +99,11 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function manualOrders(): HasMany
+    {
+        return $this->hasMany(ManualOrder::class, 'user_id');
+    }
+
     // ─── Business Logic Helpers ──────────────────────────────────────
 
     /**
@@ -121,9 +127,17 @@ class User extends Authenticatable
      */
     public static function generateCustomerCode(): string
     {
+        $year = date('Y');
+        $latest = self::where('customer_code', 'like', "CUS-{$year}-%")
+            ->lockForUpdate()
+            ->orderByDesc('customer_code')
+            ->value('customer_code');
+
+        $next = $latest ? ((int) substr($latest, -6)) + 1 : 1;
+
         do {
-            $year = date('Y');
-            $code = 'CUS-' . $year . '-' . str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+            $code = 'CUS-' . $year . '-' . str_pad((string) $next, 6, '0', STR_PAD_LEFT);
+            $next++;
         } while (self::where('customer_code', $code)->exists());
 
         return $code;

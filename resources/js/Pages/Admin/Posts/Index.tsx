@@ -58,8 +58,10 @@ export default function Index({ posts, filters = {} }: any) {
                     <table className="w-full text-sm text-left">
                         <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 font-medium border-b border-gray-200 dark:border-gray-700">
                             <tr>
+                                <th className="px-6 py-4 w-16 text-center">Nº</th>
                                 <th className="px-6 py-4">Image</th>
                                 <th className="px-6 py-4">Title</th>
+                                <th className="px-6 py-4">Category</th>
                                 <th className="px-6 py-4">Author</th>
                                 <th className="px-6 py-4">Status</th>
                                 <th className="px-6 py-4 text-right">Actions</th>
@@ -68,13 +70,16 @@ export default function Index({ posts, filters = {} }: any) {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {posts.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                         No posts found.
                                     </td>
                                 </tr>
                             ) : (
-                                posts.data.map((post: any) => (
+                                posts.data.map((post: any, idx: number) => (
                                     <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/25 transition-colors">
+                                        <td className="px-6 py-4 font-semibold text-gray-500 text-center">
+                                            {(posts.current_page - 1) * posts.per_page + idx + 1}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {post.image ? (
                                                 <img src={post.image} alt={post.title} className="h-10 w-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
@@ -89,6 +94,15 @@ export default function Index({ posts, filters = {} }: any) {
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-gray-900 dark:text-white">{post.title}</div>
                                             <div className="text-xs text-gray-500 dark:text-gray-400">{post.slug}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {post.category ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                                    {post.category.name}
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs italic">Uncategorized</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
                                             {post.user ? post.user.name : '-'}

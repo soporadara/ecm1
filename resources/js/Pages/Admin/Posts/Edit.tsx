@@ -171,6 +171,21 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                         {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug}</p>}
                     </div>
 
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
+                        <select
+                            value={data.post_category_id}
+                            onChange={e => setData('post_category_id', e.target.value)}
+                            className="w-full bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-brand-primary focus:border-brand-primary h-11 px-4 dark:text-white"
+                        >
+                            <option value="">No Category</option>
+                            {categories.map((cat: any) => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        {errors.post_category_id && <p className="mt-1 text-sm text-red-500">{errors.post_category_id}</p>}
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cover Image URL</label>
                         <input
@@ -184,7 +199,7 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                         {data.image && (
                             <div className="mt-4">
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Image Preview</p>
-                                <img src={data.image} alt="Preview" className="h-48 w-full object-cover rounded-lg border border-gray-200 dark:border-gray-700" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                                <img src={data.image} alt="Preview" className="w-full h-auto max-h-[500px] object-contain rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800" onError={(e) => (e.currentTarget.style.display = 'none')} />
                             </div>
                         )}
                     </div>

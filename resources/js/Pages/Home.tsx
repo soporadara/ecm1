@@ -90,7 +90,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
             {/* Slideshow Banner Section */}
             <section className="relative overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
                 {hasBanners ? (
-                    <div className="relative h-[100svh] min-h-[480px] md:min-h-[620px]">
+                    <div className="relative aspect-video md:aspect-auto md:h-[100svh] md:min-h-[620px]">
                         {banners.map((banner: any, index: number) => {
                             const fallbackImg = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80";
                             const dImg = banner.desktop_image_url || fallbackImg;
@@ -149,7 +149,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                     </div>
                 ) : (
                     // Default Fallback Banner
-                    <div className="relative h-[100svh] min-h-[480px] md:min-h-[620px]">
+                    <div className="relative aspect-video md:aspect-auto md:h-[100svh] md:min-h-[620px]">
                         <div className="absolute inset-0">
                             <img src={page?.banner_image || "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80"} className="w-full h-full object-cover object-center" alt="Logistics warehouse and shipping boxes" />
                         </div>
@@ -203,7 +203,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                             <button
                                 type="button"
                                 onClick={() => scrollSites('previous')}
-                                className="absolute left-0 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg ring-1 ring-gray-200 transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 md:flex dark:bg-gray-950 dark:text-gray-100 dark:ring-gray-800"
+                                className="absolute left-0 top-[48px] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg ring-1 ring-gray-200 transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 md:flex dark:bg-gray-950 dark:text-gray-100 dark:ring-gray-800"
                                 aria-label={t('available_sites.previous')}
                             >
                                 <ChevronLeft className="h-6 w-6" aria-hidden="true" />
@@ -211,7 +211,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
 
                             <div
                                 ref={sitesScrollerRef}
-                                className="flex snap-x gap-7 overflow-x-auto scroll-smooth px-1 pb-4 md:px-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                className="flex gap-7 overflow-x-auto scroll-smooth px-1 pb-4 md:px-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                             >
                                 {marketplaces.map((site: any) => (
                                     <a
@@ -219,7 +219,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                         href={site.website_url || '#'}
                                         target={site.open_in_new_tab === false ? undefined : '_blank'}
                                         rel={site.open_in_new_tab === false ? undefined : 'noopener noreferrer'}
-                                        className="group flex w-28 shrink-0 snap-start flex-col items-center gap-3 rounded-2xl p-2 text-center transition hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60"
+                                        className="group flex w-28 shrink-0 flex-col items-center gap-3 rounded-2xl p-2 text-center transition hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60"
                                     >
                                         <span className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100 transition group-hover:shadow-xl dark:bg-gray-950 dark:ring-gray-800">
                                             {site.logo ? (
@@ -238,7 +238,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                             <button
                                 type="button"
                                 onClick={() => scrollSites('next')}
-                                className="absolute right-0 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg ring-1 ring-gray-200 transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 md:flex dark:bg-gray-950 dark:text-gray-100 dark:ring-gray-800"
+                                className="absolute right-0 top-[48px] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-700 shadow-lg ring-1 ring-gray-200 transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 md:flex dark:bg-gray-950 dark:text-gray-100 dark:ring-gray-800"
                                 aria-label={t('available_sites.next')}
                             >
                                 <ChevronRight className="h-6 w-6" aria-hidden="true" />

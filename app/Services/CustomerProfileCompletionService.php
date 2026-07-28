@@ -69,6 +69,7 @@ class CustomerProfileCompletionService
             $customer->forceFill([
                 'profile_completed_at' => $customer->profile_completed_at ?? now(),
                 'profile_onboarding_skipped_at' => null,
+                'customer_code' => $customer->customer_code ?: User::generateCustomerCode(),
             ])->save();
         }
     }

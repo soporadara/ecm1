@@ -1,14 +1,39 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function AuditLogsIndex({ logs }: any) {
+    const { delete: destroy } = useForm();
+    const { auth } = usePage().props as any;
+
+    const handleClear = () => {
+        if (confirm('Are you sure you want to clear ALL audit logs? This action cannot be undone.')) {
+            destroy('/admin/audit-logs/clear', {
+                preserveScroll: true,
+                onSuccess: () => toast.success('All audit logs have been cleared.')
+            });
+        }
+    };
+
+    const isSuperAdmin = auth?.user?.role === 'super_admin' || auth?.user?.role === 'superadmin' || auth?.user?.roles?.includes('Super Administrator');
+
     return (
         <AdminLayout title="Audit Logs">
             <Head title="Audit Logs - Admin" />
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-admin-text tracking-tight">Audit Logs</h1>
-                <p className="text-sm font-medium text-admin-text-muted mt-1">Recent admin and system activity.</p>
+            <div className="mb-6 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Audit Logs</h1>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">Recent admin and system activity.</p>
+                </div>
+                {isSuperAdmin && (
+                    <button 
+                        onClick={handleClear} 
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                    >
+                        Clear All Logs
+                    </button>
+                )}
             </div>
 
             <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl overflow-hidden border border-admin-border/50">

@@ -75,7 +75,7 @@ class FirebaseAuthService
                 $matchingUser->firebase_provider = $provider;
                 $matchingUser->authentication_provider = $this->combinedProvider($matchingUser->authentication_provider, $provider);
                 if (!$matchingUser->customer_code) {
-                    $matchingUser->customer_code = $this->nextCustomerCode();
+                    $matchingUser->customer_code = User::generateCustomerCode();
                 }
                 $this->updateFirebaseProfile($matchingUser, $email, $name, $picture, $provider, (bool) ($claims['email_verified'] ?? false));
                 $this->audit('firebase.account.linked', $matchingUser, $request, ['provider' => $provider]);
@@ -94,7 +94,7 @@ class FirebaseAuthService
                 'avatar' => $picture,
                 'avatar_source_url' => $picture,
                 'password' => null,
-                'customer_code' => $this->nextCustomerCode(),
+                'customer_code' => User::generateCustomerCode(),
                 'preferred_locale' => $this->preferredLocale($request),
                 'preferred_language' => $this->preferredLocale($request),
                 'preferred_currency' => 'USD',
@@ -227,23 +227,7 @@ class FirebaseAuthService
         return (bool) $user->is_admin || in_array($user->role, ['admin', 'super_admin', 'logistics', 'content', 'support'], true);
     }
 
-    private function nextCustomerCode(): string
-    {
-        $year = now()->format('Y');
-        $latest = User::where('customer_code', 'like', "CUS-{$year}-%")
-            ->lockForUpdate()
-            ->orderByDesc('customer_code')
-            ->value('customer_code');
 
-        $next = $latest ? ((int) substr($latest, -6)) + 1 : 1;
-
-        do {
-            $code = 'CUS-'.$year.'-'.str_pad((string) $next, 6, '0', STR_PAD_LEFT);
-            $next++;
-        } while (User::where('customer_code', $code)->exists());
-
-        return $code;
-    }
 
     private function normalizeEmail(?string $email): ?string
     {

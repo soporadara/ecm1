@@ -8,21 +8,35 @@ use Inertia\Inertia;
 
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/debug-pages', function () {
+    return \App\Models\Page::get(['id', 'title', 'slug', 'is_system']);
+});
+
 // Auth routes
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::middleware('throttle:6,1')->group(function () {
+        Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [AuthController::class, 'storeLogin']);
+        Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+        Route::post('/register', [AuthController::class, 'storeRegister']);
+        Route::get('/cms/login', [AuthController::class, 'showCmsLogin'])->name('cms.login');
+        Route::post('/cms/login', [AuthController::class, 'cmsLogin'])->name('cms.login.store');
+        
+        Route::post('/forgot-password/send-pin', [AuthController::class, 'sendResetPin'])->name('password.send-pin');
+        Route::post('/forgot-password/verify-pin', [AuthController::class, 'verifyResetPin'])->name('password.verify-pin');
+        Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
+    });
+    
     Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
     Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
-    Route::get('/cms/login', [AuthController::class, 'showCmsLogin'])->name('cms.login');
-    Route::post('/cms/login', [AuthController::class, 'cmsLogin'])->name('cms.login.store');
 });
 
 Route::post('/auth/firebase/session', [AuthController::class, 'firebaseSession'])->middleware('guest')->name('auth.firebase.session');
 Route::post('/auth/firebase/google', [AuthController::class, 'firebaseGoogle'])->middleware('guest')->name('auth.firebase.google');
-Route::post('/auth/firebase/cms', [AuthController::class, 'cmsFirebase'])->middleware('guest')->name('auth.firebase.cms');
+Route::post('/auth/firebase/cms', [AuthController::class, 'cmsFirebase'])->middleware('guest:admin')->name('auth.firebase.cms');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::redirect('/cms/dashboard', '/admin')->middleware(['auth', 'is_admin']);
@@ -30,6 +44,13 @@ Route::redirect('/cms/dashboard', '/admin')->middleware(['auth', 'is_admin']);
 Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
 Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
 Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
+Route::get('/auth/google', [\App\Http\Controllers\AuthController::class, 'socialiteRedirect'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\AuthController::class, 'socialiteCallback']);
+
+// Admin Auth Routes
+Route::get('/cms/login', [\App\Http\Controllers\AuthController::class, 'showCmsLogin'])->name('cms.login');
+Route::post('/cms/login', [\App\Http\Controllers\AuthController::class, 'cmsLogin']);
+Route::post('/cms/firebase', [\App\Http\Controllers\AuthController::class, 'cmsFirebase'])->name('cms.firebase');
 Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
 Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
 Route::put('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
@@ -68,12 +89,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         return app(\App\Http\Controllers\Admin\FeatureFlagController::class)->update($request, $featureFlag);
     })->name('feature-flags.update');
+
+    // Team Notes
+    Route::post('notes/trash/{id}', [\App\Http\Controllers\Admin\NoteController::class, 'trash'])->name('notes.trash');
+    Route::post('notes/restore/{id}', [\App\Http\Controllers\Admin\NoteController::class, 'restore'])->name('notes.restore');
+    Route::resource('note-folders', \App\Http\Controllers\Admin\NoteFolderController::class)->except(['show']);
+    Route::resource('notes', \App\Http\Controllers\Admin\NoteController::class);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web')->group(function () {
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::post('/profile/send-pin', [\App\Http\Controllers\ProfileController::class, 'sendPin'])->name('profile.send-pin');
+    Route::post('/profile/verify-pin', [\App\Http\Controllers\ProfileController::class, 'verifyPin'])->name('profile.verify-pin');
 });
 
 // Admin routes
@@ -82,22 +111,29 @@ Route::post('/cms/logout', [\App\Http\Controllers\AuthController::class, 'cmsLog
 Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editAdmin'])->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::post('/profile/send-pin', [\App\Http\Controllers\ProfileController::class, 'sendPin'])->name('profile.send-pin');
+    Route::post('/profile/verify-pin', [\App\Http\Controllers\ProfileController::class, 'verifyPin'])->name('profile.verify-pin');
+    Route::post('/profile/google-link', [\App\Http\Controllers\ProfileController::class, 'linkGoogle'])->name('profile.google-link');
+    Route::post('/profile/google-unlink', [\App\Http\Controllers\ProfileController::class, 'unlinkGoogle'])->name('profile.google-unlink');
     
 
     // Logistics Customers & Orders
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['show']);
 
-    Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
-    Route::match(['put', 'patch'], 'orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update');
-    Route::put('orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.status');
-
-    Route::get('customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
-    Route::get('customers/{user}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
+    Route::get('logistics/customers', [\App\Http\Controllers\Admin\ManualOrderController::class, 'index'])->name('logistics.customers');
+    Route::get('logistics/customers/{customer}/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'customerOrders'])->name('logistics.customer-orders');
+    Route::get('logistics/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'allOrders'])->name('logistics.orders');
     
-    Route::get('receipts', [\App\Http\Controllers\Admin\ReceiptController::class, 'index'])->name('receipts.index');
-    Route::get('receipts/generate/{order}', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
+    // Receipt Integration
+    Route::get('receipts/generate', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
     Route::get('receipts/{receipt}', [\App\Http\Controllers\Admin\ReceiptController::class, 'show'])->name('receipts.show');
+
+    // Reports
+    Route::get('logistics/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('logistics.reports');
+    Route::get('logistics/reports/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate'])->name('logistics.reports.generate');
 
     // CMS & Settings
     Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except(['show']);
@@ -129,11 +165,20 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
     
+    Route::get('/fly-icons', [\App\Http\Controllers\Admin\FlyIconController::class, 'index'])->name('fly-icons.index');
+    Route::post('/fly-icons', [\App\Http\Controllers\Admin\FlyIconController::class, 'store'])->name('fly-icons.store');
+    
     // Staff & Users
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'update']);
     Route::resource('staff', \App\Http\Controllers\Admin\StaffController::class)->except(['show']);
+
+    // Customers & Users (Super Admin Only)
+    Route::resource('customers-management', \App\Http\Controllers\Admin\CustomerManagementController::class)->only(['index', 'update', 'destroy']);
+    Route::post('customers-management/{user}/reset-password', [\App\Http\Controllers\Admin\CustomerManagementController::class, 'resetPassword'])->name('customers-management.reset-password');
+    Route::post('customers-management/{user}/toggle-status', [\App\Http\Controllers\Admin\CustomerManagementController::class, 'toggleStatus'])->name('customers-management.toggle-status');
     
     Route::get('audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit.index');
+    Route::delete('audit-logs/clear', [\App\Http\Controllers\Admin\AuditLogController::class, 'clear'])->name('audit.clear');
     Route::get('security/access-control', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'index'])->name('security.access-control');
     Route::delete('security/access-control/{block}', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'destroy'])->name('security.access-control.destroy');
 });

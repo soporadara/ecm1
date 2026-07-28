@@ -115,6 +115,21 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
     const formRef = useRef<HTMLFormElement>(null);
     const submittedOrder = flash?.submitted_order;
     const [showSuccessModal, setShowSuccessModal] = useState(Boolean(submittedOrder));
+    // Phone parsing helpers
+    const parsePhone = (phoneStr: string) => {
+        if (!phoneStr) return { code: '+855', num: '' };
+        if (phoneStr.startsWith('+84')) return { code: '+84', num: phoneStr.substring(3).replace(/^0+/, '') };
+        if (phoneStr.startsWith('+856')) return { code: '+856', num: phoneStr.substring(4).replace(/^0+/, '') };
+        if (phoneStr.startsWith('+855')) return { code: '+855', num: phoneStr.substring(4).replace(/^0+/, '') };
+        return { code: '+855', num: phoneStr.replace(/^0+/, '') };
+    };
+
+    const initialPhone = parsePhone(auth?.user?.phone_e164 || '');
+    const [phoneCode, setPhoneCode] = useState(initialPhone.code);
+    const [phoneNum, setPhoneNum] = useState(initialPhone.num);
+
+    const hasProfileAddress = Boolean(auth?.user?.address_line_1);
+    const [useCustomAddress, setUseCustomAddress] = useState(!hasProfileAddress);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         contact_email: auth?.user?.email || '',
@@ -170,6 +185,9 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
+
+        const fullPhone = phoneNum ? `${phoneCode}${phoneNum}` : '';
+        data.contact_phone = fullPhone; // Update directly for the post payload
 
         post('/manual-order', {
             forceFormData: true,
@@ -277,7 +295,24 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-1">Phone number</label>
-                                    <input value={data.contact_phone} onChange={e => setData('contact_phone', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                    <div className="flex shadow-sm rounded-xl">
+                                        <select 
+                                            value={phoneCode} 
+                                            onChange={e => setPhoneCode(e.target.value)}
+                                            className="w-[100px] sm:w-[120px] rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 px-3 py-3 text-sm font-semibold text-gray-950 focus:border-brand-primary focus:ring-0 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:focus:border-brand-primary"
+                                        >
+                                            <option value="+855">🇰🇭 +855</option>
+                                            <option value="+84">🇻🇳 +84</option>
+                                            <option value="+856">🇱🇦 +856</option>
+                                        </select>
+                                        <input 
+                                            type="tel" 
+                                            value={phoneNum} 
+                                            onChange={e => setPhoneNum(e.target.value.replace(/\D/g, ''))} 
+                                            placeholder="12 345 678" 
+                                            className="w-full rounded-r-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-950 placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 dark:border-gray-800 dark:bg-gray-950 dark:text-white dark:focus:border-brand-primary"
+                                        />
+                                    </div>
                                     <label className="mt-3 flex items-center gap-3 text-xs font-semibold text-gray-500"><input type="checkbox" checked={data.save_phone_to_profile} onChange={e => setData('save_phone_to_profile', e.target.checked)} /> Save this phone number to my profile</label>
                                     {errors.contact_phone && <p className="text-red-500 text-xs mt-1">{errors.contact_phone}</p>}
                                 </div>
@@ -297,20 +332,51 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                 <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">2</span>
                                 <h2 className="text-xl font-black text-gray-900 dark:text-white">Delivery Address</h2>
                             </div>
-                            <p className="text-sm text-gray-500 mb-4">This address will be used for this order.</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-bold mb-1">Address line 1</label>
-                                    <input value={data.address_line_1} onChange={e => setData('address_line_1', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                    {errors.address_line_1 && <p className="text-red-500 text-xs mt-1">{errors.address_line_1}</p>}
-                                </div>
-                                <input placeholder="Address line 2" value={data.address_line_2} onChange={e => setData('address_line_2', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                <input placeholder="City" value={data.city} onChange={e => setData('city', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                <input placeholder="Province" value={data.province} onChange={e => setData('province', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                <input placeholder="Postal code" value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                <textarea placeholder="Delivery notes" value={data.delivery_notes} onChange={e => setData('delivery_notes', e.target.value)} rows={2} className="md:col-span-2 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                            <div className="flex items-center justify-between mb-4">
+                                <p className="text-sm text-gray-500">This address will be used for this order.</p>
+                                {hasProfileAddress && (
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setUseCustomAddress(!useCustomAddress)}
+                                        className="text-sm font-bold text-brand-primary hover:underline"
+                                    >
+                                        {useCustomAddress ? 'Use Profile Address' : '+ Add New Address'}
+                                    </button>
+                                )}
                             </div>
-                            <label className="mt-4 flex items-center gap-3 text-sm font-semibold text-gray-500"><input type="checkbox" checked={data.save_address_to_profile} onChange={e => setData('save_address_to_profile', e.target.checked)} /> Save this address to my profile</label>
+
+                            {!useCustomAddress && hasProfileAddress ? (
+                                <div className="rounded-xl border-2 border-brand-primary bg-brand-primary/5 p-5 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 bg-brand-primary text-white text-[10px] font-black tracking-wider uppercase px-3 py-1 rounded-bl-xl">Selected</div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white mb-1">My Profile Address</h3>
+                                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                        {auth?.user?.address_line_1} <br/>
+                                        {auth?.user?.address_line_2 && <>{auth?.user?.address_line_2} <br/></>}
+                                        {auth?.user?.city}, {auth?.user?.province} {auth?.user?.postal_code}
+                                    </p>
+                                    {auth?.user?.address_notes && (
+                                        <p className="text-gray-500 text-xs italic mt-2">Notes: {auth?.user?.address_notes}</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-bold mb-1">Address line 1</label>
+                                            <input value={data.address_line_1} onChange={e => setData('address_line_1', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                            {errors.address_line_1 && <p className="text-red-500 text-xs mt-1">{errors.address_line_1}</p>}
+                                        </div>
+                                        <input placeholder="Address line 2" value={data.address_line_2} onChange={e => setData('address_line_2', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                        <input placeholder="City" value={data.city} onChange={e => setData('city', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                        <input placeholder="Province" value={data.province} onChange={e => setData('province', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                        <input placeholder="Postal code" value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                        <textarea placeholder="Delivery notes" value={data.delivery_notes} onChange={e => setData('delivery_notes', e.target.value)} rows={2} className="md:col-span-2 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                    </div>
+                                    <label className="mt-4 flex items-center gap-3 text-sm font-semibold text-gray-500">
+                                        <input type="checkbox" checked={data.save_address_to_profile} onChange={e => setData('save_address_to_profile', e.target.checked)} /> Save this address to my profile
+                                    </label>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-4">
@@ -319,20 +385,20 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                     <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">3</span>
                                     <h2 className="text-xl font-black text-gray-900 dark:text-white">Requested Products</h2>
                                 </div>
-                                <button type="button" onClick={addProduct} className="rounded-xl bg-gray-900 text-white px-4 py-2 font-bold">Add Another Product</button>
+                                <button type="button" onClick={addProduct} className="rounded-xl bg-gray-900 text-white px-5 py-2.5 font-bold transition-all duration-300 hover:bg-green-500 hover:text-white hover:shadow-lg hover:-translate-y-0.5">Add Another Product</button>
                             </div>
 
                             {data.products.map((product, index) => (
-                                <div key={index} className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:border-brand-primary/30 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900">
-                                    <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5">
-                                        <h3 className="font-black text-gray-900 dark:text-white">Product {index + 1}</h3>
+                                <div key={index} className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-brand-primary/50 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+                                    <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gray-50/50 dark:bg-gray-800/50 transition-colors duration-300 group-hover:bg-brand-primary/5">
+                                        <h3 className="font-black text-gray-900 dark:text-white transition-colors group-hover:text-brand-primary">Product {index + 1}</h3>
                                         <div className="flex gap-2">
-                                            <button type="button" onClick={() => duplicateProduct(index)} className="text-sm font-bold px-3 py-2 rounded-lg border">Duplicate</button>
-                                            <button type="button" disabled={data.products.length === 1} onClick={() => removeProduct(index)} className="text-sm font-bold px-3 py-2 rounded-lg border text-red-600 disabled:opacity-40">Remove</button>
+                                            <button type="button" onClick={() => duplicateProduct(index)} className="text-sm font-bold px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-green-500 hover:bg-green-500 hover:text-white hover:shadow-md">Duplicate</button>
+                                            <button type="button" disabled={data.products.length === 1} onClick={() => removeProduct(index)} className="text-sm font-bold px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm text-red-600 transition-all duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-md disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:text-red-600">Remove</button>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-5 px-6 pb-6 md:grid-cols-12">
+                                    <div className="grid grid-cols-1 gap-5 px-6 pb-6 md:grid-cols-12 pt-5">
                                         <div className="rounded-2xl border border-brand-primary/20 bg-red-50/50 p-4 dark:bg-red-950/10 md:col-span-12">
                                             <div className="mb-2 flex items-center justify-between gap-3">
                                                 <label className="block text-sm font-black text-gray-900 dark:text-white">Product name</label>
@@ -350,10 +416,10 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                         <textarea placeholder="Product description" value={product.description} onChange={e => updateProduct(index, { description: e.target.value })} rows={3} className="md:col-span-12 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
                                         <div className="md:col-span-4">
                                             <label className="block text-sm font-bold mb-1">Quantity</label>
-                                            <div className="inline-flex h-12 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                <button type="button" aria-label="Decrease quantity" disabled={product.quantity <= 1} onClick={() => updateProduct(index, { quantity: Math.max(1, product.quantity - 1) })} className="w-12 disabled:opacity-40">-</button>
-                                                <input type="number" min={1} max={limits?.max_quantity || 999} value={product.quantity} onChange={e => updateProduct(index, { quantity: Math.max(1, Number(e.target.value) || 1) })} className="w-20 text-center border-x border-gray-200 dark:border-gray-700" />
-                                                <button type="button" aria-label="Increase quantity" onClick={() => updateProduct(index, { quantity: Math.min(limits?.max_quantity || 999, product.quantity + 1) })} className="w-12">+</button>
+                                            <div className="inline-flex h-12 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm transition-all focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/20">
+                                                <button type="button" aria-label="Decrease quantity" disabled={product.quantity <= 1} onClick={() => updateProduct(index, { quantity: Math.max(1, product.quantity - 1) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors disabled:opacity-40">-</button>
+                                                <input type="number" min={1} max={limits?.max_quantity || 999} value={product.quantity} onChange={e => updateProduct(index, { quantity: Math.max(1, Number(e.target.value) || 1) })} className="w-20 text-center border-x border-gray-200 dark:border-gray-700 focus:border-brand-primary focus:ring-0" />
+                                                <button type="button" aria-label="Increase quantity" onClick={() => updateProduct(index, { quantity: Math.min(limits?.max_quantity || 999, product.quantity + 1) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">+</button>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 gap-4 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800/70 md:col-span-8 md:grid-cols-3">
@@ -367,13 +433,13 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                     <div className="space-y-3 border-t border-gray-100 px-6 py-6 dark:border-gray-800">
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-bold">Product URLs ({product.urls.filter(Boolean).length})</h4>
-                                            <button type="button" onClick={() => updateProduct(index, { urls: [...product.urls, ''] })} className="text-sm font-bold text-brand-primary">Add Another URL</button>
+                                            <button type="button" onClick={() => updateProduct(index, { urls: [...product.urls, ''] })} className="text-sm font-bold text-brand-primary transition-colors hover:text-green-500">+ Add Another URL</button>
                                         </div>
                                         {product.urls.map((url, urlIndex) => (
                                             <div key={urlIndex} className="flex flex-col sm:flex-row gap-2">
-                                                <input value={url} placeholder="https://supplier.example/product" onChange={e => updateProduct(index, { urls: product.urls.map((u, i) => i === urlIndex ? e.target.value : u) })} className="flex-1 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                                {domainFromUrl(url) && <a href={url} target="_blank" rel="noopener noreferrer" className="px-4 py-3 rounded-xl border font-bold text-center">View {domainFromUrl(url)}</a>}
-                                                <button type="button" onClick={() => updateProduct(index, { urls: product.urls.filter((_, i) => i !== urlIndex) })} className="px-4 py-3 rounded-xl border text-red-600 font-bold">Remove</button>
+                                                <input value={url} placeholder="https://supplier.example/product" onChange={e => updateProduct(index, { urls: product.urls.map((u, i) => i === urlIndex ? e.target.value : u) })} className="flex-1 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                                {domainFromUrl(url) && <a href={url} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-xl border border-gray-200 bg-white font-bold text-center shadow-sm transition-all hover:border-brand-primary hover:text-brand-primary">View {domainFromUrl(url)}</a>}
+                                                <button type="button" onClick={() => updateProduct(index, { urls: product.urls.filter((_, i) => i !== urlIndex) })} className="px-5 py-3 rounded-xl border border-gray-200 bg-white shadow-sm text-red-600 font-bold transition-all hover:border-red-500 hover:bg-red-500 hover:text-white">Remove</button>
                                             </div>
                                         ))}
                                     </div>

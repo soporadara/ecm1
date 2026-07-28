@@ -3,32 +3,32 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\ManualOrder;
 use App\Models\Receipt;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ReceiptController extends Controller
 {
-    public function index()
+    public function generate(Request $request)
     {
-        return redirect()->route('admin.orders.index');
-    }
+        $request->validate([
+            'manual_order_id' => 'required|exists:manual_orders,id'
+        ]);
 
-    public function generate(Order $order)
-    {
-        $order->load(['user', 'items']);
+        $order = ManualOrder::with(['user', 'items'])->findOrFail($request->manual_order_id);
 
-        $subtotal = (float) ($order->subtotal ?: $order->total_amount);
-        $charges = (float) ($order->service_charge + $order->delivery_charge);
-        $discount = (float) $order->discount;
+        $subtotal = (float) $order->total_amount;
+        $charges = 0;
+        $discount = 0;
         $total = max($subtotal + $charges - $discount, 0);
 
         $receipt = Receipt::create([
             'receipt_number' => Receipt::generateReceiptNumber(),
-            'order_id' => $order->id,
+            'manual_order_id' => $order->id,
             'user_id' => $order->user_id,
             'snapshot_json' => [
-                'order' => $order->only(['id', 'order_number', 'title', 'description', 'status']),
+                'order' => $order->only(['id', 'order_number', 'status']),
                 'items' => $order->items->toArray(),
             ],
             'subtotal' => $subtotal,
@@ -36,7 +36,7 @@ class ReceiptController extends Controller
             'discount' => $discount,
             'total' => $total,
             'payment_status' => $order->payment_status ?? 'unpaid',
-            'generated_by' => auth('admin')->id(),
+            'generated_by' => auth('admin')->id() ?? auth()->id(),
         ]);
 
         return redirect()->route('admin.receipts.show', $receipt);
@@ -44,7 +44,7 @@ class ReceiptController extends Controller
 
     public function show(Receipt $receipt)
     {
-        $receipt->load(['order', 'user']);
+        $receipt->load(['manualOrder', 'user']);
 
         return Inertia::render('Admin/Logistics/Receipts/Show', [
             'receipt' => $receipt,

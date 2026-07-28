@@ -29,18 +29,20 @@ class SettingController extends Controller
             'store_address' => 'nullable|string',
             'about_title' => 'nullable|string|max:255',
             'about_text' => 'nullable|string|max:2000',
-            'social_1_name' => 'nullable|string|max:80',
-            'social_1_url' => 'nullable|url|max:255',
-            'social_1_icon' => 'nullable|string|max:80',
-            'social_2_name' => 'nullable|string|max:80',
-            'social_2_url' => 'nullable|url|max:255',
-            'social_2_icon' => 'nullable|string|max:80',
-            'social_3_name' => 'nullable|string|max:80',
-            'social_3_url' => 'nullable|url|max:255',
-            'social_3_icon' => 'nullable|string|max:80',
-            'social_4_name' => 'nullable|string|max:80',
-            'social_4_url' => 'nullable|url|max:255',
-            'social_4_icon' => 'nullable|string|max:80',
+            'social_links' => 'nullable|array',
+            'social_links.*.name' => 'nullable|string|max:255',
+            'social_links.*.url' => 'nullable|string|max:1000',
+            'social_links.*.icon' => 'nullable|string|max:1000',
+            'fab_email' => 'nullable|string|max:255',
+            'fab_phone' => 'nullable|string|max:255',
+            'fab_messenger' => 'nullable|string|max:255',
+            'fab_telegram' => 'nullable|string|max:255',
+            'cambodia_map_embed_url' => 'nullable|string',
+            'cambodia_map_open_url' => 'nullable|string|max:1000',
+            'cambodia_map_address' => 'nullable|string|max:1000',
+            'vietnam_map_embed_url' => 'nullable|string',
+            'vietnam_map_open_url' => 'nullable|string|max:1000',
+            'vietnam_map_address' => 'nullable|string|max:1000',
             'store_logo' => 'nullable',
             'store_favicon' => 'nullable',
         ]);
@@ -54,18 +56,17 @@ class SettingController extends Controller
             'store_address' => $validated['store_address'] ?? null,
             'about_title' => $validated['about_title'] ?? null,
             'about_text' => $validated['about_text'] ?? null,
-            'social_1_name' => $validated['social_1_name'] ?? null,
-            'social_1_url' => $validated['social_1_url'] ?? null,
-            'social_1_icon' => $validated['social_1_icon'] ?? null,
-            'social_2_name' => $validated['social_2_name'] ?? null,
-            'social_2_url' => $validated['social_2_url'] ?? null,
-            'social_2_icon' => $validated['social_2_icon'] ?? null,
-            'social_3_name' => $validated['social_3_name'] ?? null,
-            'social_3_url' => $validated['social_3_url'] ?? null,
-            'social_3_icon' => $validated['social_3_icon'] ?? null,
-            'social_4_name' => $validated['social_4_name'] ?? null,
-            'social_4_url' => $validated['social_4_url'] ?? null,
-            'social_4_icon' => $validated['social_4_icon'] ?? null,
+            'social_links' => isset($validated['social_links']) ? json_encode($validated['social_links']) : null,
+            'fab_email' => $validated['fab_email'] ?? null,
+            'fab_phone' => $validated['fab_phone'] ?? null,
+            'fab_messenger' => $validated['fab_messenger'] ?? null,
+            'fab_telegram' => $validated['fab_telegram'] ?? null,
+            'cambodia_map_embed_url' => $validated['cambodia_map_embed_url'] ?? null,
+            'cambodia_map_open_url' => $validated['cambodia_map_open_url'] ?? null,
+            'cambodia_map_address' => $validated['cambodia_map_address'] ?? null,
+            'vietnam_map_embed_url' => $validated['vietnam_map_embed_url'] ?? null,
+            'vietnam_map_open_url' => $validated['vietnam_map_open_url'] ?? null,
+            'vietnam_map_address' => $validated['vietnam_map_address'] ?? null,
         ];
 
         if ($request->hasFile('store_logo')) {
@@ -83,7 +84,7 @@ class SettingController extends Controller
         }
 
         foreach ($settingsToSave as $key => $value) {
-            if ($value !== null || $key === 'store_address' || $key === 'support_phone' || str_starts_with($key, 'social_') || str_starts_with($key, 'about_')) {
+            if ($value !== null || $key === 'store_address' || $key === 'support_phone' || $key === 'social_links' || str_starts_with($key, 'about_') || str_starts_with($key, 'fab_') || str_contains($key, '_map_')) {
                 Setting::updateOrCreate(
                     ['group' => 'general', 'key' => $key],
                     ['value' => $value ?? '']

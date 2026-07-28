@@ -8,6 +8,7 @@ import {
     Eye,
     FileText,
     HelpCircle,
+    PhoneCall,
     Home,
     LogIn,
     LogOut,
@@ -20,15 +21,18 @@ import {
     ReceiptText,
     Shield,
     ShieldCheck,
+    ShoppingCart,
     Sun,
     Truck,
     User,
     UserRound,
     X,
     Zap,
+    CheckCircle2,
 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import MobileMenu from '../Components/MobileMenu';
+import SupportFAB from '../Components/SupportFAB';
 import RegionSettings from '../Components/RegionSettings';
 import SeoHead from '../Components/SeoHead';
 import {
@@ -64,7 +68,7 @@ const languageStorageToCode: Record<string, LanguageCode> = {
 const customerNav = [
     { label: 'Home', labelKey: 'nav.home', href: '/', icon: Home },
     { label: 'Manual Order', labelKey: 'nav.manual_order', href: '/manual-order', icon: ClipboardList },
-    { label: 'Contact', labelKey: 'nav.contact', href: '/contact', icon: HelpCircle },
+    { label: 'Contact', labelKey: 'nav.contact', href: '/contact', icon: PhoneCall },
 ];
 
 const customerLinks = [
@@ -74,7 +78,7 @@ const customerLinks = [
     { label: 'My Orders', labelKey: 'nav.my_orders', href: '/my-orders', icon: PackageCheck },
     { label: 'Receipts', labelKey: 'nav.receipts', href: '/receipts', icon: ReceiptText },
     { label: 'Security', labelKey: 'nav.security', href: '/security', icon: Shield },
-    { label: 'Contact Support', labelKey: 'nav.contact_support', href: '/contact', icon: HelpCircle },
+    { label: 'Contact Support', labelKey: 'nav.contact_support', href: '/contact', icon: PhoneCall },
 ];
 
 function GoogleIcon() {
@@ -89,7 +93,7 @@ function GoogleIcon() {
 }
 
 export default function MainLayout({ children, title, description }: Props) {
-    const { auth, general_settings }: any = usePage().props;
+    const { auth, general_settings, flash, global_nav }: any = usePage().props;
     const { url } = usePage();
     const { t, i18n } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -109,6 +113,33 @@ export default function MainLayout({ children, title, description }: Props) {
     const accountRef = useRef<HTMLDivElement>(null);
     const accountButtonRef = useRef<HTMLButtonElement>(null);
     const authCloseButtonRef = useRef<HTMLButtonElement>(null);
+
+    const translatedLabel = (key: string, fallback: string) => {
+        const translated = t(key);
+        return translated === key ? fallback : translated;
+    };
+
+    const getPageTitle = (slug: string, defaultLabel: string, labelKey: string) => {
+        const p = global_nav?.pages?.find((p: any) => p.slug === slug);
+        const fallback = translatedLabel(labelKey, defaultLabel);
+        if (p) {
+            const key = `title_${language}`;
+            if (p[key]) return p[key];
+            if (p.is_system) return fallback;
+            return p.title || fallback;
+        }
+        return fallback;
+    };
+
+    const dynamicCustomerNav = customerNav.map(nav => {
+        if (nav.href === '/') {
+            return { ...nav, dynamicLabel: getPageTitle('home', nav.label, nav.labelKey) };
+        }
+        if (nav.href === '/contact') {
+            return { ...nav, dynamicLabel: getPageTitle('contact-us', nav.label, nav.labelKey) };
+        }
+        return { ...nav, dynamicLabel: translatedLabel(nav.labelKey, nav.label) };
+    });
 
     const isCmsUser = Boolean(auth?.user?.is_admin) || ['admin', 'super_admin', 'logistics', 'content', 'support'].includes(auth?.user?.role);
     const customerUser = auth?.user && !isCmsUser ? auth.user : null;
@@ -147,11 +178,15 @@ export default function MainLayout({ children, title, description }: Props) {
         };
         window.addEventListener('open-login-modal', handleOpenLoginModal);
 
+        if (flash?.open_login_modal) {
+            openAuthModal(flash.open_login_modal as AuthMode);
+        }
+
         return () => {
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('open-login-modal', handleOpenLoginModal);
         };
-    }, []);
+    }, [flash?.open_login_modal]);
 
     useEffect(() => {
         const handlePointerDown = (event: MouseEvent) => {
@@ -299,21 +334,32 @@ export default function MainLayout({ children, title, description }: Props) {
         }
     };
 
-    const submitModalSignIn = async (event: FormEvent) => {
+    const submitModalSignIn = (event: FormEvent) => {
         event.preventDefault();
         setAuthLoading('email-signin');
         setAuthError(null);
 
-        try {
-            const result = await signInWithFirebasePassword(signinForm.email, signinForm.password, signinForm.remember);
-            await completeBackendLogin(await result.user.getIdToken(), 'signin');
-        } catch (authError: any) {
-            setAuthError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
-            setAuthLoading(null);
-        }
+        router.post('/login', {
+            email: signinForm.email,
+            password: signinForm.password,
+            remember: signinForm.remember,
+        }, {
+            preserveScroll: true,
+            onError: (errors) => {
+                setAuthError(errors.email || errors.password || t('login.error_invalid_credentials'));
+                setAuthLoading(null);
+            },
+            onSuccess: () => {
+                setIsAuthChoiceOpen(false);
+                setAuthLoading(null);
+            },
+            onFinish: () => {
+                // Keep loading state true if redirecting to manual-order, but onFinish usually fires after navigation
+            }
+        });
     };
 
-    const submitModalSignUp = async (event: FormEvent) => {
+    const submitModalSignUp = (event: FormEvent) => {
         event.preventDefault();
         setAuthError(null);
 
@@ -329,13 +375,22 @@ export default function MainLayout({ children, title, description }: Props) {
 
         setAuthLoading('email-signup');
 
-        try {
-            const result = await createFirebasePasswordAccount(signupForm.name, signupForm.email, signupForm.password);
-            await completeBackendLogin(await result.user.getIdToken(true), 'signup', signupForm.name);
-        } catch (authError: any) {
-            setAuthError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
-            setAuthLoading(null);
-        }
+        router.post('/register', {
+            name: signupForm.name,
+            email: signupForm.email,
+            password: signupForm.password,
+            password_confirmation: signupForm.passwordConfirmation,
+        }, {
+            preserveScroll: true,
+            onError: (errors) => {
+                setAuthError(errors.email || errors.password || errors.name || t('login.error_backend'));
+                setAuthLoading(null);
+            },
+            onSuccess: () => {
+                setIsAuthChoiceOpen(false);
+                setAuthLoading(null);
+            },
+        });
     };
 
     const navToneClass = isTransparent
@@ -349,11 +404,6 @@ export default function MainLayout({ children, title, description }: Props) {
             ? (isTransparent ? 'bg-white/18 text-white' : 'bg-brand-primary/10 text-brand-primary')
             : (isTransparent ? 'hover:bg-white/12' : 'hover:bg-black/5 dark:hover:bg-white/10'),
     ].join(' ');
-
-    const translatedLabel = (key: string, fallback: string) => {
-        const translated = t(key);
-        return translated === key ? fallback : translated;
-    };
 
     const iconButtonClass = [
         'inline-flex h-11 w-11 items-center justify-center rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-[0.98] motion-reduce:active:scale-100',
@@ -370,6 +420,7 @@ export default function MainLayout({ children, title, description }: Props) {
             <MobileMenu
                 isOpen={isMobileMenuOpen}
                 onClose={() => setIsMobileMenuOpen(false)}
+                pages={global_nav?.pages || []}
                 auth={auth}
                 language={language}
                 changeLanguage={changeLanguage}
@@ -394,11 +445,24 @@ export default function MainLayout({ children, title, description }: Props) {
 
                 <div className="relative mx-auto grid h-20 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:h-24 lg:px-8">
                     <nav aria-label="Primary navigation" className="hidden items-center gap-1 lg:flex">
-                        {customerNav.map((item) => {
+                        {dynamicCustomerNav.map((item) => {
+                            if (item.href === '/manual-order' && !customerUser) {
+                                return (
+                                    <button
+                                        key={item.href}
+                                        type="button"
+                                        onClick={() => openAuthModal('signin')}
+                                        className={navLinkClass(item.href)}
+                                    >
+                                        <item.icon className="h-4 w-4" aria-hidden="true" />
+                                        {item.dynamicLabel}
+                                    </button>
+                                );
+                            }
                             return (
                                 <Link key={item.href} href={item.href} className={navLinkClass(item.href)} aria-current={isActiveNavItem(item.href) ? 'page' : undefined}>
                                     <item.icon className="h-4 w-4" aria-hidden="true" />
-                                    {translatedLabel(item.labelKey, item.label)}
+                                    {item.dynamicLabel}
                                 </Link>
                             );
                         })}
@@ -430,6 +494,10 @@ export default function MainLayout({ children, title, description }: Props) {
                         <div className="hidden xl:block">
                             <RegionSettings language={language} changeLanguage={changeLanguage} tone={isTransparent ? 'light' : 'dark'} />
                         </div>
+
+                        <Link href="/my-orders" className={iconButtonClass} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
+                            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                        </Link>
 
                         <button type="button" onClick={toggleDarkMode} className={iconButtonClass} aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
                             {isDarkMode ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
@@ -480,9 +548,14 @@ export default function MainLayout({ children, title, description }: Props) {
                                                 <p className="truncate text-sm font-black text-gray-950 dark:text-white">{customerUser.name}</p>
                                                 <p className="truncate text-xs font-semibold text-gray-500 dark:text-gray-400">{customerUser.email}</p>
                                                 <p className="mt-1 truncate font-mono text-xs font-black text-brand-primary">{customerUser.customer_code || translatedLabel('nav.customer_id_pending', 'Customer ID pending')}</p>
-                                                {isCustomerProfileIncomplete && (
+                                                {isCustomerProfileIncomplete ? (
                                                     <span className="mt-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-wider text-amber-800 dark:bg-amber-900/40 dark:text-amber-100">
                                                         {translatedLabel('nav.profile_incomplete', 'Profile incomplete')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-wider text-green-800 dark:bg-green-900/40 dark:text-green-100">
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        {translatedLabel('nav.profile_verified', 'Profile verified')}
                                                     </span>
                                                 )}
                                             </div>
@@ -654,12 +727,6 @@ export default function MainLayout({ children, title, description }: Props) {
                                 </div>
                             )}
 
-                            {!firebaseIsConfigured && (
-                                <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 dark:border-amber-300/30 dark:bg-amber-400/12 dark:text-amber-100">
-                                    {t('login.error_not_configured')}
-                                </div>
-                            )}
-
                             {authMode === 'signin' ? (
                                 <form onSubmit={submitModalSignIn} className="mt-4 space-y-3">
                                     <button
@@ -741,7 +808,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
                                     <button
                                         type="submit"
-                                        disabled={authLoading !== null || !firebaseIsConfigured}
+                                        disabled={authLoading !== null}
                                         className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-brand-primary px-5 text-sm font-black text-white shadow-lg shadow-brand-primary/25 transition hover:-translate-y-0.5 hover:bg-brand-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {authLoading === 'email-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
@@ -859,7 +926,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
                                     <button
                                         type="submit"
-                                        disabled={authLoading !== null || !firebaseIsConfigured}
+                                        disabled={authLoading !== null}
                                         className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-brand-primary px-5 text-sm font-black text-white shadow-lg shadow-brand-primary/25 transition hover:-translate-y-0.5 hover:bg-brand-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {authLoading === 'email-signup' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
@@ -912,11 +979,11 @@ export default function MainLayout({ children, title, description }: Props) {
                         <div>
                             <h3 className="text-sm font-black uppercase tracking-wider text-gray-950 dark:text-white">{translatedLabel('footer.navigation', 'Navigation')}</h3>
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                                {customerNav.map((item) => (
+                                {dynamicCustomerNav.map((item) => (
                                     <li key={item.href}>
                                         <Link href={item.href} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50">
                                             <item.icon className="h-4 w-4" aria-hidden="true" />
-                                            {translatedLabel(item.labelKey, item.label)}
+                                            {item.dynamicLabel}
                                         </Link>
                                     </li>
                                 ))}
@@ -928,7 +995,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
                                 <li><Link href="/my-orders" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PackageCheck className="h-4 w-4" />{translatedLabel('nav.my_orders', 'My Orders')}</Link></li>
                                 <li><Link href="/receipts" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><FileText className="h-4 w-4" />{translatedLabel('nav.receipts', 'Receipts')}</Link></li>
-                                <li><Link href="/contact" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><HelpCircle className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
+                                <li><Link href="/contact" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PhoneCall className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
                             </ul>
                         </div>
 
@@ -949,6 +1016,8 @@ export default function MainLayout({ children, title, description }: Props) {
                     </div>
                 </div>
             </footer>
+            
+            <SupportFAB />
         </div>
     );
 }

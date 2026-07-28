@@ -56,6 +56,30 @@ class HandleInertiaRequests extends Middleware
         $isAdminRoute = $request->is('admin') || $request->is('admin/*') || $request->is('cms/*');
         $activeUser = $isAdminRoute ? auth('admin')->user() : auth('web')->user();
 
+        $adminNotifications = [];
+        if ($isAdminRoute && $activeUser && \Illuminate\Support\Facades\Schema::hasTable('manual_orders')) {
+            $adminNotifications = \App\Models\ManualOrder::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get()
+                ->map(function($order) {
+                    $action = 'submitted';
+                    if ($order->status === 'cancelled') $action = 'cancelled';
+                    else if ($order->status === 'completed') $action = 'completed';
+                    
+                    return [
+                        'id' => $order->id,
+                        'title' => 'Manual Order ' . ucfirst($action),
+                        'message' => 'Order #' . $order->order_number . ' ' . $action . ' by ' . ($order->user->name ?? 'Guest'),
+                        'avatar' => $order->user->avatar ?? null,
+                        'name' => $order->user->name ?? 'Guest',
+                        'status' => $order->status,
+                        'time' => $order->created_at->diffForHumans(),
+                        'url' => '/admin/logistics/orders'
+                    ];
+                });
+        }
+
         return [
             ...parent::share($request),
             'auth' => fn () => [
@@ -65,10 +89,12 @@ class HandleInertiaRequests extends Middleware
                     'profile_missing_fields' => $activeUser->is_admin ? [] : app(CustomerProfileCompletionService::class)->missingFields($activeUser),
                     'profile_is_complete' => $activeUser->is_admin ? true : app(CustomerProfileCompletionService::class)->isComplete($activeUser),
                 ]) : null,
+                'admin_notifications' => $adminNotifications,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'open_login_modal' => fn () => $request->session()->get('open_login_modal'),
             ],
             'global_nav' => fn () => [
                 'categories' => \App\Models\Category::whereNull('parent_id')->with('children')->get(),
@@ -80,6 +106,9 @@ class HandleInertiaRequests extends Middleware
                         ->orderBy('id')
                         ->get() 
                     : [],
+                'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages')
+                    ? \App\Models\Page::where('is_published', true)->get(['id', 'title', 'slug', 'is_system'])
+                    : [],
             ],
             'seo_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
                 ? \App\Models\Setting::where('group', 'seo')->pluck('value', 'key')->toArray()
@@ -87,6 +116,12 @@ class HandleInertiaRequests extends Middleware
             'general_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
                 ? \App\Models\Setting::where('group', 'general')->pluck('value', 'key')->toArray()
                 : [],
+            'admin_counts' => $request->is('admin/*') || $request->is('admin') ? [
+                'customers' => \App\Models\User::where('role', 'customer')->count(),
+                'orders' => \Illuminate\Support\Facades\Schema::hasTable('orders') ? \DB::table('orders')->count() : 0,
+                'posts' => \Illuminate\Support\Facades\Schema::hasTable('posts') ? \DB::table('posts')->count() : 0,
+                'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages') ? \DB::table('pages')->count() : 0,
+            ] : [],
             'cart' => $cart,
         ];
     }

@@ -87,7 +87,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     );
 }
 
-const inputClass = 'h-11 w-full rounded-xl border border-admin-border bg-white px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
+const inputClass = 'h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
 
 export default function MarketplacesIndex({ marketplaces }: Props) {
     const [editingId, setEditingId] = useState<number | null>(null);

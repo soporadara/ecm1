@@ -15,28 +15,32 @@ export default function Index({ products }: any) {
     };
 
     return (
-        <AdminLayout title="Products">
-            <Head title="Products - Admin" />
-
-            <div className="mb-6 flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Products</h1>
-                    <p className="text-sm font-medium text-admin-text-muted mt-1">Manage your catalog and inventory.</p>
-                </div>
+        <AdminLayout 
+            title="Products"
+            actions={
                 <Link 
                     href="/admin/products/create" 
-                    className="inline-flex items-center justify-center bg-admin-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover hover:-translate-y-0.5 transition-all duration-200"
+                    className="inline-flex items-center justify-center bg-admin-primary text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm shadow-admin-primary/30 hover:bg-admin-primary-hover hover:-translate-y-0.5 transition-all duration-200"
                 >
-                    <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     New Product
                 </Link>
+            }
+        >
+            <Head title="Products - Admin" />
+
+            <div className="hidden sm:flex sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Products</h1>
+                    <p className="text-sm font-medium text-admin-text-muted mt-1">Manage your catalog and inventory.</p>
+                </div>
             </div>
 
             <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl overflow-hidden border border-admin-border/50">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                    <table className="w-full text-sm text-left whitespace-nowrap">
                         <thead className="bg-admin-surface-muted/50 text-admin-text-muted font-bold border-b border-admin-border">
                             <tr>
                                 <th className="px-6 py-4 tracking-wider uppercase text-xs">Product</th>

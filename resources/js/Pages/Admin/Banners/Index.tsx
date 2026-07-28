@@ -22,17 +22,21 @@ export default function Index({ banners, bannerMode = 'slideshow' }: any) {
     };
 
     return (
-        <AdminLayout title="Hero Banners">
+        <AdminLayout 
+            title="Hero Banners"
+            actions={
+                <Link href="/admin/banners/create" className="px-4 py-2 bg-admin-primary text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-admin-primary-hover shadow-sm transition-all duration-200">
+                    + Create
+                </Link>
+            }
+        >
             <Head title="Hero Banners - Admin" />
             
-            <div className="flex justify-between items-center mb-6">
+            <div className="hidden sm:flex sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-admin-text tracking-tight">Hero Banners</h1>
                     <p className="text-sm font-medium text-admin-text-muted mt-1">Manage the four storefront homepage hero banners.</p>
                 </div>
-                <Link href="/admin/banners/create" className="px-5 py-2.5 bg-admin-primary text-white rounded-xl font-bold text-sm hover:bg-admin-primary-hover shadow-sm transition-all duration-200">
-                    + Create Banner
-                </Link>
             </div>
 
             <form onSubmit={saveMode} className="mb-6 flex flex-col gap-4 rounded-2xl border border-admin-border/50 bg-admin-surface p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
@@ -52,17 +56,18 @@ export default function Index({ banners, bannerMode = 'slideshow' }: any) {
             </form>
 
             <div className="bg-admin-surface shadow-sm shadow-admin-border/20 rounded-2xl border border-admin-border/50 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="border-b border-admin-border bg-admin-surface-muted/50">
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Preview</th>
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Internal Name</th>
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Title (EN)</th>
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider text-right">Actions</th>
-                        </tr>
-                    </thead>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse whitespace-nowrap">
+                        <thead>
+                            <tr className="border-b border-admin-border bg-admin-surface-muted/50">
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Preview</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Internal Name</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Title (EN)</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider text-right">Actions</th>
+                            </tr>
+                        </thead>
                     <tbody className="divide-y divide-admin-border">
                         {banners.map((banner: any) => (
                             <tr key={banner.id} className="hover:bg-admin-surface-muted/30 transition-colors">
@@ -103,7 +108,8 @@ export default function Index({ banners, bannerMode = 'slideshow' }: any) {
                             </tr>
                         )}
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </AdminLayout>
     );
