@@ -96,7 +96,7 @@ export default function Contact() {
                                 )}
                             </div>
                             <iframe 
-                                src={`https://www.google.com/maps?q=${encodeURIComponent(general_settings?.cambodia_map_address || 'Phnom Penh, Cambodia')}&output=embed`} 
+                                src={general_settings?.cambodia_map_embed_url || `https://www.google.com/maps?q=${encodeURIComponent(general_settings?.cambodia_map_address || 'Phnom Penh, Cambodia')}&output=embed`} 
                                 width="100%" 
                                 height="300" 
                                 style={{ border: 0, borderRadius: '0.75rem', flexGrow: 1 }} 
@@ -123,7 +123,7 @@ export default function Contact() {
                                 )}
                             </div>
                             <iframe 
-                                src={`https://www.google.com/maps?q=${encodeURIComponent(general_settings?.vietnam_map_address || 'Ho Chi Minh City, Vietnam')}&output=embed`} 
+                                src={general_settings?.vietnam_map_embed_url || `https://www.google.com/maps?q=${encodeURIComponent(general_settings?.vietnam_map_address || 'Ho Chi Minh City, Vietnam')}&output=embed`} 
                                 width="100%" 
                                 height="300" 
                                 style={{ border: 0, borderRadius: '0.75rem', flexGrow: 1 }} 

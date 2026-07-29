@@ -2,7 +2,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import MainLayout from '../../Layouts/MainLayout';
 import { useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { FileText, Image as ImageIcon, UploadCloud, X } from 'lucide-react';
+import { CheckCircle2, FileText, Home, Image as ImageIcon, MapPin, Plus, UploadCloud, X } from 'lucide-react';
 
 type ProductForm = {
     name: string;
@@ -109,6 +109,17 @@ function FileDropInput({
     );
 }
 
+type UserAddress = {
+    id: number;
+    address_line_1: string;
+    address_line_2?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
+    address_notes?: string;
+    is_default: boolean;
+};
+
 export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
     const { flash }: any = usePage().props;
     const [step, setStep] = useState<'edit' | 'review'>('edit');
@@ -128,26 +139,62 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
     const [phoneCode, setPhoneCode] = useState(initialPhone.code);
     const [phoneNum, setPhoneNum] = useState(initialPhone.num);
 
-    const hasProfileAddress = Boolean(auth?.user?.address_line_1);
-    const [useCustomAddress, setUseCustomAddress] = useState(!hasProfileAddress);
+    // Multi-address state
+    const savedAddresses: UserAddress[] = auth?.user?.addresses || [];
+    const defaultAddress = savedAddresses.find((a: UserAddress) => a.is_default) || savedAddresses[0] || null;
+    const [selectedAddressId, setSelectedAddressId] = useState<number | 'new'>(defaultAddress?.id ?? 'new');
+    const [showNewAddressForm, setShowNewAddressForm] = useState(savedAddresses.length === 0);
+    const [newAddress, setNewAddress] = useState({
+        address_line_1: '',
+        address_line_2: '',
+        city: '',
+        province: '',
+        postal_code: '',
+        address_notes: '',
+        save_address_to_profile: true,
+    });
+
+    const activeAddress = selectedAddressId !== 'new'
+        ? savedAddresses.find((a: UserAddress) => a.id === selectedAddressId) || null
+        : null;
 
     const { data, setData, post, processing, errors, reset } = useForm({
         contact_email: auth?.user?.email || '',
         save_email_to_profile: false,
         contact_phone: auth?.user?.phone_e164 || '',
         save_phone_to_profile: false,
-        address_line_1: auth?.user?.address_line_1 || '',
-        address_line_2: auth?.user?.address_line_2 || '',
-        city: auth?.user?.city || '',
-        province: auth?.user?.province || '',
-        postal_code: auth?.user?.postal_code || '',
-        delivery_notes: auth?.user?.address_notes || '',
+        address_line_1: defaultAddress?.address_line_1 || auth?.user?.address_line_1 || '',
+        address_line_2: defaultAddress?.address_line_2 || auth?.user?.address_line_2 || '',
+        city: defaultAddress?.city || auth?.user?.city || '',
+        province: defaultAddress?.province || auth?.user?.province || '',
+        postal_code: defaultAddress?.postal_code || auth?.user?.postal_code || '',
+        delivery_notes: defaultAddress?.address_notes || auth?.user?.address_notes || '',
         save_address_to_profile: false,
         message: '',
         currency_code: auth?.user?.preferred_currency === 'VND' ? 'VND' : 'USD',
         confirmation: false,
         products: [blankProduct()],
     });
+
+    const selectSavedAddress = (addr: UserAddress) => {
+        setSelectedAddressId(addr.id);
+        setShowNewAddressForm(false);
+        setData((prev: any) => ({
+            ...prev,
+            address_line_1: addr.address_line_1,
+            address_line_2: addr.address_line_2 || '',
+            city: addr.city || '',
+            province: addr.province || '',
+            postal_code: addr.postal_code || '',
+            delivery_notes: addr.address_notes || '',
+        }));
+    };
+
+    const openNewAddressForm = () => {
+        setSelectedAddressId('new');
+        setShowNewAddressForm(true);
+        setNewAddress({ address_line_1: '', address_line_2: '', city: '', province: '', postal_code: '', address_notes: '', save_address_to_profile: true });
+    };
 
     const totals = useMemo(() => {
         const productCount = data.products.length;
@@ -317,64 +364,176 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                     {errors.contact_phone && <p className="text-red-500 text-xs mt-1">{errors.contact_phone}</p>}
                                 </div>
                             </div>
-                            <div className="mt-5 rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm dark:border-gray-800 dark:bg-gray-800">
-                                <label className="mb-2 block font-bold">Order currency snapshot</label>
-                                <select value={data.currency_code} onChange={e => setData('currency_code', e.target.value as any)} className="w-full rounded-xl border-gray-200 px-4 py-3 dark:border-gray-700">
-                                    <option value="USD">USD - United States Dollar</option>
-                                    <option value="VND">VND - Vietnamese Dong</option>
-                                </select>
-                                <p className="mt-2 text-xs text-gray-500">This currency is saved on this Manual Order and will not change if your profile preference changes later.</p>
-                            </div>
                         </div>
 
+                        {/* ── Delivery Address — Taobao-style ── */}
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">2</span>
                                 <h2 className="text-xl font-black text-gray-900 dark:text-white">Delivery Address</h2>
                             </div>
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="text-sm text-gray-500">This address will be used for this order.</p>
-                                {hasProfileAddress && (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setUseCustomAddress(!useCustomAddress)}
-                                        className="text-sm font-bold text-brand-primary hover:underline"
-                                    >
-                                        {useCustomAddress ? 'Use Profile Address' : '+ Add New Address'}
-                                    </button>
-                                )}
-                            </div>
+                            <p className="text-sm text-gray-500 mb-4">Select a delivery address for this order.</p>
 
-                            {!useCustomAddress && hasProfileAddress ? (
-                                <div className="rounded-xl border-2 border-brand-primary bg-brand-primary/5 p-5 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 bg-brand-primary text-white text-[10px] font-black tracking-wider uppercase px-3 py-1 rounded-bl-xl">Selected</div>
-                                    <h3 className="font-bold text-gray-900 dark:text-white mb-1">My Profile Address</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                        {auth?.user?.address_line_1} <br/>
-                                        {auth?.user?.address_line_2 && <>{auth?.user?.address_line_2} <br/></>}
-                                        {auth?.user?.city}, {auth?.user?.province} {auth?.user?.postal_code}
-                                    </p>
-                                    {auth?.user?.address_notes && (
-                                        <p className="text-gray-500 text-xs italic mt-2">Notes: {auth?.user?.address_notes}</p>
-                                    )}
+                            {/* Saved address cards */}
+                            {savedAddresses.length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                    {savedAddresses.map((addr: UserAddress) => {
+                                        const isSelected = selectedAddressId === addr.id;
+                                        return (
+                                            <button
+                                                key={addr.id}
+                                                type="button"
+                                                onClick={() => selectSavedAddress(addr)}
+                                                className={`relative text-left rounded-2xl border-2 p-4 transition-all duration-200 focus:outline-none ${
+                                                    isSelected
+                                                        ? 'border-brand-primary bg-brand-primary/5 shadow-md'
+                                                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:border-brand-primary/50 hover:shadow-sm'
+                                                }`}
+                                            >
+                                                {isSelected && (
+                                                    <span className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-primary text-white">
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                    </span>
+                                                )}
+                                                {addr.is_default && (
+                                                    <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-brand-primary/10 px-2 py-0.5 text-[11px] font-black uppercase tracking-wider text-brand-primary">
+                                                        <Home className="h-3 w-3" /> Default
+                                                    </span>
+                                                )}
+                                                <p className="font-bold text-sm text-gray-900 dark:text-white leading-snug">{addr.address_line_1}</p>
+                                                {addr.address_line_2 && <p className="text-xs text-gray-500 mt-0.5">{addr.address_line_2}</p>}
+                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                    {[addr.city, addr.province, addr.postal_code].filter(Boolean).join(', ')}
+                                                </p>
+                                                {addr.address_notes && (
+                                                    <p className="mt-1 text-[11px] italic text-gray-400">{addr.address_notes}</p>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+
+                                    {/* Add new address card */}
+                                    <button
+                                        type="button"
+                                        onClick={openNewAddressForm}
+                                        className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 transition-all duration-200 focus:outline-none ${
+                                            selectedAddressId === 'new'
+                                                ? 'border-brand-primary bg-brand-primary/5'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-brand-primary/50'
+                                        }`}
+                                    >
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary">
+                                            <Plus className="h-5 w-5" />
+                                        </span>
+                                        <span className="text-sm font-bold text-brand-primary">Add New Address</span>
+                                    </button>
                                 </div>
-                            ) : (
-                                <div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            )}
+
+                            {/* New address form — shown either when adding new or when no saved addresses */}
+                            {(showNewAddressForm || savedAddresses.length === 0) && (
+                                <div className="mt-4 rounded-2xl border border-brand-primary/30 bg-brand-primary/3 p-5">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <MapPin className="h-5 w-5 text-brand-primary" />
+                                        <h3 className="font-black text-gray-900 dark:text-white text-sm">
+                                            {savedAddresses.length === 0 ? 'Enter Delivery Address' : 'Add New Address'}
+                                        </h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="md:col-span-2">
-                                            <label className="block text-sm font-bold mb-1">Address line 1</label>
-                                            <input value={data.address_line_1} onChange={e => setData('address_line_1', e.target.value)} className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                            <label className="block text-sm font-bold mb-1">Address line 1 <span className="text-brand-primary">*</span></label>
+                                            <input
+                                                value={savedAddresses.length === 0 ? data.address_line_1 : newAddress.address_line_1}
+                                                onChange={e => {
+                                                    if (savedAddresses.length === 0) {
+                                                        setData('address_line_1', e.target.value);
+                                                    } else {
+                                                        const val = e.target.value;
+                                                        setNewAddress(prev => ({ ...prev, address_line_1: val }));
+                                                        setData('address_line_1', val);
+                                                    }
+                                                }}
+                                                placeholder="House number, street, ward"
+                                                className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            />
                                             {errors.address_line_1 && <p className="text-red-500 text-xs mt-1">{errors.address_line_1}</p>}
                                         </div>
-                                        <input placeholder="Address line 2" value={data.address_line_2} onChange={e => setData('address_line_2', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                        <input placeholder="City" value={data.city} onChange={e => setData('city', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                        <input placeholder="Province" value={data.province} onChange={e => setData('province', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                        <input placeholder="Postal code" value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
-                                        <textarea placeholder="Delivery notes" value={data.delivery_notes} onChange={e => setData('delivery_notes', e.target.value)} rows={2} className="md:col-span-2 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
+                                        <input
+                                            placeholder="Address line 2 (optional)"
+                                            value={savedAddresses.length === 0 ? data.address_line_2 : newAddress.address_line_2}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('address_line_2', e.target.value);
+                                                else { setNewAddress(prev => ({ ...prev, address_line_2: e.target.value })); setData('address_line_2', e.target.value); }
+                                            }}
+                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                        />
+                                        <input
+                                            placeholder="City"
+                                            value={savedAddresses.length === 0 ? data.city : newAddress.city}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('city', e.target.value);
+                                                else { setNewAddress(prev => ({ ...prev, city: e.target.value })); setData('city', e.target.value); }
+                                            }}
+                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                        />
+                                        <input
+                                            placeholder="Province / State"
+                                            value={savedAddresses.length === 0 ? data.province : newAddress.province}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('province', e.target.value);
+                                                else { setNewAddress(prev => ({ ...prev, province: e.target.value })); setData('province', e.target.value); }
+                                            }}
+                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                        />
+                                        <input
+                                            placeholder="Postal code (optional)"
+                                            value={savedAddresses.length === 0 ? data.postal_code : newAddress.postal_code}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('postal_code', e.target.value);
+                                                else { setNewAddress(prev => ({ ...prev, postal_code: e.target.value })); setData('postal_code', e.target.value); }
+                                            }}
+                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                        />
+                                        <textarea
+                                            placeholder="Delivery notes (optional)"
+                                            value={savedAddresses.length === 0 ? data.delivery_notes : newAddress.address_notes}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('delivery_notes', e.target.value);
+                                                else { setNewAddress(prev => ({ ...prev, address_notes: e.target.value })); setData('delivery_notes', e.target.value); }
+                                            }}
+                                            rows={2}
+                                            className="md:col-span-2 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                        />
                                     </div>
-                                    <label className="mt-4 flex items-center gap-3 text-sm font-semibold text-gray-500">
-                                        <input type="checkbox" checked={data.save_address_to_profile} onChange={e => setData('save_address_to_profile', e.target.checked)} /> Save this address to my profile
+                                    <label className="mt-4 flex items-center gap-3 text-sm font-semibold text-gray-500 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={savedAddresses.length === 0 ? data.save_address_to_profile : newAddress.save_address_to_profile}
+                                            onChange={e => {
+                                                if (savedAddresses.length === 0) setData('save_address_to_profile', e.target.checked);
+                                                else setNewAddress(prev => ({ ...prev, save_address_to_profile: e.target.checked }));
+                                            }}
+                                            className="rounded"
+                                        />
+                                        Save this address to my profile for future orders
                                     </label>
+                                </div>
+                            )}
+
+                            {/* Active address summary */}
+                            {activeAddress && !showNewAddressForm && (
+                                <div className="mt-4 flex items-start gap-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-4">
+                                    <MapPin className="h-5 w-5 text-brand-primary mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-white">Delivering to:</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                                            {activeAddress.address_line_1}
+                                            {activeAddress.address_line_2 && `, ${activeAddress.address_line_2}`}
+                                            {activeAddress.city && `, ${activeAddress.city}`}
+                                            {activeAddress.province && `, ${activeAddress.province}`}
+                                            {activeAddress.postal_code && ` ${activeAddress.postal_code}`}
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>

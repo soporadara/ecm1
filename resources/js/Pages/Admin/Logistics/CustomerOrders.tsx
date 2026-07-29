@@ -197,9 +197,9 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex flex-col gap-2 items-end">
-                                            <button className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
+                                            <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Edit Order
-                                            </button>
+                                            </Link>
                                             <Link href={`/admin/receipts/generate?manual_order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Generate Receipt
                                             </Link>

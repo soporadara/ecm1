@@ -49,4 +49,28 @@ class ManualOrder extends Model
     {
         return $this->hasMany(Receipt::class, 'order_id'); // We'll need to adapt Receipt model to handle this or just relate directly
     }
+
+    /**
+     * Generate a unique order number, e.g. MVM-ORD-001, MVM-ORD-002.
+     */
+    public static function generateOrderNumber(): string
+    {
+        $latest = self::where('order_number', 'like', 'MVM-ORD-%')
+            ->lockForUpdate()
+            ->orderByDesc('order_number')
+            ->value('order_number');
+
+        if ($latest && preg_match('/MVM-ORD-(\d+)$/', $latest, $matches)) {
+            $next = (int) $matches[1] + 1;
+        } else {
+            $next = 1;
+        }
+
+        do {
+            $code = 'MVM-ORD-' . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
+            $next++;
+        } while (self::where('order_number', $code)->exists());
+
+        return $code;
+    }
 }

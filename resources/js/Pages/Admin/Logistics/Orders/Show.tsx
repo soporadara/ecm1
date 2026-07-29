@@ -13,7 +13,7 @@ const label = (value: any) => {
 };
 
 export default function OrderShow({ order, statuses, paymentStatuses = [], auditLogs }: any) {
-    const { data, setData, put, processing } = useForm({
+    const { data, setData, put, processing, recentlySuccessful } = useForm({
         status: order.status,
         payment_status: order.payment_status || 'unpaid',
         internal_note: '',
@@ -29,7 +29,7 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
 
     const updateStatus = (event: FormEvent) => {
         event.preventDefault();
-        put(`/admin/orders/${order.id}/status`, { preserveScroll: true });
+        put(`/admin/logistics/orders/${order.id}`, { preserveScroll: true });
     };
 
     const total = Number(data.subtotal || 0) + Number(data.logistics_fee || 0) + Number(data.service_fee || 0) + Number(data.delivery_fee || 0) - Number(data.discount || 0);
@@ -40,7 +40,7 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
 
             <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <Link href="/admin/orders" className="text-admin-text-muted hover:text-admin-text text-sm font-medium mb-2 inline-block">Back to Orders</Link>
+                    <Link href="/admin/logistics/orders" className="text-admin-text-muted hover:text-admin-text text-sm font-medium mb-2 inline-block">Back to Orders</Link>
                     <h1 className="text-3xl font-bold text-admin-text">Order {order.order_number}</h1>
                     <p className="text-sm font-medium text-admin-text-muted">{label(order.status)} · {order.items?.length || 0} product request(s)</p>
                 </div>
@@ -205,9 +205,15 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                                 <textarea value={data.internal_note} onChange={event => setData('internal_note', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" rows={2} />
                             </label>
 
-                            <button type="submit" disabled={processing} className="w-full rounded-xl bg-admin-primary py-3 text-sm font-black uppercase tracking-wider text-white hover:opacity-90 disabled:opacity-60">
-                                Save Changes
-                            </button>
+                            <div className="flex flex-col gap-3">
+                                <button type="submit" disabled={processing} className="w-full rounded-xl bg-admin-primary py-3 text-sm font-black uppercase tracking-wider text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2">
+                                    Save Changes
+                                    {recentlySuccessful && <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">Saved Successfully!</span>}
+                                </button>
+                                <Link href="/admin/logistics/orders" className="w-full rounded-xl bg-admin-surface-muted border border-admin-border py-3 text-sm font-black uppercase tracking-wider text-admin-text hover:bg-admin-border/50 text-center flex items-center justify-center transition-colors">
+                                    Exit
+                                </Link>
+                            </div>
                         </form>
                     </section>
 

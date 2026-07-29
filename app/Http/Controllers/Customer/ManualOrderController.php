@@ -30,6 +30,8 @@ class ManualOrderController extends Controller
                 ->with('error', 'Complete your contact and delivery information before creating a Manual Order.');
         }
 
+        $user->load('addresses');
+
         return Inertia::render('Customer/ManualOrderForm', [
             'quoteMessages' => [
                 'page_title' => ContentSetting::publicValue('order_messages', 'request_quote_page_title', 'Create Manual Order'),
@@ -119,14 +121,22 @@ class ManualOrderController extends Controller
                 $user->phone_e164 = $this->normalizePhone($validated['contact_phone']);
             }
             if ($validated['save_address_to_profile'] ?? false) {
-                $user->fill([
+                $user->addresses()->create([
                     'address_line_1' => $validated['address_line_1'],
                     'address_line_2' => $validated['address_line_2'] ?? null,
                     'city' => $validated['city'] ?? null,
                     'province' => $validated['province'] ?? null,
                     'postal_code' => $validated['postal_code'] ?? null,
                     'address_notes' => $validated['delivery_notes'] ?? null,
+                    'is_default' => $user->addresses()->count() === 0,
                 ]);
+                // Keep backwards compatibility for primary address
+                $user->address_line_1 = $validated['address_line_1'];
+                $user->address_line_2 = $validated['address_line_2'] ?? null;
+                $user->city = $validated['city'] ?? null;
+                $user->province = $validated['province'] ?? null;
+                $user->postal_code = $validated['postal_code'] ?? null;
+                $user->address_notes = $validated['delivery_notes'] ?? null;
             }
             if ($user->isDirty()) {
                 $user->save();

@@ -249,6 +249,16 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                     <h3 className="mb-4 text-sm font-black text-admin-text uppercase tracking-wider">Cambodia Office</h3>
                                     <div className="space-y-4">
                                         <div>
+                                            <label className="block text-sm font-bold text-admin-text-muted mb-1">Map Embed URL (Optional for exact pin)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="https://www.google.com/maps/embed?pb=..."
+                                                value={data.cambodia_map_embed_url}
+                                                onChange={e => setData('cambodia_map_embed_url', e.target.value)}
+                                                className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm"
+                                            />
+                                        </div>
+                                        <div>
                                             <label className="block text-sm font-bold text-admin-text-muted mb-1">Link to open Google Maps</label>
                                             <input
                                                 type="url"
@@ -274,6 +284,16 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                 <div className="rounded-xl border border-admin-border bg-admin-surface p-5 shadow-sm">
                                     <h3 className="mb-4 text-sm font-black text-admin-text uppercase tracking-wider">Vietnam Office</h3>
                                     <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-admin-text-muted mb-1">Map Embed URL (Optional for exact pin)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="https://www.google.com/maps/embed?pb=..."
+                                                value={data.vietnam_map_embed_url}
+                                                onChange={e => setData('vietnam_map_embed_url', e.target.value)}
+                                                className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm"
+                                            />
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-bold text-admin-text-muted mb-1">Link to open Google Maps</label>
                                             <input

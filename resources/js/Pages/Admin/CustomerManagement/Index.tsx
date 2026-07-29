@@ -8,6 +8,7 @@ interface User {
     email: string;
     phone_e164: string | null;
     account_status: string;
+    customer_code: string | null;
     created_at: string;
 }
 
@@ -150,6 +151,8 @@ export default function CustomerManagement({ customers, filters }: Props) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-admin-surface-muted/50 border-b border-admin-border">
+                                <th className="text-center px-4 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider w-12">No.</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer ID</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Name</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Email</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Phone</th>
@@ -158,8 +161,16 @@ export default function CustomerManagement({ customers, filters }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-admin-border">
-                            {customers.data.map(user => (
+                            {customers.data.map((user, index) => {
+                                const rowNumber = (customers.current_page - 1) * 15 + index + 1;
+                                return (
                                 <tr key={user.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                    <td className="px-4 py-4 text-center text-xs font-black text-admin-text-muted">{rowNumber}</td>
+                                    <td className="px-6 py-4">
+                                        <span className="inline-block rounded-lg bg-admin-primary/10 px-2.5 py-1 text-xs font-black tracking-wider text-admin-primary font-mono">
+                                            {user.customer_code || '—'}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4 font-bold text-admin-text">{user.name}</td>
                                     <td className="px-6 py-4 text-admin-text-muted">{user.email}</td>
                                     <td className="px-6 py-4 text-admin-text-muted">{user.phone_e164 || 'N/A'}</td>
@@ -174,10 +185,11 @@ export default function CustomerManagement({ customers, filters }: Props) {
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                             {customers.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-admin-text-muted">No customers found.</td>
+                                    <td colSpan={7} className="px-6 py-12 text-center text-admin-text-muted">No customers found.</td>
                                 </tr>
                             )}
                         </tbody>

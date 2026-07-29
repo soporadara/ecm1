@@ -211,7 +211,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
 
                             <div
                                 ref={sitesScrollerRef}
-                                className="flex gap-7 overflow-x-auto scroll-smooth px-1 pb-4 md:px-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                className="flex mx-auto w-fit max-w-full gap-7 overflow-x-auto scroll-smooth px-1 pb-4 md:px-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                             >
                                 {marketplaces.map((site: any) => (
                                     <a

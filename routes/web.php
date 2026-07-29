@@ -126,6 +126,8 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::get('logistics/customers', [\App\Http\Controllers\Admin\ManualOrderController::class, 'index'])->name('logistics.customers');
     Route::get('logistics/customers/{customer}/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'customerOrders'])->name('logistics.customer-orders');
     Route::get('logistics/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'allOrders'])->name('logistics.orders');
+    Route::get('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'show'])->name('logistics.orders.show');
+    Route::put('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'update'])->name('logistics.orders.update');
     
     // Receipt Integration
     Route::get('receipts/generate', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
@@ -262,5 +264,5 @@ Now, imagine doing that exact same job with a mini excavator.',
             'user_id' => null
         ]
     );
-    return "Blog post seeded: " . $post->id . ". You can now visit /blog to see it.";
 });
+

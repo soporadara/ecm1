@@ -123,23 +123,31 @@ class User extends Authenticatable
     }
 
     /**
-     * Generate a unique customer code, e.g. CUS-2026-000001.
+     * Generate a unique customer code, e.g. MVM-000, MVM-001, MVM-002.
      */
     public static function generateCustomerCode(): string
     {
-        $year = date('Y');
-        $latest = self::where('customer_code', 'like', "CUS-{$year}-%")
+        $latest = self::where('customer_code', 'like', 'MVM-%')
             ->lockForUpdate()
             ->orderByDesc('customer_code')
             ->value('customer_code');
 
-        $next = $latest ? ((int) substr($latest, -6)) + 1 : 1;
+        if ($latest && preg_match('/MVM-(\d+)$/', $latest, $matches)) {
+            $next = (int) $matches[1] + 1;
+        } else {
+            $next = 0;
+        }
 
         do {
-            $code = 'CUS-' . $year . '-' . str_pad((string) $next, 6, '0', STR_PAD_LEFT);
+            $code = 'MVM-' . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
             $next++;
         } while (self::where('customer_code', $code)->exists());
 
         return $code;
+    }
+
+    public function addresses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserAddress::class);
     }
 }

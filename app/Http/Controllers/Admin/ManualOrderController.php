@@ -129,4 +129,62 @@ class ManualOrderController extends Controller
             'paymentStatuses' => ['unpaid', 'partial', 'paid', 'refunded'],
         ]);
     }
+
+    /**
+     * Display the specified manual order for editing.
+     */
+    public function show(ManualOrder $order)
+    {
+        $order->load(['user', 'items', 'files']);
+        
+        return Inertia::render('Admin/Logistics/Orders/Show', [
+            'order' => $order,
+            'statuses' => ['pending', 'processing', 'packed', 'shipping', 'delivered', 'cancelled'],
+            'paymentStatuses' => ['unpaid', 'partial', 'paid', 'refunded'],
+            'auditLogs' => [],
+        ]);
+    }
+
+    /**
+     * Update the manual order status and other details.
+     */
+    public function update(Request $request, ManualOrder $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+            'payment_status' => 'required|string',
+            'internal_note' => 'nullable|string',
+            'public_message' => 'nullable|string',
+            'currency_code' => 'required|string',
+            'subtotal' => 'nullable|numeric',
+            'logistics_fee' => 'nullable|numeric',
+            'service_fee' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
+            'discount' => 'nullable|numeric',
+            'pricing_notes' => 'nullable|string',
+        ]);
+
+        $totalAmount = ($validated['subtotal'] ?? 0) 
+            + ($validated['logistics_fee'] ?? 0) 
+            + ($validated['service_fee'] ?? 0) 
+            + ($validated['delivery_fee'] ?? 0) 
+            - ($validated['discount'] ?? 0);
+
+        $order->update([
+            'status' => $validated['status'],
+            'payment_status' => $validated['payment_status'],
+            'internal_note' => $validated['internal_note'],
+            'customer_visible_note' => $validated['public_message'],
+            'currency_code' => $validated['currency_code'],
+            'subtotal_amount' => $validated['subtotal'] ?? 0,
+            'logistics_fee_amount' => $validated['logistics_fee'] ?? 0,
+            'service_fee_amount' => $validated['service_fee'] ?? 0,
+            'delivery_fee_amount' => $validated['delivery_fee'] ?? 0,
+            'discount_amount' => $validated['discount'] ?? 0,
+            'total_amount' => max($totalAmount, 0),
+            'pricing_notes' => $validated['pricing_notes'],
+        ]);
+
+        return back()->with('success', 'Order updated successfully.');
+    }
 }

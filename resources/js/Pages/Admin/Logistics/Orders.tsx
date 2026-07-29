@@ -10,11 +10,19 @@ interface Order {
     status: string;
     payment_status: string;
     total_amount: string;
+    budget: string | null;
     created_at: string;
+    paid_at: string | null;
+    delivered_at: string | null;
+    user_id: number;
     user?: {
         name: string;
         customer_code: string;
     };
+    items?: Array<{
+        product_name: string;
+        quantity: number;
+    }>;
 }
 
 interface Props {
@@ -113,12 +121,13 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-admin-surface-muted/50 border-b border-admin-border">
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order Details</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer</th>
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Status</th>
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Payment</th>
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Date</th>
-                                <th className="text-right px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Total</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Products</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Budget / Total</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Statuses</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Dates</th>
+                                <th className="text-right px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-admin-border/50">
@@ -128,24 +137,45 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                                         <div className="font-bold text-admin-primary">{order.order_number}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="font-medium text-admin-text">{order.user?.name || 'Guest'}</div>
-                                        <div className="text-xs text-admin-text-muted">{order.user?.customer_code}</div>
+                                        <Link href={`/admin/logistics/customers/${order.user_id}/orders`} className="font-bold text-admin-text hover:text-admin-primary hover:underline transition-colors block">{order.user?.name || 'Guest'}</Link>
+                                        <div className="text-xs text-admin-text-muted mt-1">{order.user?.customer_code}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusColors[order.status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
-                                            {order.status}
-                                        </span>
+                                        <div className="font-semibold text-admin-text">{order.items?.length || 0} Products</div>
+                                        <div className="text-xs text-admin-text-muted mt-1 line-clamp-2">
+                                            {order.items?.map(i => i.product_name).join(', ') || 'No items'}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${paymentColors[order.payment_status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
-                                            {order.payment_status}
-                                        </span>
+                                        <div className="font-bold text-admin-text">${Number(order.total_amount).toFixed(2)}</div>
+                                        {order.budget && <div className="text-xs text-admin-text-muted mt-1">Budget: ${Number(order.budget).toFixed(2)}</div>}
                                     </td>
-                                    <td className="px-6 py-4 text-admin-text-muted">
-                                        {new Date(order.created_at).toLocaleDateString()}
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-2 items-start">
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${statusColors[order.status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
+                                                {order.status}
+                                            </span>
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${paymentColors[order.payment_status] || 'bg-admin-surface-muted text-admin-text-muted'}`}>
+                                                {order.payment_status}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-bold text-admin-text tracking-tight">
-                                        ${Number(order.total_amount).toFixed(2)}
+                                    <td className="px-6 py-4">
+                                        <div className="text-xs flex flex-col gap-1 text-admin-text-muted">
+                                            <div><span className="font-semibold">Ordered:</span> {new Date(order.created_at).toLocaleDateString()}</div>
+                                            {order.paid_at && <div><span className="font-semibold">Paid:</span> {new Date(order.paid_at).toLocaleDateString()}</div>}
+                                            {order.delivered_at && <div><span className="font-semibold">Delivered:</span> {new Date(order.delivered_at).toLocaleDateString()}</div>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex flex-col gap-2 items-end">
+                                            <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
+                                                Edit Order
+                                            </Link>
+                                            <Link href={`/admin/receipts/generate?manual_order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
+                                                Generate Receipt
+                                            </Link>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
