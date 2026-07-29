@@ -163,6 +163,10 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::patch('banners/mode', [\App\Http\Controllers\Admin\BannerController::class, 'updateMode'])->name('banners.mode');
     Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
 
+    // Testimonials management
+    Route::post('testimonials/reorder', [\App\Http\Controllers\Admin\TestimonialController::class, 'reorder'])->name('testimonials.reorder');
+    Route::resource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class)->except(['create', 'show', 'edit']);
+
     // Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');

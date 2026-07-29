@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 export default function ShippingRates() {
     return (
         <>
-            <Head><title>Shipping Rates — PurchaseAsia</title></Head>
+            <Head><title>Shipping Rates — MVM Logistic</title></Head>
             <section className="section"><div className="container-narrow">
                 <div className="section-header">
                     <h1 className="section-title">Shipping Rates</h1>

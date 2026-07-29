@@ -118,7 +118,7 @@ export default function ImportedProductPage({ importResult, importJob }: { impor
         <ErrorBoundary>
             <MainLayout title={isFailed ? 'Import Failed' : safeProduct.title} description={safeProduct.description}>
                 <Head>
-                    <title>{isFailed ? 'Import Failed' : safeProduct.title} — PurchaseAsia</title>
+                    <title>{isFailed ? 'Import Failed' : safeProduct.title} — MVM Logistic</title>
                 </Head>
 
                 <div className="bg-gray-50 dark:bg-gray-900 min-h-screen py-12">

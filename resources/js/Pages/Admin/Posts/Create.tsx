@@ -16,7 +16,6 @@ export default function Create({ categories = [] }: { categories?: any[] }) {
         image_files: [] as File[],
         seo_title: '',
         seo_description: '',
-        seo_description: '',
         post_category_id: '',
         is_published: true,
         scheduled_at: '',

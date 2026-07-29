@@ -311,7 +311,6 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                                 placeholder="Ho Chi Minh City, Vietnam..."
                                                 value={data.vietnam_map_address}
                                                 onChange={e => setData('vietnam_map_address', e.target.value)}
-                                                rows={2}
                                                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm resize-y"
                                             />
                                         </div>

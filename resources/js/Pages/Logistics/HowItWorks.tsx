@@ -4,8 +4,8 @@ export default function HowItWorks() {
     return (
         <>
             <Head>
-                <title>How It Works — PurchaseAsia</title>
-                <meta name="description" content="Learn how PurchaseAsia purchases products from Taobao, Tmall, 1688, Alibaba, Pinduoduo and AliExpress and delivers them to you." />
+                <title>How It Works — MVM Logistic</title>
+                <meta name="description" content="Learn how MVM Logistic purchases products from Taobao, Tmall, 1688, Alibaba, Pinduoduo and AliExpress and delivers them to you." />
             </Head>
             <section className="section">
                 <div className="container-narrow">

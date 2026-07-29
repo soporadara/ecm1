@@ -6,7 +6,7 @@ import PromoPopup from '../Components/PromoPopup';
 import { useRef, useState, useEffect } from 'react';
 import { CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Globe2, PackageCheck, ShoppingBag, Truck } from 'lucide-react';
 
-export default function Home({ banners, bannerMode = 'slideshow', page, marketplaces = [], popup = null }: any) {
+export default function Home({ banners, bannerMode = 'slideshow', page, marketplaces = [], popup = null, testimonials = [], recentBlogs = [] }: any) {
     const { t, i18n } = useTranslation();
     const manualOrderHref = '/manual-order';
     const sitesScrollerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
     return (
         <MainLayout title="Home" description="Logistics and Manual-Order Platform">
             <Head>
-                <title>PurchaseAsia — Cross-Border Logistics</title>
+                <title>MVM Logistic — Cross-Border Logistics</title>
             </Head>
 
             {/* Slideshow Banner Section */}
@@ -266,6 +266,97 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                     </div>
                 </div>
             </section>
+
+            {/* Customer Reviews Section */}
+            {testimonials && testimonials.length > 0 && (
+                <section className="py-20 bg-white dark:bg-gray-950">
+                    <div className="container mx-auto px-4 lg:px-8 text-center">
+                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">Testimonials</p>
+                        <h2 className="mt-3 text-3xl lg:text-4xl font-black text-gray-950 dark:text-white mb-12 font-serif">What Our Customers Say</h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
+                            {testimonials.map((t: any) => (
+                                <div key={t.id} className="bg-gray-50 dark:bg-gray-900 rounded-[20px] p-8 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex gap-1 mb-4 text-[#ef5a3d]">
+                                            {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+                                        </div>
+                                        <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed mb-8 italic">"{t.content}"</p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 shrink-0">
+                                            {t.image_path ? (
+                                                <img src={`/storage/${t.image_path}`} alt={t.customer_name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">
+                                                    {t.customer_name.charAt(0)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-950 dark:text-white text-sm">{t.customer_name}</h4>
+                                            <p className="text-xs text-gray-500">Verified Customer</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Recent Blogs Section */}
+            {recentBlogs && recentBlogs.length > 0 && (
+                <section className="py-20 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+                    <div className="container mx-auto px-4 lg:px-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                            <div>
+                                <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">Latest Updates</p>
+                                <h2 className="mt-3 text-3xl lg:text-4xl font-black text-gray-950 dark:text-white font-serif">Recent Articles</h2>
+                            </div>
+                            <Link href="/blog" className="shrink-0 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-700 dark:text-gray-300 hover:border-brand-primary hover:text-brand-primary transition-colors inline-flex items-center gap-2">
+                                View All Posts
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            </Link>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {recentBlogs.map((post: any) => (
+                                <article key={post.id} className="group bg-white dark:bg-gray-950 rounded-[20px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1">
+                                    <Link href={`/blog/${post.slug}`} className="block relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                        {post.image ? (
+                                            <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        {post.category && (
+                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-md text-[11px] font-bold text-brand-primary tracking-wide uppercase shadow-sm">
+                                                {post.category.name}
+                                            </div>
+                                        )}
+                                    </Link>
+                                    <div className="p-6 md:p-8">
+                                        <div className="flex items-center justify-between text-xs font-bold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">
+                                            <time>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+                                            <span className="flex items-center gap-1.5"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> 10 Min</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight mb-4 group-hover:text-brand-primary transition-colors line-clamp-2">
+                                            <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-400 font-light line-clamp-2 text-sm">
+                                            {post.seo_description || 'Read more about this topic in our latest article.'}
+                                        </p>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <SupportFAB />
             <PromoPopup popup={popup} />

@@ -136,9 +136,7 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
                         <Field label="Name">
                             <input className={inputClass} value={createForm.data.name} onChange={(event) => createForm.setData('name', event.target.value)} required />
                         </Field>
-                        <Field label="Slug">
-                            <input className={inputClass} value={createForm.data.slug} onChange={(event) => createForm.setData('slug', event.target.value)} placeholder="auto from name" />
-                        </Field>
+
                         <Field label="Website URL">
                             <input className={inputClass} value={createForm.data.website_url} onChange={(event) => createForm.setData('website_url', event.target.value)} placeholder="https://example.com" />
                         </Field>
@@ -157,18 +155,11 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
                         <Field label="Icon URL">
                             <input className={inputClass} value={createForm.data.icon_source_url} onChange={(event) => createForm.setData('icon_source_url', event.target.value)} placeholder="https://..." />
                         </Field>
-                        <Field label="Alt Text">
-                            <input className={inputClass} value={createForm.data.alt_text} onChange={(event) => createForm.setData('alt_text', event.target.value)} />
-                        </Field>
+
                         <Field label="Brand Color">
                             <input className={inputClass} type="color" value={createForm.data.brand_color} onChange={(event) => createForm.setData('brand_color', event.target.value)} />
                         </Field>
-                        <Field label="Starts At">
-                            <input className={inputClass} type="datetime-local" value={createForm.data.starts_at} onChange={(event) => createForm.setData('starts_at', event.target.value)} />
-                        </Field>
-                        <Field label="Ends At">
-                            <input className={inputClass} type="datetime-local" value={createForm.data.ends_at} onChange={(event) => createForm.setData('ends_at', event.target.value)} />
-                        </Field>
+
                     </div>
                     <div className="mt-4 flex flex-wrap items-center gap-4">
                         <label className="flex items-center gap-2 text-sm font-bold text-admin-text"><input type="checkbox" checked={createForm.data.is_enabled} onChange={(event) => createForm.setData('is_enabled', event.target.checked)} /> Active</label>
@@ -192,14 +183,14 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
                             {editingId === site.id ? (
                                 <form onSubmit={(event) => saveEdit(event, site)} className="grid gap-4 px-5 py-5 md:grid-cols-2 xl:grid-cols-4">
                                     <Field label="Name"><input className={inputClass} value={editData.name} onChange={(event) => setEditData({ ...editData, name: event.target.value })} required /></Field>
-                                    <Field label="Slug"><input className={inputClass} value={editData.slug} onChange={(event) => setEditData({ ...editData, slug: event.target.value })} /></Field>
+
                                     <Field label="Website URL"><input className={inputClass} value={editData.website_url} onChange={(event) => setEditData({ ...editData, website_url: event.target.value })} /></Field>
                                     <Field label="Order"><input className={inputClass} type="number" min={0} value={editData.sort_order} onChange={(event) => setEditData({ ...editData, sort_order: Number(event.target.value) })} /></Field>
                                     <Field label="Khmer Name"><input className={inputClass} value={editData.name_km} onChange={(event) => setEditData({ ...editData, name_km: event.target.value })} /></Field>
                                     <Field label="English Name"><input className={inputClass} value={editData.name_en} onChange={(event) => setEditData({ ...editData, name_en: event.target.value })} /></Field>
                                     <Field label="Vietnamese Name"><input className={inputClass} value={editData.name_vi} onChange={(event) => setEditData({ ...editData, name_vi: event.target.value })} /></Field>
                                     <Field label="Icon URL"><input className={inputClass} value={editData.icon_source_url} onChange={(event) => setEditData({ ...editData, icon_source_url: event.target.value })} /></Field>
-                                    <Field label="Alt Text"><input className={inputClass} value={editData.alt_text} onChange={(event) => setEditData({ ...editData, alt_text: event.target.value })} /></Field>
+
                                     <Field label="Status">
                                         <select className={inputClass} value={editData.status} onChange={(event) => setEditData({ ...editData, status: event.target.value })}>
                                             <option value="active">Active</option>
@@ -207,8 +198,7 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
                                             <option value="disabled">Disabled</option>
                                         </select>
                                     </Field>
-                                    <Field label="Starts At"><input className={inputClass} type="datetime-local" value={editData.starts_at} onChange={(event) => setEditData({ ...editData, starts_at: event.target.value })} /></Field>
-                                    <Field label="Ends At"><input className={inputClass} type="datetime-local" value={editData.ends_at} onChange={(event) => setEditData({ ...editData, ends_at: event.target.value })} /></Field>
+
                                     <div className="flex flex-wrap items-center gap-4 xl:col-span-4">
                                         <label className="flex items-center gap-2 text-sm font-bold text-admin-text"><input type="checkbox" checked={editData.is_enabled} onChange={(event) => setEditData({ ...editData, is_enabled: event.target.checked })} /> Active</label>
                                         <label className="flex items-center gap-2 text-sm font-bold text-admin-text"><input type="checkbox" checked={editData.open_in_new_tab} onChange={(event) => setEditData({ ...editData, open_in_new_tab: event.target.checked })} /> Open in new tab</label>

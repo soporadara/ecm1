@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 export default function Warehouses() {
     return (
         <>
-            <Head><title>Warehouses — PurchaseAsia</title></Head>
+            <Head><title>Warehouses — MVM Logistic</title></Head>
             <section className="section"><div className="container-narrow">
                 <div className="section-header">
                     <h1 className="section-title">Our Warehouses</h1>

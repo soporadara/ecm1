@@ -171,6 +171,22 @@ class HomeController extends Controller
         // Fetch the Home page from the pages table to use its SEO data
         $homePage = \App\Models\Page::where('slug', 'home')->first();
         
+        // Fetch Testimonials
+        $testimonials = \App\Models\Testimonial::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        // Fetch Recent Blogs
+        $recentBlogs = \App\Models\Post::with(['category', 'user'])
+            ->where('is_published', true)
+            ->where(function ($query) {
+                $query->whereNull('published_at')->orWhere('published_at', '<=', now());
+            })
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+        
         return Inertia::render('Home', [
             'banners'      => $banners,
             'bannerMode'   => Setting::where('group', 'general')->where('key', 'home_banner_mode')->value('value') ?: 'slideshow',
@@ -179,6 +195,8 @@ class HomeController extends Controller
             'marketplaces' => $marketplaces,
             'featureFlags' => $featureFlags,
             'page'         => $homePage,
+            'testimonials' => $testimonials,
+            'recentBlogs'  => $recentBlogs,
         ]);
     }
 }

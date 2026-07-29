@@ -4,7 +4,7 @@ export default function Track() {
     const [trackingNumber, setTrackingNumber] = useState('');
     return (
         <>
-            <Head><title>Track Parcel — PurchaseAsia</title></Head>
+            <Head><title>Track Parcel — MVM Logistic</title></Head>
             <section className="section"><div className="container-narrow">
                 <div className="section-header">
                     <h1 className="section-title">Track Your Parcel</h1>

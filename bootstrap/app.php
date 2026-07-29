@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Console\Commands\DemoResetCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
