@@ -252,6 +252,12 @@ class ManualOrderController extends Controller
             return $order;
         });
 
+        \App\Models\User::notifyAdmins(new \App\Notifications\AdminSystemNotification(
+            "New Manual Order #{$order->order_number} received from {$user->name}",
+            "order",
+            "/admin/manual-orders/{$order->id}"
+        ));
+
         return redirect()->route('my-orders.show', $order)->with([
             'success' => 'Manual order submitted successfully.',
             'submitted_order' => [

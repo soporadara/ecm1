@@ -88,7 +88,7 @@ export default function SupportFAB() {
 
                 {/* Main Toggle Button */}
                 <div 
-                    className="relative flex items-center justify-center bg-brand-primary text-white p-4 rounded-full shadow-lg shadow-brand-primary/30 hover:shadow-xl hover:shadow-brand-primary/50 transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+                    className="relative flex items-center justify-center bg-orange-500 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:bg-orange-600 hover:shadow-orange-600/50 transition-all duration-300 transform hover:scale-105 cursor-pointer group"
                     onClick={() => setIsOpen(!isOpen)}
                     aria-label="Support contacts"
                 >
@@ -102,7 +102,7 @@ export default function SupportFAB() {
                     )}
 
                     {/* Pulse ring */}
-                    <div className="absolute inset-0 bg-brand-primary rounded-full animate-ping opacity-20"></div>
+                    <div className="absolute inset-0 bg-orange-500 rounded-full animate-ping opacity-20"></div>
                     
                     {/* Icon flips on open/close */}
                     <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}>

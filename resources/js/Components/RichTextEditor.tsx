@@ -4,12 +4,53 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
-import { 
-    Bold, Italic, Underline as UnderlineIcon, Strikethrough, 
-    Heading1, Heading2, Heading3, List, ListOrdered, 
+import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, 
+    Heading1, Heading2, Heading3, Heading4, Heading5, List, ListOrdered, 
     Quote, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    Link as LinkIcon, Image as ImageIcon, Undo, Redo 
+    Link as LinkIcon, Image as ImageIcon, Undo, Redo, Type 
 } from 'lucide-react';
+import { Extension } from '@tiptap/core';
+import { TextStyle } from '@tiptap/extension-text-style';
+
+const FontSize = Extension.create({
+    name: 'fontSize',
+    addOptions() {
+        return {
+            types: ['textStyle'],
+        };
+    },
+    addGlobalAttributes() {
+        return [
+            {
+                types: this.options.types,
+                attributes: {
+                    fontSize: {
+                        default: null,
+                        parseHTML: element => element.style.fontSize.replace(/['"]+/g, ''),
+                        renderHTML: attributes => {
+                            if (!attributes.fontSize) {
+                                return {};
+                            }
+                            return {
+                                style: `font-size: ${attributes.fontSize}`,
+                            };
+                        },
+                    },
+                },
+            },
+        ];
+    },
+    addCommands() {
+        return {
+            setFontSize: (fontSize: string) => ({ chain }: any) => {
+                return chain().setMark('textStyle', { fontSize }).run();
+            },
+            unsetFontSize: () => ({ chain }: any) => {
+                return chain().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run();
+            },
+        };
+    },
+});
 
 interface RichTextEditorProps {
     value: string;
@@ -24,6 +65,8 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-brand-primary underline' } }),
             Image.configure({ inline: true }),
+            TextStyle,
+            FontSize,
         ],
         content: value,
         onUpdate: ({ editor }) => {
@@ -98,6 +141,36 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <MenuButton isActive={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
                     <Heading3 size={18} />
                 </MenuButton>
+                <MenuButton isActive={editor.isActive('heading', { level: 4 })} onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}>
+                    <Heading4 size={18} />
+                </MenuButton>
+                <MenuButton isActive={editor.isActive('heading', { level: 5 })} onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}>
+                    <Heading5 size={18} />
+                </MenuButton>
+                
+                <div className="w-px h-6 bg-admin-border mx-1 my-auto"></div>
+                
+                <select 
+                    className="p-1.5 rounded-lg border-admin-border text-sm text-admin-text-muted bg-admin-surface hover:bg-admin-surface-muted transition-colors focus:ring-1 focus:ring-admin-primary"
+                    onChange={(e) => {
+                        if (e.target.value) {
+                            (editor.chain().focus() as any).setFontSize(e.target.value).run();
+                        } else {
+                            (editor.chain().focus() as any).unsetFontSize().run();
+                        }
+                    }}
+                    value={editor.getAttributes('textStyle').fontSize || ''}
+                >
+                    <option value="">Size</option>
+                    <option value="12px">12</option>
+                    <option value="14px">14</option>
+                    <option value="16px">16</option>
+                    <option value="18px">18</option>
+                    <option value="20px">20</option>
+                    <option value="24px">24</option>
+                    <option value="30px">30</option>
+                    <option value="36px">36</option>
+                </select>
                 
                 <div className="w-px h-6 bg-admin-border mx-1 my-auto"></div>
                 

@@ -19,6 +19,9 @@ export default function Edit({ banner, mediaLibrary }: any) {
         secondary_button_url: banner.secondary_button_url || '',
         desktop_image: null as File | null,
         mobile_image: null as File | null,
+        video_url: banner.video_url || '',
+        video_file: null as File | null,
+        remove_video_file: false,
         fallback_color: banner.fallback_color || '#000000',
         text_position: banner.text_position || 'center',
         content_alignment: banner.content_alignment || 'center',
@@ -91,6 +94,25 @@ export default function Edit({ banner, mediaLibrary }: any) {
                             <label className="block text-sm font-bold text-admin-text-muted mb-2 uppercase tracking-wide">Mobile Image (Optional)</label>
                             <input type="file" accept="image/*" className="w-full rounded-xl border-admin-border bg-admin-bg text-admin-text focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors" onChange={e => setData('mobile_image', e.target.files?.[0] || null)} />
                             {errors.mobile_image && <p className="text-admin-danger text-xs mt-1">{errors.mobile_image}</p>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-admin-border/50">
+                        <div>
+                            <label className="block text-sm font-bold text-admin-text-muted mb-2 uppercase tracking-wide">Video File (Optional, replaces image)</label>
+                            <input type="file" accept="video/mp4,video/webm" className="w-full rounded-xl border-admin-border bg-admin-bg text-admin-text focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors" onChange={e => setData('video_file', e.target.files?.[0] || null)} />
+                            {banner.video_file_path && (
+                                <div className="mt-2 flex items-center">
+                                    <input type="checkbox" id="remove_video_file" checked={data.remove_video_file} onChange={e => setData('remove_video_file', e.target.checked)} className="rounded border-admin-border text-admin-primary" />
+                                    <label htmlFor="remove_video_file" className="ml-2 text-sm text-admin-text-muted">Remove current video</label>
+                                </div>
+                            )}
+                            {errors.video_file && <p className="text-admin-danger text-xs mt-1">{errors.video_file}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-admin-text-muted mb-2 uppercase tracking-wide">Or Video URL (Youtube/Vimeo ID or URL)</label>
+                            <input type="text" className="w-full rounded-xl border-admin-border bg-admin-bg text-admin-text focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary" value={data.video_url} onChange={e => setData('video_url', e.target.value)} placeholder="https://..." />
+                            {errors.video_url && <p className="text-admin-danger text-xs mt-1">{errors.video_url}</p>}
                         </div>
                     </div>
 

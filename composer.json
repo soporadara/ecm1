@@ -14,6 +14,7 @@
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.28",
         "laravel/tinker": "^2.10.1",
+        "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-permission": "^8.3",
         "stripe/stripe-php": "^21.0",
         "tightenco/ziggy": "^2.4"

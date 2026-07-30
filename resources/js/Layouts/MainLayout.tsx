@@ -397,13 +397,25 @@ export default function MainLayout({ children, title, description }: Props) {
         ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]'
         : 'text-gray-950 dark:text-white';
 
-    const navLinkClass = (href: string) => [
-        'inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-black uppercase tracking-wider transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-[0.98] motion-reduce:active:scale-100',
-        navToneClass,
-        isActiveNavItem(href)
-            ? (isTransparent ? 'bg-white/18 text-white' : 'bg-brand-primary/10 text-brand-primary')
-            : (isTransparent ? 'hover:bg-white/12' : 'hover:bg-black/5 dark:hover:bg-white/10'),
-    ].join(' ');
+    const navLinkClass = (href: string) => {
+        const isActive = isActiveNavItem(href);
+        const base = 'inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black uppercase tracking-wider transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-95 overflow-hidden relative';
+        
+        const glassEffect = 'bg-white/20 dark:bg-white/10 backdrop-blur-md border border-white/30 dark:border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]';
+        
+        let stateClass = '';
+        if (isActive) {
+            stateClass = isTransparent 
+                ? `text-white ${glassEffect} scale-105`
+                : `text-brand-primary bg-brand-primary/10 border border-brand-primary/20 shadow-sm`;
+        } else {
+            stateClass = isTransparent
+                ? `hover:text-white hover:${glassEffect} hover:scale-105`
+                : `hover:text-brand-primary hover:bg-black/5 dark:hover:bg-white/10 hover:shadow-sm`;
+        }
+        
+        return [base, navToneClass, stateClass].join(' ');
+    };
 
     const iconButtonClass = [
         'inline-flex h-11 w-11 items-center justify-center rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-[0.98] motion-reduce:active:scale-100',

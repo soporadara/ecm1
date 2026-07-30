@@ -140,6 +140,9 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     // CMS & Settings
     Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except(['show']);
     Route::post('posts/import-doc', [\App\Http\Controllers\Admin\PostController::class, 'importDoc'])->name('posts.import-doc');
+    Route::get('posts/{post}/comments', [\App\Http\Controllers\Admin\PostController::class, 'comments'])->name('posts.comments');
+    Route::delete('comments/{comment}', [\App\Http\Controllers\Admin\PostController::class, 'deleteComment'])->name('comments.destroy');
+    Route::post('comments/{comment}/reply', [\App\Http\Controllers\Admin\PostController::class, 'replyComment'])->name('comments.reply');
     Route::resource('post-categories', \App\Http\Controllers\Admin\PostCategoryController::class)->except(['show', 'create', 'edit']);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
     Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class)->except(['show']);
@@ -214,6 +217,7 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     });
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+Route::post('/blog/{post}/comments', [\App\Http\Controllers\PostCommentController::class, 'store'])->name('blog.comments.store');
 
 Route::get('/pages/{slug}', [\App\Http\Controllers\PageController::class, 'show'])->name('page.show');
 

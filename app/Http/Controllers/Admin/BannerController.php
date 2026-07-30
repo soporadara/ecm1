@@ -86,6 +86,8 @@ class BannerController extends Controller
             'sort_order' => 'integer',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'video_url' => 'nullable|string|max:255',
+            'video_file' => 'nullable|file|mimes:mp4,webm|max:20480',
         ]);
 
         if ($request->hasFile('desktop_image')) {
@@ -100,8 +102,13 @@ class BannerController extends Controller
             $validated['mobile_media_id'] = $media->id;
         }
 
+        if ($request->hasFile('video_file')) {
+            $validated['video_file_path'] = $request->file('video_file')->store('banners/videos', 'public');
+        }
+
         unset($validated['desktop_image']);
         unset($validated['mobile_image']);
+        unset($validated['video_file']);
 
         Banner::create($validated);
 
@@ -148,6 +155,8 @@ class BannerController extends Controller
             'sort_order' => 'integer',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'video_url' => 'nullable|string|max:255',
+            'video_file' => 'nullable|file|mimes:mp4,webm|max:20480',
         ]);
 
         if ($request->hasFile('desktop_image')) {
@@ -162,8 +171,22 @@ class BannerController extends Controller
             $validated['mobile_media_id'] = $media->id;
         }
 
+        if ($request->hasFile('video_file')) {
+            if ($banner->video_file_path) {
+                Storage::disk('public')->delete($banner->video_file_path);
+            }
+            $validated['video_file_path'] = $request->file('video_file')->store('banners/videos', 'public');
+        } elseif ($request->boolean('remove_video_file')) {
+            if ($banner->video_file_path) {
+                Storage::disk('public')->delete($banner->video_file_path);
+            }
+            $validated['video_file_path'] = null;
+        }
+
         unset($validated['desktop_image']);
         unset($validated['mobile_image']);
+        unset($validated['video_file']);
+        unset($validated['remove_video_file']);
 
         $banner->update($validated);
 
@@ -172,6 +195,9 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner)
     {
+        if ($banner->video_file_path) {
+            Storage::disk('public')->delete($banner->video_file_path);
+        }
         $banner->delete();
         return redirect()->route('admin.banners.index')->with('success', 'Banner deleted successfully.');
     }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Moon, Sun } from 'lucide-react';
 import { Link, usePage, router } from '@inertiajs/react';
+import toast from 'react-hot-toast';
 
 interface Props {
     children: ReactNode;
@@ -152,6 +153,35 @@ export default function AdminLayout({ children, title, actions }: Props) {
     });
     const [showNotifications, setShowNotifications] = useState(false);
     const notificationsRef = useRef<HTMLDivElement>(null);
+
+    const initialNotifications = auth?.admin_notifications || [];
+    const [liveNotifications, setLiveNotifications] = useState(initialNotifications);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && (window as any).Echo) {
+            (window as any).Echo.channel('admin-notifications')
+                .listen('.AdminSystemNotification', (e: any) => {
+                    toast.success(e.message, {
+                        duration: 5000,
+                        position: 'top-right',
+                    });
+                    
+                    const newNotif = {
+                        id: Date.now(),
+                        message: e.message,
+                        title: e.type ? e.type.charAt(0).toUpperCase() + e.type.slice(1) : 'System',
+                        url: e.url || '#',
+                        time: 'Just now',
+                    };
+                    
+                    setLiveNotifications((prev: any) => [newNotif, ...prev]);
+                });
+                
+            return () => {
+                (window as any).Echo.leaveChannel('admin-notifications');
+            };
+        }
+    }, []);
 
     useEffect(() => {
         if (isDarkMode) {
@@ -334,19 +364,20 @@ export default function AdminLayout({ children, title, actions }: Props) {
         <div className="flex flex-col h-full bg-admin-surface border-r border-admin-border/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative z-10">
             {/* Store Header */}
             <div className={`flex items-center pt-6 pb-5 ${sidebarCollapsed ? 'px-4 justify-center' : 'px-5 md:px-8'}`}>
-                <Link href="/admin" className="flex items-center gap-4 min-w-0">
+                <Link href="/admin" className="flex items-center gap-3 min-w-0">
                     {storeLogo ? (
-                        <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center bg-white rounded-[16px] shadow-sm overflow-hidden p-1 border border-admin-border/50">
-                            <img src={storeLogo} alt={storeName} className="w-full h-full object-contain" />
+                        <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white rounded-xl shadow-sm overflow-hidden p-1 border border-admin-border/50">
+                            <img src={storeLogo} alt="MVM Logistic" className="w-full h-full object-contain" />
                         </div>
                     ) : (
-                        <div className="w-14 h-14 bg-admin-secondary rounded-[16px] flex items-center justify-center flex-shrink-0 font-black text-white text-xl shadow-lg shadow-admin-secondary/40 uppercase">
-                            {storeName.charAt(0)}
+                        <div className="w-12 h-12 bg-admin-secondary rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-lg shadow-md shadow-admin-secondary/30 uppercase">
+                            MVM
                         </div>
                     )}
                     {!sidebarCollapsed && (
-                        <div className="min-w-0 flex items-center">
-                            <p className="font-extrabold text-admin-text text-2xl tracking-tight truncate lowercase">{storeName}</p>
+                        <div className="min-w-0 flex flex-col justify-center mt-0.5">
+                            <p className="font-extrabold text-admin-text text-[1.1rem] tracking-tight truncate">MVM Logistic</p>
+                            <p className="text-[10px] font-bold text-admin-text-muted uppercase tracking-wider">CMS Dashboard</p>
                         </div>
                     )}
                 </Link>
@@ -519,7 +550,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                 title="View order updates"
                             >
                                 <Icon d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" className="w-5 h-5" />
-                                {auth?.admin_notifications?.length > 0 && (
+                                {liveNotifications.length > 0 && (
                                     <span className="absolute top-1 right-1 flex h-2 w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -534,9 +565,9 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                         <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
                                     </div>
                                     <div className="overflow-y-auto flex-1">
-                                        {auth?.admin_notifications?.length > 0 ? (
+                                        {liveNotifications.length > 0 ? (
                                             <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                                                {auth.admin_notifications.map((notif: any) => (
+                                                {liveNotifications.map((notif: any) => (
                                                     <Link 
                                                         href={notif.url} 
                                                         key={notif.id}

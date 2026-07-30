@@ -41,12 +41,15 @@ class BlogController extends Controller
 
     public function show($slug)
     {
-        $post = Post::with('user', 'category')
-            ->where('slug', $slug)
+        $post = Post::where('slug', $slug)
             ->where('is_published', true)
             ->where(function ($query) {
                 $query->whereNull('published_at')->orWhere('published_at', '<=', now());
             })
+            ->with(['comments' => function($query) {
+                $query->where('is_approved', true)->latest();
+            }])
+            ->with('user', 'category')
             ->firstOrFail();
 
         $relatedPosts = Post::where('is_published', true)

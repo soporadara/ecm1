@@ -14,6 +14,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
+    protected $guard_name = 'web';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -149,5 +151,11 @@ class User extends Authenticatable
     public function addresses(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(UserAddress::class);
+    }
+
+    public static function notifyAdmins($notification)
+    {
+        $admins = self::where('is_admin', true)->get();
+        \Illuminate\Support\Facades\Notification::send($admins, $notification);
     }
 }

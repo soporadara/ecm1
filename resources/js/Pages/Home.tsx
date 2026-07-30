@@ -13,6 +13,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
     
     // Auto-playing slideshow logic
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
     const hasBanners = banners && banners.length > 0;
     
     useEffect(() => {
@@ -103,11 +104,19 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                     style={{ backgroundColor: banner.fallback_color }}
                                 >
                                     <div className="absolute inset-0">
-                                        <picture>
-                                            <source media="(max-width: 767px)" srcSet={mImg} />
-                                            <source media="(min-width: 768px)" srcSet={dImg} />
-                                            <img src={dImg} className="h-full w-full object-cover object-center" alt={banner.title_en || 'Hero Banner'} />
-                                        </picture>
+                                        {banner.video_file_path || banner.video_url ? (
+                                            <video 
+                                                src={banner.video_file_path ? `/storage/${banner.video_file_path}` : banner.video_url} 
+                                                autoPlay muted loop playsInline 
+                                                className="h-full w-full object-cover object-center" 
+                                            />
+                                        ) : (
+                                            <picture>
+                                                <source media="(max-width: 767px)" srcSet={mImg} />
+                                                <source media="(min-width: 768px)" srcSet={dImg} />
+                                                <img src={dImg} className="h-full w-full object-cover object-center" alt={banner.title_en || 'Hero Banner'} />
+                                            </picture>
+                                        )}
                                         {banner.theme_variant === 'light' && <div className="absolute inset-0 bg-black/10"></div>}
                                     </div>
                                 </div>
@@ -298,6 +307,26 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                             <p className="text-xs text-gray-500">Verified Customer</p>
                                         </div>
                                     </div>
+                                    {(t.product_image_1 || t.product_image_2) && (
+                                        <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 flex gap-3">
+                                            {t.product_image_1 && (
+                                                <img 
+                                                    src={`/storage/${t.product_image_1}`} 
+                                                    alt="Product Image" 
+                                                    className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border border-gray-200 dark:border-gray-700" 
+                                                    onClick={() => setLightboxImage(`/storage/${t.product_image_1}`)} 
+                                                />
+                                            )}
+                                            {t.product_image_2 && (
+                                                <img 
+                                                    src={`/storage/${t.product_image_2}`} 
+                                                    alt="Product Image" 
+                                                    className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border border-gray-200 dark:border-gray-700" 
+                                                    onClick={() => setLightboxImage(`/storage/${t.product_image_2}`)} 
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -360,6 +389,29 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
 
             <SupportFAB />
             <PromoPopup popup={popup} />
+
+            {/* Lightbox */}
+            {lightboxImage && (
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+                    onClick={() => setLightboxImage(null)}
+                >
+                    <div className="relative max-w-5xl w-full flex justify-center items-center h-full">
+                        <button 
+                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center transition"
+                            onClick={() => setLightboxImage(null)}
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                        <img 
+                            src={lightboxImage} 
+                            alt="Preview" 
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+                            onClick={(e) => e.stopPropagation()} 
+                        />
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }

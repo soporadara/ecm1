@@ -121,6 +121,7 @@ export default function Index({ posts, filters = {} }: any) {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-3">
+                                            <Link href={`/admin/posts/${post.id}/comments`} className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-medium transition-colors">Comments</Link>
                                             <Link href={`/admin/posts/${post.id}/edit`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium transition-colors">Edit</Link>
                                             <button onClick={() => handleDelete(post.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium transition-colors">Delete</button>
                                         </td>

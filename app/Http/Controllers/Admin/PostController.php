@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\PostComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -137,9 +138,40 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
+        if ($post->image) {
+            \Storage::disk('public')->delete($post->image);
+        }
         $post->delete();
 
         return redirect()->route('admin.posts.index')->with('success', 'Post deleted successfully.');
+    }
+
+    public function comments(Post $post)
+    {
+        $comments = $post->comments()->latest()->get();
+        return Inertia::render('Admin/Posts/Comments', [
+            'post' => $post,
+            'comments' => $comments,
+        ]);
+    }
+
+    public function deleteComment(PostComment $comment)
+    {
+        $comment->delete();
+        return back()->with('success', 'Comment deleted successfully.');
+    }
+
+    public function replyComment(\Illuminate\Http\Request $request, PostComment $comment)
+    {
+        $request->validate([
+            'admin_reply' => 'nullable|string|max:1000',
+        ]);
+
+        $comment->update([
+            'admin_reply' => $request->admin_reply,
+        ]);
+
+        return back()->with('success', 'Reply saved successfully.');
     }
 
     private function collectImages(Request $request, ?string $imageUrls, ?string $coverImage, array $existing = []): array

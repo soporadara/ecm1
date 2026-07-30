@@ -6,6 +6,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 export default function Index({ testimonials }: any) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
 
     const { data, setData, post, clearErrors, reset, errors, processing } = useForm({
         customer_name: '',
@@ -15,10 +16,15 @@ export default function Index({ testimonials }: any) {
         sort_order: 0,
         image: null as File | null,
         remove_image: false,
+        product_image_1: null as File | null,
+        remove_product_image_1: false,
+        product_image_2: null as File | null,
+        remove_product_image_2: false,
     });
 
     const openModal = (testimonial: any = null) => {
         clearErrors();
+        setEditingTestimonial(testimonial);
         if (testimonial) {
             setEditingId(testimonial.id);
             setData({
@@ -29,6 +35,10 @@ export default function Index({ testimonials }: any) {
                 sort_order: testimonial.sort_order,
                 image: null,
                 remove_image: false,
+                product_image_1: null,
+                remove_product_image_1: false,
+                product_image_2: null,
+                remove_product_image_2: false,
             });
         } else {
             setEditingId(null);
@@ -61,6 +71,28 @@ export default function Index({ testimonials }: any) {
         if (confirm('Are you sure you want to delete this testimonial?')) {
             router.delete(`/admin/testimonials/${id}`);
         }
+    };
+
+    const renderPreview = (file: File | null, existingPath?: string) => {
+        if (file) {
+            return (
+                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-admin-border/50 bg-admin-surface-muted relative group">
+                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+            );
+        }
+        if (existingPath) {
+            return (
+                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-admin-border/50 bg-admin-surface-muted relative group">
+                    <img src={`/storage/${existingPath}`} alt="Current" className="w-full h-full object-cover" />
+                </div>
+            );
+        }
+        return (
+            <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-admin-border/50 bg-admin-surface-muted flex items-center justify-center text-admin-text-muted/30 text-xs">
+                None
+            </div>
+        );
     };
 
     return (
@@ -170,16 +202,28 @@ export default function Index({ testimonials }: any) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold mb-1">Customer Image</label>
-                                    <input type="file" accept="image/*" onChange={e => setData('image', e.target.files ? e.target.files[0] : null)} className="w-full border-admin-border/50 rounded-xl text-sm" />
-                                    {editingId && (
-                                        <div className="mt-2">
-                                            <label className="flex items-center gap-2 text-sm text-admin-text-muted">
-                                                <input type="checkbox" checked={data.remove_image} onChange={e => setData('remove_image', e.target.checked)} className="rounded border-admin-border text-admin-primary focus:ring-admin-primary" />
-                                                Remove current image
-                                            </label>
+                                    <label className="block text-sm font-bold mb-1">Upload Profile Picture</label>
+                                    <div className="flex gap-4 items-center">
+                                        {renderPreview(data.image, editingTestimonial?.image_path)}
+                                        <input type="file" accept="image/*" onChange={e => setData('image', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-admin-border/50">
+                                    <div>
+                                        <label className="block text-sm font-bold mb-1">Product Image 1 (Optional)</label>
+                                        <div className="flex gap-4 items-center">
+                                            {renderPreview(data.product_image_1, editingTestimonial?.product_image_1)}
+                                            <input type="file" accept="image/*" onChange={e => setData('product_image_1', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                         </div>
-                                    )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-1">Product Image 2 (Optional)</label>
+                                        <div className="flex gap-4 items-center">
+                                            {renderPreview(data.product_image_2, editingTestimonial?.product_image_2)}
+                                            <input type="file" accept="image/*" onChange={e => setData('product_image_2', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
