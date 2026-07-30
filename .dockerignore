@@ -1,0 +1,10 @@
+/node_modules
+/vendor
+/.git
+/.env
+/.env-hosting
+/storage/*.key
+/phpunit.xml
+/.editorconfig
+/tmp
+/npm_cache
