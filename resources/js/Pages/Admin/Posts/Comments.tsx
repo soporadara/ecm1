@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '@/Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
@@ -9,8 +10,8 @@ export default function Comments({ post, comments }: any) {
         admin_reply: ''
     });
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this comment?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this comment?')) {
             router.delete(`/admin/comments/${id}`, {
                 onSuccess: () => toast.success('Comment deleted successfully'),
             });

@@ -32,11 +32,11 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
             <div className="bg-[#f9fafb] dark:bg-gray-950 min-h-screen py-16 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
-                    <div className="flex flex-col lg:flex-row gap-10">
+                    <div className="flex flex-col lg:flex-row gap-8">
                         
                         {/* Main Content Area */}
                         <div className="lg:w-[68%]">
-                            <article className="bg-white dark:bg-gray-900 rounded-[20px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-10 transition-colors">
+                            <article className="bg-white dark:bg-gray-900 rounded-[20px] shadow-sm border border-gray-100 dark:border-gray-800 mb-10 transition-colors clearfix">
                                 <div className="p-8 md:p-12">
                                     {/* Header */}
                                     <div className="flex items-center gap-4 text-[#ef5a3d] text-sm font-medium mb-6">
@@ -57,8 +57,10 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                                         {post.title}
                                     </h1>
 
+
+
                                     {/* Content */}
-                                    <div className="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed font-light">
+                                    <div className="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed font-light clear-left">
                                         <div dangerouslySetInnerHTML={{ __html: post.content }} />
                                     </div>
                                 </div>
@@ -198,7 +200,7 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                         <aside className="lg:w-[32%] flex flex-col gap-8">
                             
                             {/* Categories */}
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors">
+                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
                                 <h3 className="text-[18px] font-bold text-[#1e293b] dark:text-white mb-5">Categories</h3>
                                 <div className="space-y-3">
                                     {categories.map((cat: any) => (
@@ -212,7 +214,7 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
 
                             {/* Recent Blogs */}
                             {relatedPosts && relatedPosts.length > 0 && (
-                                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors">
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
                                     <h3 className="text-[18px] font-bold text-[#1e293b] dark:text-white mb-6">Related Posts</h3>
                                     <div className="flex flex-col gap-5">
                                         {relatedPosts.map((related: any) => (
@@ -226,7 +228,7 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                                                     <p className="text-[11px] font-bold text-[#ef5a3d] mb-1">
                                                         {new Date(related.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </p>
-                                                    <h4 className="font-bold text-[#1e293b] dark:text-gray-200 text-sm leading-snug line-clamp-2 group-hover:text-[#ef5a3d] dark:group-hover:text-[#ef5a3d] transition-colors">
+                                                    <h4 className="font-bold text-[#1e293b] dark:text-gray-200 text-sm leading-snug line-clamp-2 group-hover:text-[#ef5a3d] transition-colors">
                                                         {related.title}
                                                     </h4>
                                                 </div>
@@ -237,11 +239,11 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                             )}
 
                             {/* Tag Cloud */}
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors">
+                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
                                 <h3 className="text-[18px] font-bold text-[#1e293b] dark:text-white mb-5">Tags</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {['Road Roller', 'Equipment', 'Safety', 'Maintenance', 'Construction', 'Tips'].map((tag, i) => (
-                                        <a key={i} href="#" className="inline-block border border-gray-200 dark:border-gray-700 text-[#64748b] dark:text-gray-400 hover:bg-[#ef5a3d] dark:hover:bg-[#ef5a3d] hover:text-white hover:border-[#ef5a3d] dark:hover:border-[#ef5a3d] transition-colors text-xs font-medium px-3.5 py-1.5 rounded-md">
+                                        <a key={i} href="#" className="inline-block border border-gray-200 dark:border-gray-700 text-[#64748b] dark:text-gray-400 hover:bg-[#ef5a3d] hover:text-white hover:border-[#ef5a3d] transition-colors text-xs font-medium px-3.5 py-1.5 rounded-md">
                                             {tag}
                                         </a>
                                     ))}
@@ -249,7 +251,7 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                             </div>
                             
                             {/* Social Networks */}
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors">
+                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
                                 <h3 className="text-[18px] font-bold text-[#1e293b] dark:text-white mb-5">Follow Us</h3>
                                 <div className="flex flex-wrap gap-3">
                                     <a href="#" className="w-11 h-11 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity">
@@ -265,7 +267,7 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                             </div>
 
                             {/* Newsletter */}
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors">
+                            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
                                 <h3 className="text-[18px] font-bold text-[#1e293b] dark:text-white mb-3">Newsletter</h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Subscribe to our newsletter to get our newest articles straight to your inbox.</p>
                                 <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); toast.success('Subscribed successfully!'); }}>
@@ -281,7 +283,6 @@ export default function Show({ post, relatedPosts, categories = [] }: any) {
                                 </form>
                             </div>
                         </aside>
-
                     </div>
                 </div>
             </div>

@@ -1,12 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
 export default function Index({ products }: any) {
     const { delete: destroy } = useForm();
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this product?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this product?')) {
             destroy(`/admin/products/${id}`, {
                 preserveScroll: true,
                 onSuccess: () => toast.success('Product deleted successfully.')

@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import { Megaphone, Pencil, Plus, Trash2 } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { useState } from 'react';
@@ -34,7 +35,7 @@ function PopupThumbnail({ popup }: { popup: Popup }) {
     return (
         <div className="relative min-h-44 bg-admin-surface-muted">
             {popup.image_url && !failed ? (
-                <img src={popup.image_url} alt={popup.title} className="h-full w-full object-cover" onError={() => setFailed(true)} />
+                <img src={popup.image_url} alt={popup.title} className="h-full w-full object-contain p-2" onError={() => setFailed(true)} />
             ) : (
                 <div className="flex h-full min-h-44 items-center justify-center text-admin-text-muted">
                     <Megaphone className="h-8 w-8" aria-hidden="true" />
@@ -48,8 +49,8 @@ function PopupThumbnail({ popup }: { popup: Popup }) {
 }
 
 export default function Index({ popups }: Props) {
-    const deletePopup = (popup: Popup) => {
-        if (!window.confirm(`Delete popup ad "${popup.title}"?`)) return;
+    const deletePopup = async (popup: Popup) => {
+        if (!(await confirmAction(`Delete popup ad "${popup.title}"?`))) return;
         router.delete(`/admin/popups/${popup.id}`, { preserveScroll: true });
     };
 

@@ -24,8 +24,8 @@ interface Props {
     popup: Popup;
 }
 
-const inputClass = 'h-11 w-full rounded-xl border border-admin-border bg-white px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
-const textareaClass = 'min-h-28 w-full rounded-xl border border-admin-border bg-white px-3 py-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
+const inputClass = 'h-11 w-full rounded-xl border border-admin-border bg-admin-surface px-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
+const textareaClass = 'min-h-28 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-3 text-sm font-semibold text-admin-text shadow-sm focus:border-admin-primary focus:outline-none focus:ring-2 focus:ring-admin-primary/20';
 
 const toDateInput = (value: string | null) => {
     if (!value) return '';
@@ -144,9 +144,21 @@ export default function Edit({ popup }: Props) {
                         </div>
 
                         <div className="mt-5 flex items-center gap-4 border-t border-admin-border pt-5">
-                            <label className="flex items-center gap-2 text-sm font-black text-admin-text">
-                                <input type="checkbox" checked={data.is_active} onChange={(event) => setData('is_active', event.target.checked)} />
-                                Active now
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <div className="relative">
+                                    <input type="checkbox" className="sr-only" checked={data.is_active} onChange={(event) => setData('is_active', event.target.checked)} />
+                                    <div className={`block w-14 h-8 rounded-full transition-colors ${data.is_active ? 'bg-[#10B981]' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform flex items-center justify-center shadow-sm ${data.is_active ? 'translate-x-6' : 'translate-x-0'}`}>
+                                        {data.is_active ? (
+                                            <svg className="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                        ) : (
+                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className="text-sm font-black text-admin-text">
+                                    {data.is_active ? 'Active' : 'Unactive'}
+                                </span>
                             </label>
                             <button disabled={processing} className="ml-auto min-h-11 rounded-xl bg-admin-primary px-5 text-sm font-black text-white shadow-lg shadow-admin-primary/20 disabled:opacity-60">
                                 {processing ? 'Saving...' : 'Save Changes'}

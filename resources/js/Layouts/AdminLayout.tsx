@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Moon, Sun } from 'lucide-react';
 import { Link, usePage, router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '@/Components/ConfirmModal';
 
 interface Props {
     children: ReactNode;
@@ -317,6 +318,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 label: 'Staff & Users',
                 href: '/admin/staff',
                 icon: <Icon d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />,
+                badge: admin_counts?.staff,
             }
         ] : []),
         ...(hasPermission('audit_logs.view') ? [{
@@ -505,7 +507,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
 
             {/* Main Content */}
             <div
-                className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}
+                className={`flex-1 flex flex-col w-full min-w-0 min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}
             >
                 {/* Top Bar */}
                 <header className="sticky top-0 z-30 flex items-center justify-between border-b border-admin-border/40 bg-admin-bg/92 px-3 py-3 backdrop-blur-xl sm:px-4 md:static md:border-0 md:bg-transparent md:px-8 md:pb-4 md:pt-8 md:backdrop-blur-none">
@@ -676,9 +678,10 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 )}
 
                 {/* Page Content */}
-                <main className="flex-1 px-4 pb-12 pt-4 sm:px-4 md:p-6 lg:p-8">
+                <main className="flex-1 w-full min-w-0 px-4 pb-12 pt-4 sm:px-4 md:p-6 lg:p-8">
                     {children}
                 </main>
+                <ConfirmModal />
             </div>
         </div>
     );

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import AdminLayout from '../../../Layouts/AdminLayout';
@@ -5,14 +6,13 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 export default function AuditLogsIndex({ logs }: any) {
     const { delete: destroy } = useForm();
     const { auth } = usePage().props as any;
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const handleClear = () => {
-        if (confirm('Are you sure you want to clear ALL audit logs? This action cannot be undone.')) {
-            destroy('/admin/audit-logs/clear', {
-                preserveScroll: true,
-                onSuccess: () => toast.success('All audit logs have been cleared.')
-            });
-        }
+        destroy('/admin/audit-logs/clear', {
+            preserveScroll: true,
+            onSuccess: () => toast.success('All audit logs have been cleared.')
+        });
     };
 
     const isSuperAdmin = auth?.user?.role === 'super_admin' || auth?.user?.role === 'superadmin' || auth?.user?.roles?.includes('Super Administrator');
@@ -28,8 +28,8 @@ export default function AuditLogsIndex({ logs }: any) {
                 </div>
                 {isSuperAdmin && (
                     <button 
-                        onClick={handleClear} 
-                        className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                        onClick={() => setShowConfirm(true)} 
+                        className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
                     >
                         Clear All Logs
                     </button>
@@ -87,6 +87,34 @@ export default function AuditLogsIndex({ logs }: any) {
                             dangerouslySetInnerHTML={{ __html: link.label }}
                         />
                     ))}
+                </div>
+            )}
+
+            {showConfirm && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-admin-surface border border-admin-border rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in duration-200">
+                        <h3 className="text-xl font-bold text-admin-text mb-2">Clear Audit Logs?</h3>
+                        <p className="text-admin-text-muted mb-6 text-sm leading-relaxed">
+                            Are you sure you want to clear ALL audit logs? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button 
+                                onClick={() => setShowConfirm(false)}
+                                className="px-4 py-2 rounded-xl text-sm font-bold text-admin-text hover:bg-admin-surface-muted transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setShowConfirm(false);
+                                    handleClear();
+                                }}
+                                className="px-4 py-2 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition-colors"
+                            >
+                                Yes, clear them
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </AdminLayout>

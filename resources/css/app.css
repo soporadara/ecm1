@@ -61,7 +61,7 @@
         @apply font-semibold text-brand-dark;
     }
     body {
-        @apply font-sans text-brand-gray bg-white;
+        @apply font-sans text-brand-gray bg-white dark:bg-admin-bg;
     }
     button,
     a,

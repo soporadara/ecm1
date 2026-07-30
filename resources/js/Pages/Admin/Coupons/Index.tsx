@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
@@ -15,8 +16,8 @@ interface Coupon {
 }
 
 export default function CouponsIndex({ coupons }: { coupons: Coupon[] }) {
-    const handleDelete = (id: number) => {
-        if (!confirm('Delete this coupon?')) return;
+    const handleDelete = async (id: number) => {
+        if (!(await confirmAction('Delete this coupon?'))) return;
         router.delete(`/admin/coupons/${id}`, {
             onSuccess: () => toast.success('Coupon deleted successfully'),
             onError: () => toast.error('Failed to delete coupon'),

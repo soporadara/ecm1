@@ -1,4 +1,5 @@
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import React, { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import toast from 'react-hot-toast';
@@ -55,8 +56,8 @@ export default function Index({ categories }: { categories: Category[] }) {
         }
     };
 
-    const handleDelete = (category: Category) => {
-        if (!confirm(`Are you sure you want to delete ${category.name}?`)) return;
+    const handleDelete = async (category: Category) => {
+        if (!(await confirmAction(`Are you sure you want to delete ${category.name}?`))) return;
         destroy(`/admin/post-categories/${category.id}`, {
             onSuccess: () => toast.success('Category deleted successfully')
         });

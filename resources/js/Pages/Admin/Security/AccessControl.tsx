@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
 type Block = {
@@ -22,8 +23,8 @@ type Attempt = {
 };
 
 export default function AccessControl({ blocks = [], attempts = [] }: { blocks: Block[]; attempts: Attempt[] }) {
-    const releaseBlock = (block: Block) => {
-        if (!confirm('Release this CMS security block?')) return;
+    const releaseBlock = async (block: Block) => {
+        if (!(await confirmAction('Release this CMS security block?'))) return;
         router.delete(`/admin/security/access-control/${block.id}`);
     };
 

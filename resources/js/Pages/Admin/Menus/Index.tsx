@@ -1,4 +1,5 @@
 import { Head, useForm, router, Link } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -47,8 +48,8 @@ export default function MenusIndex({ menus, pages = [] }: any) {
         });
     };
 
-    const deleteMenu = (id: number) => {
-        if (confirm('Delete this menu completely?')) {
+    const deleteMenu = async (id: number) => {
+        if (await confirmAction('Delete this menu completely?')) {
             router.delete(`/admin/menus/${id}`, {
                 onSuccess: () => {
                     toast.success('Menu deleted');
@@ -59,8 +60,8 @@ export default function MenusIndex({ menus, pages = [] }: any) {
         }
     };
 
-    const deleteItem = (menuId: number, itemId: number) => {
-        if (confirm('Delete this menu item?')) {
+    const deleteItem = async (menuId: number, itemId: number) => {
+        if (await confirmAction('Delete this menu item?')) {
             router.delete(`/admin/menus/${menuId}/items/${itemId}`, {
                 onSuccess: () => {
                     toast.success('Item deleted');

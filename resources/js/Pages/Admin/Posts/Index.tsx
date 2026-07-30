@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
@@ -8,8 +9,8 @@ export default function Index({ posts, filters = {} }: any) {
     const [from, setFrom] = useState(filters.from || '');
     const [to, setTo] = useState(filters.to || '');
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this post?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this post?')) {
             destroy(`/admin/posts/${id}`, {
                 preserveScroll: true,
                 onSuccess: () => toast.success('Post deleted successfully.')
@@ -120,10 +121,12 @@ export default function Index({ posts, filters = {} }: any) {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-right space-x-3">
-                                            <Link href={`/admin/posts/${post.id}/comments`} className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-medium transition-colors">Comments</Link>
-                                            <Link href={`/admin/posts/${post.id}/edit`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium transition-colors">Edit</Link>
-                                            <button onClick={() => handleDelete(post.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium transition-colors">Delete</button>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link href={`/admin/posts/${post.id}/comments`} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-600 dark:text-white hover:opacity-80 transition-opacity">Comments</Link>
+                                                <Link href={`/admin/posts/${post.id}/edit`} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</Link>
+                                                <button onClick={() => handleDelete(post.id)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity">Delete</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

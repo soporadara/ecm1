@@ -121,6 +121,8 @@ class HandleInertiaRequests extends Middleware
                 'orders' => \Illuminate\Support\Facades\Schema::hasTable('manual_orders') ? \DB::table('manual_orders')->count() : 0,
                 'posts' => \Illuminate\Support\Facades\Schema::hasTable('posts') ? \DB::table('posts')->count() : 0,
                 'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages') ? \DB::table('pages')->count() : 0,
+                'categories' => \Illuminate\Support\Facades\Schema::hasTable('post_categories') ? \DB::table('post_categories')->count() : 0,
+                'staff' => \App\Models\User::where('is_admin', true)->orWhereIn('role', ['admin', 'super_admin'])->count(),
             ] : [],
             'cart' => $cart,
         ];

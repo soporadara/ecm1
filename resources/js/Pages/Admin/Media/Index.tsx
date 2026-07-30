@@ -1,4 +1,5 @@
 import { Head, useForm, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -48,8 +49,8 @@ export default function MediaIndex({ media }: { media: Paginated }) {
         }
     };
 
-    const handleDelete = (id: number) => {
-        if (!confirm('Delete this file permanently?')) return;
+    const handleDelete = async (id: number) => {
+        if (!(await confirmAction('Delete this file permanently?'))) return;
         router.delete(`/admin/media/${id}`, {
             onSuccess: () => toast.success('File deleted successfully'),
             onError: () => toast.error('Failed to delete file'),

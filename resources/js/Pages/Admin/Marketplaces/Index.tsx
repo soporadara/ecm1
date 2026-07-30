@@ -1,4 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import type { FormEvent, ReactNode } from 'react';
 import { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
@@ -115,8 +116,8 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
         });
     };
 
-    const deleteSite = (site: Marketplace) => {
-        if (!window.confirm(`Delete ${site.name} from Available Sites?`)) return;
+    const deleteSite = async (site: Marketplace) => {
+        if (!(await confirmAction(`Delete ${site.name} from Available Sites?`))) return;
         router.delete(`/admin/available-sites/${site.id}`, { preserveScroll: true });
     };
 
@@ -156,9 +157,6 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
                             <input className={inputClass} value={createForm.data.icon_source_url} onChange={(event) => createForm.setData('icon_source_url', event.target.value)} placeholder="https://..." />
                         </Field>
 
-                        <Field label="Brand Color">
-                            <input className={inputClass} type="color" value={createForm.data.brand_color} onChange={(event) => createForm.setData('brand_color', event.target.value)} />
-                        </Field>
 
                     </div>
                     <div className="mt-4 flex flex-wrap items-center gap-4">

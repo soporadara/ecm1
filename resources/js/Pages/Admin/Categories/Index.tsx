@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -22,8 +23,8 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
         c.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    const handleDelete = (id: number) => {
-        if (!confirm('Delete this category? This cannot be undone.')) return;
+    const handleDelete = async (id: number) => {
+        if (!(await confirmAction('Delete this category? This cannot be undone.'))) return;
         setDeleting(id);
         router.delete(`/admin/categories/${id}`, {
             onSuccess: () => {
@@ -130,18 +131,18 @@ export default function CategoriesIndex({ categories }: { categories: Category[]
                                             {cat.is_active ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center gap-3 justify-end">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 justify-end">
                                             <Link
                                                 href={`/admin/categories/${cat.id}/edit`}
-                                                className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors"
+                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity"
                                             >
                                                 Edit
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(cat.id)}
                                                 disabled={deleting === cat.id}
-                                                className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors disabled:opacity-50"
+                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity disabled:opacity-50"
                                             >
                                                 {deleting === cat.id ? '...' : 'Delete'}
                                             </button>

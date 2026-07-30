@@ -179,9 +179,9 @@ export default function CustomerManagement({ customers, filters }: Props) {
                                             {user.account_status === 'frozen' ? 'Frozen' : 'Active'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-6 py-4">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => openEditModal(user)} className="px-4 py-1.5 text-xs font-bold text-admin-primary bg-admin-primary/10 hover:bg-admin-primary/20 rounded-lg transition-colors">Edit</button>
+                                            <button onClick={() => openEditModal(user)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
                                         </div>
                                     </td>
                                 </tr>

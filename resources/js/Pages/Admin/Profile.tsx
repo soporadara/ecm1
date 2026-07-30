@@ -315,7 +315,7 @@ export default function AdminProfile() {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="px-6 py-3 bg-admin-text text-white text-sm font-bold rounded-xl shadow-sm hover:bg-admin-text/90 transition-all disabled:opacity-50"
+                                    className="px-6 py-3 bg-admin-primary text-white text-sm font-bold rounded-xl shadow-sm hover:bg-admin-primary-hover transition-all disabled:opacity-50"
                                 >
                                     {processing ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -370,7 +370,7 @@ export default function AdminProfile() {
                                 <button
                                     type="submit"
                                     disabled={passwordForm.processing}
-                                    className="ml-auto px-6 py-3 bg-admin-text text-white text-sm font-bold rounded-xl shadow-sm hover:bg-admin-text/90 transition-all disabled:opacity-50"
+                                    className="ml-auto px-6 py-3 bg-admin-primary text-white text-sm font-bold rounded-xl shadow-sm hover:bg-admin-primary-hover transition-all disabled:opacity-50"
                                 >
                                     {passwordForm.processing ? 'Updating...' : 'Update Password'}
                                 </button>
@@ -422,7 +422,7 @@ export default function AdminProfile() {
                                     type="button"
                                     onClick={linkGoogleAccount}
                                     disabled={googleLoading}
-                                    className="whitespace-nowrap px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all disabled:opacity-50 flex items-center gap-2"
+                                    className="whitespace-nowrap px-6 py-3 bg-admin-surface dark:bg-admin-surface-muted border border-admin-border text-admin-text text-sm font-bold rounded-xl shadow-sm hover:bg-admin-surface-muted transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {googleLoading ? 'Linking...' : (
                                         <>

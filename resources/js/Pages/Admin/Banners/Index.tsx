@@ -1,12 +1,13 @@
 import React, { FormEvent, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 
 export default function Index({ banners, bannerMode = 'slideshow' }: any) {
     const [mode, setMode] = useState(bannerMode);
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this banner?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this banner?')) {
             router.delete(`/admin/banners/${id}`, {
                 onSuccess: () => toast.success('Banner deleted successfully.')
             });

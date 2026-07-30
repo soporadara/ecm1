@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 
@@ -67,8 +68,8 @@ export default function Index({ testimonials }: any) {
         }
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this testimonial?')) {
+    const handleDelete = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this testimonial?')) {
             router.delete(`/admin/testimonials/${id}`);
         }
     };
@@ -110,7 +111,7 @@ export default function Index({ testimonials }: any) {
                     </button>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-admin-border/40 overflow-hidden">
+                <div className="bg-white dark:bg-admin-surface rounded-2xl shadow-sm border border-admin-border/40 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-admin-text-muted">
                             <thead className="text-xs uppercase bg-admin-surface/50 text-admin-text/70 border-b border-admin-border/40">
@@ -150,9 +151,11 @@ export default function Index({ testimonials }: any) {
                                                 {t.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button onClick={() => openModal(t)} className="text-admin-primary hover:underline font-medium mr-4">Edit</button>
-                                            <button onClick={() => handleDelete(t.id)} className="text-red-500 hover:underline font-medium">Delete</button>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button onClick={() => openModal(t)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
+                                                <button onClick={() => handleDelete(t.id)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity">Delete</button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -171,8 +174,8 @@ export default function Index({ testimonials }: any) {
 
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <form onSubmit={submit} className="p-6 sm:p-8 bg-white text-admin-text">
+                    <div className="bg-white dark:bg-admin-surface rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <form onSubmit={submit} className="p-6 sm:p-8 bg-white dark:bg-admin-surface text-admin-text">
                             <h2 className="text-2xl font-bold mb-6">{editingId ? 'Edit Review' : 'Add Review'}</h2>
 
                             <div className="space-y-5">

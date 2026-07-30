@@ -1,4 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import React, { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
@@ -28,8 +29,8 @@ interface Props {
 export default function Reviews({ reviews }: Props) {
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const deleteReview = (id: number) => {
-        if (confirm('Are you sure you want to delete this review?')) {
+    const deleteReview = async (id: number) => {
+        if (await confirmAction('Are you sure you want to delete this review?')) {
             setDeletingId(id);
             router.delete(`/admin/reviews/${id}`, {
                 preserveScroll: true,

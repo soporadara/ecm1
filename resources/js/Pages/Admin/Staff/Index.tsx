@@ -1,9 +1,10 @@
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function StaffIndex({ staff }: any) {
-    const deleteStaff = (id: number) => {
-        if (confirm('Are you sure you want to remove this staff member?')) {
+    const deleteStaff = async (id: number) => {
+        if (await confirmAction('Are you sure you want to remove this staff member?')) {
             router.delete(`/admin/staff/${id}`);
         }
     };
@@ -106,16 +107,18 @@ export default function StaffIndex({ staff }: any) {
                                     <td className="px-6 py-4 text-admin-text-muted">
                                         {new Date(user.created_at).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-4 text-right space-x-4">
-                                        <Link href={`/admin/staff/${user.id}/edit`} className="text-sm font-semibold text-admin-primary hover:text-admin-primary-hover transition-colors">Edit</Link>
-                                        <button 
-                                            onClick={() => deleteStaff(user.id)}
-                                            disabled={user.id === 1}
-                                            className="text-sm font-semibold text-admin-danger hover:text-red-700 transition-colors disabled:opacity-50"
-                                            title={user.id === 1 ? 'Primary Super Admin cannot be deleted' : 'Delete user'}
-                                        >
-                                            Delete
-                                        </button>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link href={`/admin/staff/${user.id}/edit`} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</Link>
+                                            <button 
+                                                onClick={() => deleteStaff(user.id)}
+                                                disabled={user.id === 1}
+                                                className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                                title={user.id === 1 ? 'Primary Super Admin cannot be deleted' : 'Delete user'}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

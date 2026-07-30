@@ -1,4 +1,5 @@
 import { Head, useForm, router } from '@inertiajs/react';
+import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -42,8 +43,8 @@ export default function BrandsIndex({ brands }: { brands: Brand[] }) {
         });
     };
 
-    const handleDelete = (id: number) => {
-        if (!confirm('Delete this brand?')) return;
+    const handleDelete = async (id: number) => {
+        if (!(await confirmAction('Delete this brand?'))) return;
         router.delete(`/admin/brands/${id}`, {
             onSuccess: () => toast.success('Brand deleted successfully'),
             onError: () => toast.error('Failed to delete brand'),
