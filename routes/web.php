@@ -125,7 +125,9 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
 
     Route::get('logistics/customers', [\App\Http\Controllers\Admin\ManualOrderController::class, 'index'])->name('logistics.customers');
     Route::get('logistics/customers/{customer}/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'customerOrders'])->name('logistics.customer-orders');
+    Route::get('logistics/customers/{customer}/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportCustomerOrders'])->name('logistics.customer-orders.export');
     Route::get('logistics/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'allOrders'])->name('logistics.orders');
+    Route::get('logistics/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportAllOrders'])->name('logistics.orders.export');
     Route::get('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'show'])->name('logistics.orders.show');
     Route::put('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'update'])->name('logistics.orders.update');
     

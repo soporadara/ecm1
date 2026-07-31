@@ -32,6 +32,7 @@ interface Props {
         links: any[];
         current_page: number;
         last_page: number;
+        per_page: number;
     };
     filters: any;
     statuses: string[];
@@ -138,9 +139,12 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                     <button type="submit" className="px-6 py-2 bg-admin-primary text-white text-sm font-semibold rounded-lg hover:bg-admin-primary-hover transition-colors">
                         Filter
                     </button>
-                    <button type="button" className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors">
+                    <a 
+                        href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}`}
+                        className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
+                    >
                         Export CSV
-                    </button>
+                    </a>
                 </form>
             </div>
 
@@ -150,6 +154,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-admin-surface-muted/50 border-b border-admin-border">
+                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider w-16">No</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order Details</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Products</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Budget / Total</th>
@@ -159,8 +164,11 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-admin-border/50">
-                            {orders.data.map(order => (
+                            {orders.data.map((order, index) => (
                                 <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                    <td className="px-6 py-4 text-admin-text-muted font-medium">
+                                        {(orders.current_page - 1) * orders.per_page + index + 1}
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-admin-primary text-base">{order.order_number}</div>
                                         <div className="text-xs text-admin-text-muted mt-1 flex flex-col gap-0.5">
@@ -209,7 +217,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                             ))}
                             {orders.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-admin-text-muted">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-admin-text-muted">
                                         No manual orders found for this customer.
                                     </td>
                                 </tr>

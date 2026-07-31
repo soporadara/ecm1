@@ -131,6 +131,116 @@ class ManualOrderController extends Controller
     }
 
     /**
+     * Export all manual orders across all customers to CSV.
+     */
+    public function exportAllOrders(Request $request)
+    {
+        $orders = ManualOrder::with(['user', 'items'])
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = '%' . $request->input('search') . '%';
+                $query->where('order_number', 'like', $search)
+                    ->orWhereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', $search)
+                          ->orWhere('customer_code', 'like', $search);
+                    });
+            })
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
+            ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
+            ->latest()
+            ->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=all_orders_" . date('Y-m-d') . ".csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['Order Number', 'Customer', 'Invoice Number', 'Receipt Number', 'Total Amount', 'Budget', 'Status', 'Payment Status', 'Created At'];
+
+        $callback = function() use($orders, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+                $row['Order Number']  = $order->order_number;
+                $row['Customer']  = $order->user ? $order->user->name : 'Guest';
+                $row['Invoice Number']    = $order->invoice_number;
+                $row['Receipt Number']    = $order->receipt_number;
+                $row['Total Amount']  = $order->total_amount;
+                $row['Budget']  = $order->budget;
+                $row['Status']  = $order->status;
+                $row['Payment Status']  = $order->payment_status;
+                $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
+
+                fputcsv($file, array($row['Order Number'], $row['Customer'], $row['Invoice Number'], $row['Receipt Number'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export customer orders to CSV.
+     */
+    public function exportCustomerOrders(Request $request, User $customer)
+    {
+        $orders = ManualOrder::where('user_id', $customer->id)
+            ->with(['items'])
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = '%' . $request->input('search') . '%';
+                $query->where('order_number', 'like', $search);
+            })
+            ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
+            ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
+            ->when($request->filled('sort'), function ($query) use ($request) {
+                if ($request->input('sort') === 'oldest') {
+                    $query->oldest();
+                } else {
+                    $query->latest();
+                }
+            }, function ($query) {
+                $query->latest();
+            })
+            ->get();
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=orders_{$customer->customer_code}_" . date('Y-m-d') . ".csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['Order Number', 'Invoice Number', 'Receipt Number', 'Total Amount', 'Budget', 'Status', 'Payment Status', 'Created At'];
+
+        $callback = function() use($orders, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+                $row['Order Number']  = $order->order_number;
+                $row['Invoice Number']    = $order->invoice_number;
+                $row['Receipt Number']    = $order->receipt_number;
+                $row['Total Amount']  = $order->total_amount;
+                $row['Budget']  = $order->budget;
+                $row['Status']  = $order->status;
+                $row['Payment Status']  = $order->payment_status;
+                $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
+
+                fputcsv($file, array($row['Order Number'], $row['Invoice Number'], $row['Receipt Number'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Display the specified manual order for editing.
      */
     public function show(ManualOrder $order)
