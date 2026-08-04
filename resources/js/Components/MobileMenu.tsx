@@ -147,6 +147,7 @@ export default function MobileMenu({ isOpen, onClose, onLoginClick, auth, langua
                                     <Link
                                         key={item.href}
                                         href={item.href}
+                                        prefetch={['mount', 'hover']}
                                         onClick={onClose}
                                         aria-current={isActive(item.href) ? 'page' : undefined}
                                         className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 ${
@@ -198,6 +199,7 @@ export default function MobileMenu({ isOpen, onClose, onLoginClick, auth, langua
                                     <Link
                                         key={item.href}
                                         href={item.href}
+                                        prefetch={['mount', 'hover']}
                                         onClick={onClose}
                                         className="flex min-h-12 items-center gap-3 rounded-2xl px-3 text-sm font-bold text-gray-700 transition hover:-translate-y-0.5 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 dark:text-gray-200 dark:hover:bg-gray-900"
                                     >

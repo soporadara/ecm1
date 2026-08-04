@@ -57,6 +57,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+    html, body, #app {
+        @apply min-h-[100dvh];
+    }
     h1, h2, h3, h4, h5, h6 {
         @apply font-semibold text-brand-dark;
     }

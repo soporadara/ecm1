@@ -74,18 +74,20 @@ export default function Index({ testimonials }: any) {
         }
     };
 
-    const renderPreview = (file: File | null, existingPath?: string) => {
-        if (file) {
+    const renderPreview = (file: File | null, existingPath?: string, onRemove?: () => void) => {
+        if (file || existingPath) {
             return (
                 <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-admin-border/50 bg-admin-surface-muted relative group">
-                    <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-            );
-        }
-        if (existingPath) {
-            return (
-                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-admin-border/50 bg-admin-surface-muted relative group">
-                    <img src={`/storage/${existingPath}`} alt="Current" className="w-full h-full object-cover" />
+                    <img src={file ? URL.createObjectURL(file) : `/storage/${existingPath}`} alt="Preview" className="w-full h-full object-cover" />
+                    {onRemove && (
+                        <button 
+                            type="button" 
+                            onClick={onRemove}
+                            className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    )}
                 </div>
             );
         }
@@ -207,8 +209,14 @@ export default function Index({ testimonials }: any) {
                                 <div>
                                     <label className="block text-sm font-bold mb-1">Upload Profile Picture</label>
                                     <div className="flex gap-4 items-center">
-                                        {renderPreview(data.image, editingTestimonial?.image_path)}
-                                        <input type="file" accept="image/*" onChange={e => setData('image', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
+                                        {renderPreview(
+                                            data.image, 
+                                            data.remove_image ? undefined : editingTestimonial?.image_path,
+                                            () => setData(d => ({ ...d, image: null, remove_image: true }))
+                                        )}
+                                        <input type="file" accept="image/*" onChange={e => {
+                                            setData(d => ({ ...d, image: e.target.files ? e.target.files[0] : null, remove_image: false }));
+                                        }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                     </div>
                                 </div>
 
@@ -216,15 +224,27 @@ export default function Index({ testimonials }: any) {
                                     <div>
                                         <label className="block text-sm font-bold mb-1">Product Image 1 (Optional)</label>
                                         <div className="flex gap-4 items-center">
-                                            {renderPreview(data.product_image_1, editingTestimonial?.product_image_1)}
-                                            <input type="file" accept="image/*" onChange={e => setData('product_image_1', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
+                                            {renderPreview(
+                                                data.product_image_1, 
+                                                data.remove_product_image_1 ? undefined : editingTestimonial?.product_image_1,
+                                                () => setData(d => ({ ...d, product_image_1: null, remove_product_image_1: true }))
+                                            )}
+                                            <input type="file" accept="image/*" onChange={e => {
+                                                setData(d => ({ ...d, product_image_1: e.target.files ? e.target.files[0] : null, remove_product_image_1: false }));
+                                            }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                         </div>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold mb-1">Product Image 2 (Optional)</label>
                                         <div className="flex gap-4 items-center">
-                                            {renderPreview(data.product_image_2, editingTestimonial?.product_image_2)}
-                                            <input type="file" accept="image/*" onChange={e => setData('product_image_2', e.target.files ? e.target.files[0] : null)} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
+                                            {renderPreview(
+                                                data.product_image_2, 
+                                                data.remove_product_image_2 ? undefined : editingTestimonial?.product_image_2,
+                                                () => setData(d => ({ ...d, product_image_2: null, remove_product_image_2: true }))
+                                            )}
+                                            <input type="file" accept="image/*" onChange={e => {
+                                                setData(d => ({ ...d, product_image_2: e.target.files ? e.target.files[0] : null, remove_product_image_2: false }));
+                                            }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                         </div>
                                     </div>
                                 </div>

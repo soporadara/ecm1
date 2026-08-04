@@ -192,5 +192,15 @@
     "skip_now": "Skip for Now",
     "save_continue": "Save and Continue",
     "saving": "Saving..."
+  },
+  "contact": {
+    "about_company": "About our company",
+    "cambodia_office": "Cambodia Office",
+    "about_text": "At MVM Logistics, we specialize in helping customers order products and deliver goods safely and efficiently between Vietnam and Cambodia. Whether you need assistance purchasing products, creating a manual order, or arranging cross-border shipping, our team provides reliable support every step of the way.\n\nOur website makes it easy to submit an order request, track deliveries, and communicate with our logistics team. Customers can also contact us directly for personalized assistance with sourcing products, transportation, customs coordination, and delivery arrangements.\n\nWe operate two warehouses to ensure faster processing and smoother logistics operations: one warehouse in Vietnam and one warehouse in Cambodia. This allows us to manage shipments efficiently in both directions, from Vietnam to Cambodia and Cambodia to Vietnam.\n\nAt MVM Logistics, our goal is to provide a simple, transparent, and dependable logistics experience—from your first request to your final doorstep delivery. Please view our Vietnam and Cambodia warehouse locations below for more information."
+  },
+  "home": {
+    "testimonial_1": "The service was exactly what I needed. They helped coordinate my logistics perfectly, and the tracking was very reliable. Highly recommended!",
+    "testimonial_2": "Very professional team! The manual order process was simple and fast. My package arrived safely in Vietnam without any issues.",
+    "testimonial_3": "Great experience. They took care of sourcing and shipping, saving me a lot of time. Will definitely use their services again."
   }
 }

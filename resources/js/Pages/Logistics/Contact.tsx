@@ -1,9 +1,11 @@
 import { Head, usePage } from '@inertiajs/react';
 import { Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import MainLayout from '../../Layouts/MainLayout';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function Contact() {
     const { general_settings }: any = usePage().props;
+    const { t, i18n } = useTranslation();
 
     const phone = general_settings?.support_phone || general_settings?.phone || '+855 12 345 678';
     const email = general_settings?.support_email || general_settings?.email || 'support@rafel.com';
@@ -33,8 +35,24 @@ export default function Contact() {
         { label: 'Business Hours', value: 'Monday to Saturday, 8:30 AM - 6:00 PM', href: '#', icon: Clock },
     ];
 
-    const aboutTitle = general_settings?.about_title || 'About our company';
-    const aboutText = general_settings?.about_text || 'We help customers create manual orders, source products, coordinate logistics, and track deliveries with clear support from request to doorstep.';
+    const currentLang = i18n.language;
+
+    const aboutTitle = currentLang === 'en' ? (general_settings?.about_title || t('contact.about_company')) : t('contact.about_company');
+    const aboutText = currentLang === 'en' ? (general_settings?.about_text || t('contact.about_text')) : t('contact.about_text');
+
+    // Helper to safely extract src if user pasted a full <iframe src="..."> HTML string instead of just a URL
+    const getEmbedUrl = (embedUrl: string | undefined, address: string | undefined, defaultAddress: string) => {
+        if (!embedUrl) {
+            return `https://www.google.com/maps?q=${encodeURIComponent(address || defaultAddress)}&output=embed`;
+        }
+        if (embedUrl.includes('<iframe') && embedUrl.includes('src="')) {
+            const match = embedUrl.match(/src="([^"]+)"/);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        return embedUrl;
+    };
 
     return (
         <MainLayout title="Contact Us" description="Contact support for manual orders, tracking, receipts, and account help.">
@@ -87,7 +105,7 @@ export default function Contact() {
                             <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <h3 className="text-xl font-black text-gray-950 dark:text-white flex items-center gap-2">
                                     <MapPin className="w-5 h-5 text-brand-primary" />
-                                    Cambodia Office
+                                    {t('contact.cambodia_office')}
                                 </h3>
                                 {general_settings?.cambodia_map_open_url && (
                                     <a href={general_settings.cambodia_map_open_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-brand-primary/10 hover:text-brand-primary transition-colors dark:bg-gray-800 dark:text-gray-300">
@@ -96,7 +114,7 @@ export default function Contact() {
                                 )}
                             </div>
                             <iframe 
-                                src={general_settings?.cambodia_map_embed_url || `https://www.google.com/maps?q=${encodeURIComponent(general_settings?.cambodia_map_address || 'Phnom Penh, Cambodia')}&output=embed`} 
+                                src={getEmbedUrl(general_settings?.cambodia_map_embed_url, general_settings?.cambodia_map_address, 'Phnom Penh, Cambodia')} 
                                 width="100%" 
                                 height="300" 
                                 style={{ border: 0, borderRadius: '0.75rem', flexGrow: 1 }} 
@@ -123,7 +141,7 @@ export default function Contact() {
                                 )}
                             </div>
                             <iframe 
-                                src={general_settings?.vietnam_map_embed_url || `https://www.google.com/maps?q=${encodeURIComponent(general_settings?.vietnam_map_address || 'Ho Chi Minh City, Vietnam')}&output=embed`} 
+                                src={getEmbedUrl(general_settings?.vietnam_map_embed_url, general_settings?.vietnam_map_address, 'Ho Chi Minh City, Vietnam')} 
                                 width="100%" 
                                 height="300" 
                                 style={{ border: 0, borderRadius: '0.75rem', flexGrow: 1 }} 

@@ -96,34 +96,42 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'open_login_modal' => fn () => $request->session()->get('open_login_modal'),
             ],
-            'global_nav' => fn () => [
-                'categories' => \App\Models\Category::whereNull('parent_id')->with('children')->get(),
-                'brands' => \App\Models\Brand::take(6)->get(),
-                'collections' => \App\Models\Collection::where('is_active', true)->take(6)->get(),
-                'menus' => \Illuminate\Support\Facades\Schema::hasTable('menus') 
-                    ? \App\Models\Menu::where('is_active', true)
-                        ->with(['items' => fn($q) => $q->whereNull('parent_id')->orderBy('order')->with('children')])
-                        ->orderBy('id')
-                        ->get() 
-                    : [],
-                'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages')
-                    ? \App\Models\Page::where('is_published', true)->get(['id', 'title', 'slug', 'is_system'])
-                    : [],
-            ],
-            'seo_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
-                ? \App\Models\Setting::where('group', 'seo')->pluck('value', 'key')->toArray()
-                : [],
-            'general_settings' => \Illuminate\Support\Facades\Schema::hasTable('settings')
-                ? \App\Models\Setting::where('group', 'general')->pluck('value', 'key')->toArray()
-                : [],
-            'admin_counts' => $request->is('admin/*') || $request->is('admin') ? [
-                'customers' => \App\Models\User::where('role', 'customer')->count(),
-                'orders' => \Illuminate\Support\Facades\Schema::hasTable('manual_orders') ? \DB::table('manual_orders')->count() : 0,
-                'posts' => \Illuminate\Support\Facades\Schema::hasTable('posts') ? \DB::table('posts')->count() : 0,
-                'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages') ? \DB::table('pages')->count() : 0,
-                'categories' => \Illuminate\Support\Facades\Schema::hasTable('post_categories') ? \DB::table('post_categories')->count() : 0,
-                'staff' => \App\Models\User::where('is_admin', true)->orWhereIn('role', ['admin', 'super_admin'])->count(),
-            ] : [],
+            'global_nav' => fn () => \Illuminate\Support\Facades\Cache::remember('global_nav', 60, function () {
+                return [
+                    'categories' => \App\Models\Category::whereNull('parent_id')->with('children')->get(),
+                    'brands' => \App\Models\Brand::take(6)->get(),
+                    'collections' => \App\Models\Collection::where('is_active', true)->take(6)->get(),
+                    'menus' => \Illuminate\Support\Facades\Schema::hasTable('menus') 
+                        ? \App\Models\Menu::where('is_active', true)
+                            ->with(['items' => fn($q) => $q->whereNull('parent_id')->orderBy('order')->with('children')])
+                            ->orderBy('id')
+                            ->get() 
+                        : [],
+                    'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages')
+                        ? \App\Models\Page::where('is_published', true)->get(['id', 'title', 'slug', 'is_system'])
+                        : [],
+                ];
+            }),
+            'seo_settings' => \Illuminate\Support\Facades\Cache::remember('seo_settings', 60, function () {
+                return \Illuminate\Support\Facades\Schema::hasTable('settings')
+                    ? \App\Models\Setting::where('group', 'seo')->pluck('value', 'key')->toArray()
+                    : [];
+            }),
+            'general_settings' => \Illuminate\Support\Facades\Cache::remember('general_settings', 60, function () {
+                return \Illuminate\Support\Facades\Schema::hasTable('settings')
+                    ? \App\Models\Setting::where('group', 'general')->pluck('value', 'key')->toArray()
+                    : [];
+            }),
+            'admin_counts' => $request->is('admin/*') || $request->is('admin') ? \Illuminate\Support\Facades\Cache::remember('admin_counts', 60, function () {
+                return [
+                    'customers' => \App\Models\User::where('role', 'customer')->count(),
+                    'orders' => \Illuminate\Support\Facades\Schema::hasTable('manual_orders') ? \DB::table('manual_orders')->count() : 0,
+                    'posts' => \Illuminate\Support\Facades\Schema::hasTable('posts') ? \DB::table('posts')->count() : 0,
+                    'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages') ? \DB::table('pages')->count() : 0,
+                    'categories' => \Illuminate\Support\Facades\Schema::hasTable('post_categories') ? \DB::table('post_categories')->count() : 0,
+                    'staff' => \App\Models\User::where('is_admin', true)->orWhereIn('role', ['admin', 'super_admin'])->count(),
+                ];
+            }) : [],
             'cart' => $cart,
         ];
     }

@@ -28,7 +28,7 @@ export default function MegaMenu({ categories, collections, brands, onClose }: M
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-4xl">
                     
                     {/* All item */}
-                    <Link href="/shop" className="flex items-center gap-4 group/item" onClick={onClose}>
+                    <Link href="/shop" prefetch={['mount', 'hover']} className="flex items-center gap-4 group/item" onClick={onClose}>
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 group-hover/item:shadow-md transition-shadow">
                             <img src={defaultImage} alt="All" className="w-full h-full object-cover group-hover/item:scale-110 transition-transform" />
                         </div>
@@ -37,7 +37,7 @@ export default function MegaMenu({ categories, collections, brands, onClose }: M
 
                     {/* Dynamic categories */}
                     {categories?.map((cat) => (
-                        <Link key={cat.id} href={`/shop?category=${cat.slug}`} className="flex items-center gap-4 group/item" onClick={onClose}>
+                        <Link key={cat.id} href={`/shop?category=${cat.slug}`} prefetch={['mount', 'hover']} className="flex items-center gap-4 group/item" onClick={onClose}>
                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 group-hover/item:shadow-md transition-shadow">
                                 <img src={categoryImages[cat.name] || defaultImage} alt={cat.name} className="w-full h-full object-cover group-hover/item:scale-110 transition-transform" />
                             </div>

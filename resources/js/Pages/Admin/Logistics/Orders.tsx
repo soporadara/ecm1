@@ -43,11 +43,13 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
     const [status, setStatus] = React.useState(filters.status || '');
     const [paymentStatus, setPaymentStatus] = React.useState(filters.payment_status || '');
 
-    const handleFilter = (e?: React.FormEvent) => {
+    const handleFilter = (e?: React.FormEvent, overrides?: { search?: string, status?: string, paymentStatus?: string }) => {
         if (e) e.preventDefault();
         router.get('/admin/logistics/orders', { 
-            search, status, payment_status: paymentStatus 
-        }, { preserveState: true });
+            search: overrides?.search ?? search, 
+            status: overrides?.status ?? status, 
+            payment_status: overrides?.paymentStatus ?? paymentStatus 
+        }, { preserveState: true, preserveScroll: true });
     };
 
     const statusColors: Record<string, string> = {
@@ -93,7 +95,7 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Status</label>
                         <select 
                             value={status} 
-                            onChange={e => { setStatus(e.target.value); handleFilter(); }}
+                            onChange={e => { setStatus(e.target.value); handleFilter(undefined, { status: e.target.value }); }}
                             className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
                         >
                             <option value="">All Statuses</option>
@@ -104,16 +106,13 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Payment</label>
                         <select 
                             value={paymentStatus} 
-                            onChange={e => { setPaymentStatus(e.target.value); handleFilter(); }}
+                            onChange={e => { setPaymentStatus(e.target.value); handleFilter(undefined, { paymentStatus: e.target.value }); }}
                             className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
                         >
                             <option value="">All Payments</option>
                             {paymentStatuses.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                         </select>
                     </div>
-                    <button type="submit" className="px-6 py-2 bg-admin-primary text-white text-sm font-semibold rounded-lg hover:bg-admin-primary-hover transition-colors">
-                        Filter
-                    </button>
                     <a 
                         href={`/admin/logistics/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}`}
                         className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"

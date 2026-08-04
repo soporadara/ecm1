@@ -94,7 +94,8 @@ function GoogleIcon() {
 
 export default function MainLayout({ children, title, description }: Props) {
     const { auth, general_settings, flash, global_nav }: any = usePage().props;
-    const { url } = usePage();
+    const { url, component } = usePage();
+    const isHome = component === 'Home';
     const { t, i18n } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -144,7 +145,7 @@ export default function MainLayout({ children, title, description }: Props) {
     const isCmsUser = Boolean(auth?.user?.is_admin) || ['admin', 'super_admin', 'logistics', 'content', 'support'].includes(auth?.user?.role);
     const customerUser = auth?.user && !isCmsUser ? auth.user : null;
     const isCustomerProfileIncomplete = Boolean(customerUser && customerUser.profile_is_complete === false);
-    const isTransparent = url === '/' && !isScrolled;
+    const isTransparent = isHome && !isScrolled;
     const headerTheme = isTransparent ? 'light' : 'dark';
 
     const isActiveNavItem = (href: string) => {
@@ -423,7 +424,7 @@ export default function MainLayout({ children, title, description }: Props) {
     ].join(' ');
 
     return (
-        <div className="min-h-screen overflow-x-hidden bg-white font-sans antialiased text-brand-gray transition-colors duration-300 [--public-header-height:5rem] [--public-header-offset:5rem] dark:bg-gray-950 dark:text-gray-300 lg:[--public-header-height:6rem] lg:[--public-header-offset:6rem]">
+        <div className="min-h-[100dvh] overflow-x-hidden bg-white font-sans antialiased text-brand-gray transition-colors duration-300 [--public-header-height:5rem] [--public-header-offset:5rem] dark:bg-gray-950 dark:text-gray-300 lg:[--public-header-height:6rem] lg:[--public-header-offset:6rem]">
             <SeoHead title={title} description={description} />
             <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-xl focus:bg-white focus:px-4 focus:py-3 focus:text-sm focus:font-black focus:text-gray-950 focus:shadow-lg">
                 Skip to content
@@ -472,7 +473,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                 );
                             }
                             return (
-                                <Link key={item.href} href={item.href} className={navLinkClass(item.href)} aria-current={isActiveNavItem(item.href) ? 'page' : undefined}>
+                                <Link key={item.href} href={item.href} prefetch={['mount', 'hover']} className={navLinkClass(item.href)} aria-current={isActiveNavItem(item.href) ? 'page' : undefined}>
                                     <item.icon className="h-4 w-4" aria-hidden="true" />
                                     {item.dynamicLabel}
                                 </Link>
@@ -490,7 +491,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         <Menu className="h-6 w-6" aria-hidden="true" />
                     </button>
 
-                    <Link href="/" className="inline-flex justify-self-center rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60">
+                    <Link href="/" prefetch={['mount', 'hover']} className="inline-flex justify-self-center rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60">
                         {general_settings?.store_logo ? (
                             <img
                                 src={general_settings.store_logo}
@@ -507,7 +508,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             <RegionSettings language={language} changeLanguage={changeLanguage} tone={isTransparent ? 'light' : 'dark'} />
                         </div>
 
-                        <Link href="/my-orders" className={iconButtonClass} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
+                        <Link href="/my-orders" prefetch={['mount', 'hover']} className={iconButtonClass} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
                             <ShoppingCart className="h-5 w-5" aria-hidden="true" />
                         </Link>
 
@@ -663,7 +664,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                         <img src={general_settings?.store_logo || '/logo.png'} alt={general_settings?.store_name || 'MVM Logistics'} className="h-8 w-8 object-contain" />
                                     </span>
                                     <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
-                                        {translatedLabel('login.customer_portal', 'Customer Portal')}
+                                        {general_settings?.store_name || 'MVM Logistics'}
                                     </p>
                                 </div>
 
@@ -694,7 +695,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                     <img src={general_settings?.store_logo || '/logo.png'} alt={general_settings?.store_name || 'MVM Logistics'} className="h-7 w-7 object-contain" />
                                 </span>
                                 <div className="min-w-0">
-                                    <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-brand-primary">{translatedLabel('login.customer_portal', 'Customer Portal')}</p>
+                                    <p className="text-[0.6rem] font-black uppercase tracking-[0.3em] text-brand-primary">{general_settings?.store_name || 'MVM Logistics'}</p>
                                     <h2 id="customer-auth-choice-title" className="truncate text-xl font-black tracking-tight text-slate-950 dark:text-white sm:text-2xl">
                                         {authMode === 'signin' ? translatedLabel('nav.customer_login', 'Customer Login') : translatedLabel('login.signup_heading', 'Create Account')}
                                     </h2>
@@ -968,7 +969,7 @@ export default function MainLayout({ children, title, description }: Props) {
                 </div>
             )}
 
-            <main id="main-content" className={`flex min-h-screen flex-1 flex-col ${url === '/' ? '' : 'pt-[var(--public-header-offset)]'}`}>
+            <main id="main-content" className={`flex min-h-[100dvh] flex-1 flex-col ${isHome ? '' : 'pt-[var(--public-header-offset)]'}`}>
                 {children}
             </main>
 
@@ -993,7 +994,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
                                 {dynamicCustomerNav.map((item) => (
                                     <li key={item.href}>
-                                        <Link href={item.href} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50">
+                                        <Link href={item.href} prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50">
                                             <item.icon className="h-4 w-4" aria-hidden="true" />
                                             {item.dynamicLabel}
                                         </Link>
@@ -1005,9 +1006,9 @@ export default function MainLayout({ children, title, description }: Props) {
                         <div>
                             <h3 className="text-sm font-black uppercase tracking-wider text-gray-950 dark:text-white">{translatedLabel('footer.customer_service', 'Customer Service')}</h3>
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                                <li><Link href="/my-orders" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PackageCheck className="h-4 w-4" />{translatedLabel('nav.my_orders', 'My Orders')}</Link></li>
-                                <li><Link href="/receipts" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><FileText className="h-4 w-4" />{translatedLabel('nav.receipts', 'Receipts')}</Link></li>
-                                <li><Link href="/contact" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PhoneCall className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
+                                <li><Link href="/my-orders" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PackageCheck className="h-4 w-4" />{translatedLabel('nav.my_orders', 'My Orders')}</Link></li>
+                                <li><Link href="/receipts" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><FileText className="h-4 w-4" />{translatedLabel('nav.receipts', 'Receipts')}</Link></li>
+                                <li><Link href="/contact" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PhoneCall className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
                             </ul>
                         </div>
 
@@ -1020,11 +1021,7 @@ export default function MainLayout({ children, title, description }: Props) {
                     </div>
 
                     <div className="mt-12 border-t border-gray-200 pt-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                        {url?.startsWith('/blog') ? (
-                            <>&copy; 2026 Soporadara Rin. All Rights Reserved.</>
-                        ) : (
-                            <>&copy; 2026 MVM. All Rights Reserved.</>
-                        )}
+                        &copy; 2026 MVM Logistics. All Rights Reserved.
                     </div>
                 </div>
             </footer>

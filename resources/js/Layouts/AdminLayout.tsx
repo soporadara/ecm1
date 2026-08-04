@@ -64,6 +64,7 @@ const NavItemLink = ({ item, collapsed, active }: { item: NavItem; collapsed: bo
             <Link
                 ref={linkRef}
                 href={item.href}
+                prefetch={['mount', 'hover']}
                 className={`
                     group flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all duration-300
                     ${collapsed ? 'justify-center' : ''}
@@ -158,6 +159,21 @@ export default function AdminLayout({ children, title, actions }: Props) {
     const initialNotifications = auth?.admin_notifications || [];
     const [liveNotifications, setLiveNotifications] = useState(initialNotifications);
 
+    const [notifPermission, setNotifPermission] = useState(
+        typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
+    );
+
+    const handleEnableNotifs = () => {
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                setNotifPermission(permission);
+                if (permission === 'granted') {
+                    toast.success("Browser notifications enabled!");
+                }
+            });
+        }
+    };
+
     useEffect(() => {
         if (typeof window !== 'undefined' && (window as any).Echo) {
             (window as any).Echo.channel('admin-notifications')
@@ -176,6 +192,19 @@ export default function AdminLayout({ children, title, actions }: Props) {
                     };
                     
                     setLiveNotifications((prev: any) => [newNotif, ...prev]);
+
+                    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                        const notif = new Notification(newNotif.title, {
+                            body: e.message,
+                            icon: storeLogo || '/favicon.ico'
+                        });
+                        notif.onclick = () => {
+                            window.focus();
+                            if (e.url) {
+                                router.get(e.url);
+                            }
+                        };
+                    }
                 });
                 
             return () => {
@@ -247,11 +276,11 @@ export default function AdminLayout({ children, title, actions }: Props) {
             href: '/admin/logistics/reports',
             icon: <Icon d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
         }] : []),
-        {
+        ...(hasPermission('team_notes.view') ? [{
             label: 'Team Notes',
             href: '/admin/notes',
             icon: <Icon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
-        }
+        }] : [])
     ];
 
     const blogNavItems: NavItem[] = [
@@ -281,11 +310,11 @@ export default function AdminLayout({ children, title, actions }: Props) {
             href: '/admin/banners',
             icon: <Icon d="M4 5h16M4 19h16M4 5v14m16-14v14M8 9h8m-8 4h5" />,
         }] : []),
-        {
+        ...(hasPermission('testimonials.view') ? [{
             label: 'Testimonials',
             href: '/admin/testimonials',
             icon: <Icon d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />,
-        },
+        }] : []),
         ...(hasPermission('available_sites.view') ? [{
             label: 'Available Sites',
             href: '/admin/available-sites',
@@ -366,7 +395,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
         <div className="flex flex-col h-full bg-admin-surface border-r border-admin-border/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative z-10">
             {/* Store Header */}
             <div className={`flex items-center pt-6 pb-5 ${sidebarCollapsed ? 'px-4 justify-center' : 'px-5 md:px-8'}`}>
-                <Link href="/admin" className="flex items-center gap-3 min-w-0">
+                <Link href="/admin" prefetch={['mount', 'hover']} className="flex items-center gap-3 min-w-0">
                     {storeLogo ? (
                         <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-white rounded-xl shadow-sm overflow-hidden p-1 border border-admin-border/50">
                             <img src={storeLogo} alt="MVM Logistic" className="w-full h-full object-contain" />
@@ -445,12 +474,12 @@ export default function AdminLayout({ children, title, actions }: Props) {
                             <p className="text-sm font-bold text-admin-text truncate">{auth?.user?.name}</p>
                             <p className="text-xs text-admin-text-muted truncate">{auth?.user?.email}</p>
                         </div>
-                        <Link href="/admin/profile" className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors">
+                        <Link href="/admin/profile" prefetch={['mount', 'hover']} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors">
                             <Icon d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" className="w-5 h-5 opacity-70" />
                             My Profile
                         </Link>
                         {hasPermission('settings.view') && (
-                            <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors">
+                            <Link href="/admin/settings" prefetch={['mount', 'hover']} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors">
                                 <Icon d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" className="w-5 h-5 opacity-70" />
                                 Settings
                             </Link>
@@ -467,11 +496,11 @@ export default function AdminLayout({ children, title, actions }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-admin-bg flex">
+        <div className="min-h-[100dvh] bg-admin-bg flex">
             {/* Desktop Sidebar */}
             <aside
                 className={`
-                    hidden md:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-300 ease-in-out
+                    hidden md:flex flex-col fixed left-0 top-0 h-[100dvh] z-40 transition-all duration-300 ease-in-out
                     ${collapsed ? 'w-20' : 'w-64'}
                 `}
             >
@@ -498,7 +527,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
             {/* Mobile Sidebar */}
             <aside
                 className={`
-                    fixed left-0 top-0 h-full w-[min(90vw,22rem)] z-50 transition-transform duration-300 ease-in-out md:hidden
+                    fixed left-0 top-0 h-[100dvh] w-[min(90vw,22rem)] z-50 transition-transform duration-300 ease-in-out md:hidden
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >
@@ -507,7 +536,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
 
             {/* Main Content */}
             <div
-                className={`flex-1 flex flex-col w-full min-w-0 min-h-screen transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}
+                className={`flex-1 flex flex-col w-full min-w-0 min-h-[100dvh] transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}
             >
                 {/* Top Bar */}
                 <header className="sticky top-0 z-30 flex items-center justify-between border-b border-admin-border/40 bg-admin-bg/92 px-3 py-3 backdrop-blur-xl sm:px-4 md:static md:border-0 md:bg-transparent md:px-8 md:pb-4 md:pt-8 md:backdrop-blur-none">
@@ -563,8 +592,16 @@ export default function AdminLayout({ children, title, actions }: Props) {
                             {/* Notification Dropdown */}
                             {showNotifications && (
                                 <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden max-h-[80vh] flex flex-col">
-                                    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                                         <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
+                                        {notifPermission !== 'granted' && (
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleEnableNotifs(); }}
+                                                className="text-xs text-admin-primary hover:underline font-semibold bg-admin-primary/10 px-2 py-1 rounded-md"
+                                            >
+                                                Enable Browser Popups
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="overflow-y-auto flex-1">
                                         {liveNotifications.length > 0 ? (
@@ -605,7 +642,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                         )}
                                     </div>
                                     <div className="p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-center">
-                                        <Link href="/admin/logistics/orders" className="text-sm font-bold text-brand-primary hover:underline">
+                                        <Link href="/admin/logistics/orders" prefetch={['mount', 'hover']} className="text-sm font-bold text-brand-primary hover:underline">
                                             View all manual orders
                                         </Link>
                                     </div>
@@ -632,14 +669,14 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                 <p className="text-[13px] font-bold text-admin-text leading-none mb-1">{auth?.user?.name}</p>
                                 <p className="text-[11px] font-bold text-admin-text-muted capitalize leading-none">{auth?.user?.role?.replace('_', ' ')}</p>
                             </div>
-                            <Link href="/admin/profile" className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm hover:opacity-80 transition-opacity">
+                            <Link href="/admin/profile" prefetch={['mount', 'hover']} className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm hover:opacity-80 transition-opacity">
                                 {auth?.user?.avatar ? (
                                     <img src={auth.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     auth?.user?.name?.charAt(0)?.toUpperCase()
                                 )}
                             </Link>
-                            <Link href="/admin/profile" className="w-4 h-4 text-admin-text-muted ml-1 hover:text-admin-text transition-colors">
+                            <Link href="/admin/profile" prefetch={['mount', 'hover']} className="w-4 h-4 text-admin-text-muted ml-1 hover:text-admin-text transition-colors">
                                 <Icon d="M19 9l-7 7-7-7" />
                             </Link>
                         </div>

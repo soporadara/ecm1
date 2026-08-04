@@ -92,6 +92,8 @@ class SettingController extends Controller
             }
         }
 
+        \Illuminate\Support\Facades\Cache::forget('general_settings');
+
         return back()->with('success', 'General settings updated successfully.');
     }
 }

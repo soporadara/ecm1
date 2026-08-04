@@ -325,7 +325,17 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                     </div>
                                 </div>
                                 {logoPreview && (
-                                    <div className="mt-5 bg-white dark:bg-gray-800 rounded-xl p-5 inline-block shadow-md border border-gray-200 dark:border-gray-700">
+                                    <div className="mt-5 bg-white dark:bg-gray-800 rounded-xl p-5 inline-block shadow-md border border-gray-200 dark:border-gray-700 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setData('store_logo', '');
+                                                setLogoPreview('');
+                                            }}
+                                            className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
                                         <img src={logoPreview} alt="Store Logo" className="h-20 object-contain rounded-lg" />
                                     </div>
                                 )}
@@ -361,7 +371,17 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                     </div>
                                 </div>
                                 {faviconPreview && (
-                                    <div className="mt-5 bg-white dark:bg-gray-800 rounded-xl p-5 inline-block shadow-md border border-gray-200 dark:border-gray-700">
+                                    <div className="mt-5 bg-white dark:bg-gray-800 rounded-xl p-5 inline-block shadow-md border border-gray-200 dark:border-gray-700 relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setData('store_favicon', '');
+                                                setFaviconPreview('');
+                                            }}
+                                            className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        </button>
                                         <img src={faviconPreview} alt="Store Favicon" className="h-14 object-contain rounded-lg" />
                                     </div>
                                 )}

@@ -157,5 +157,15 @@
     "skip_now": "Bỏ qua lúc này",
     "save_continue": "Lưu và tiếp tục",
     "saving": "Đang lưu..."
+  },
+  "contact": {
+    "about_company": "Về công ty chúng tôi",
+    "cambodia_office": "Văn phòng Campuchia",
+    "about_text": "Tại MVM Logistics, chúng tôi chuyên hỗ trợ khách hàng đặt mua sản phẩm và vận chuyển hàng hóa an toàn, hiệu quả giữa Việt Nam và Campuchia. Cho dù quý khách cần hỗ trợ mua hàng, tạo đơn hàng thủ công hay sắp xếp vận chuyển xuyên biên giới, đội ngũ của chúng tôi luôn cung cấp sự hỗ trợ đáng tin cậy trong từng giai đoạn.\n\nTrang web của chúng tôi giúp việc gửi yêu cầu đặt hàng, theo dõi giao hàng và liên lạc với đội ngũ hậu cần trở nên dễ dàng. Khách hàng cũng có thể liên hệ trực tiếp với chúng tôi để nhận được sự hỗ trợ cá nhân hóa trong việc tìm kiếm nguồn hàng, vận chuyển, điều phối hải quan và sắp xếp giao nhận.\n\nChúng tôi vận hành hai kho hàng nhằm đảm bảo quá trình xử lý nhanh chóng và hoạt động hậu cần suôn sẻ hơn: một kho tại Việt Nam và một kho tại Campuchia. Điều này cho phép chúng tôi quản lý các chuyến hàng một cách hiệu quả theo cả hai chiều, từ Việt Nam sang Campuchia và từ Campuchia về Việt Nam.\n\nTại MVM Logistics, mục tiêu của chúng tôi là mang đến trải nghiệm dịch vụ hậu cần đơn giản, minh bạch và đáng tin cậy—từ yêu cầu đầu tiên của quý khách cho đến khi giao hàng tận cửa. Vui lòng xem vị trí kho hàng tại Việt Nam và Campuchia của chúng tôi dưới đây để biết thêm thông tin."
+  },
+  "home": {
+    "testimonial_1": "Dịch vụ chính xác là những gì tôi cần. Họ đã giúp điều phối hậu cần của tôi một cách hoàn hảo và việc theo dõi rất đáng tin cậy. Rất khuyến khích!",
+    "testimonial_2": "Đội ngũ rất chuyên nghiệp! Quy trình đặt hàng thủ công rất đơn giản và nhanh chóng. Gói hàng của tôi đã đến Việt Nam an toàn mà không có bất kỳ vấn đề nào.",
+    "testimonial_3": "Trải nghiệm tuyệt vời. Họ đã lo việc tìm nguồn hàng và vận chuyển, giúp tôi tiết kiệm rất nhiều thời gian. Chắc chắn sẽ sử dụng dịch vụ của họ một lần nữa."
   }
 }

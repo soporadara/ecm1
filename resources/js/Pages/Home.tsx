@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useTranslation } from '../hooks/useTranslation';
 import MainLayout from '../Layouts/MainLayout';
 import SupportFAB from '../Components/SupportFAB';
@@ -284,45 +284,45 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                         <h2 className="mt-3 text-3xl lg:text-4xl font-black text-gray-950 dark:text-white mb-12 font-serif">What Our Customers Say</h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-                            {testimonials.map((t: any) => (
-                                <div key={t.id} className="bg-gray-50 dark:bg-gray-900 rounded-[20px] p-8 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                            {testimonials.map((testimonial: any) => (
+                                <div key={testimonial.id} className="bg-gray-50 dark:bg-gray-900 rounded-[20px] p-8 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
                                     <div>
                                         <div className="flex gap-1 mb-4 text-[#ef5a3d]">
-                                            {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+                                            {'★'.repeat(testimonial.rating)}{'☆'.repeat(5 - testimonial.rating)}
                                         </div>
-                                        <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed mb-8 italic">"{t.content}"</p>
+                                        <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed mb-8 italic">"{testimonial.content.startsWith('home.testimonial') ? t(testimonial.content) : testimonial.content}"</p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 shrink-0">
-                                            {t.image_path ? (
-                                                <img src={`/storage/${t.image_path}`} alt={t.customer_name} className="w-full h-full object-cover" />
+                                            {testimonial.image_path ? (
+                                                <img src={`/storage/${testimonial.image_path}`} alt={testimonial.customer_name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">
-                                                    {t.customer_name.charAt(0)}
+                                                    {testimonial.customer_name.charAt(0)}
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-gray-950 dark:text-white text-sm">{t.customer_name}</h4>
+                                            <h4 className="font-bold text-gray-950 dark:text-white text-sm">{testimonial.customer_name}</h4>
                                             <p className="text-xs text-gray-500">Verified Customer</p>
                                         </div>
                                     </div>
-                                    {(t.product_image_1 || t.product_image_2) && (
+                                    {(testimonial.product_image_1 || testimonial.product_image_2) && (
                                         <div className="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 flex gap-3">
-                                            {t.product_image_1 && (
+                                            {testimonial.product_image_1 && (
                                                 <img 
-                                                    src={`/storage/${t.product_image_1}`} 
+                                                    src={`/storage/${testimonial.product_image_1}`} 
                                                     alt="Product Image" 
                                                     className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border border-gray-200 dark:border-gray-700" 
-                                                    onClick={() => setLightboxImage(`/storage/${t.product_image_1}`)} 
+                                                    onClick={() => setLightboxImage(`/storage/${testimonial.product_image_1}`)} 
                                                 />
                                             )}
-                                            {t.product_image_2 && (
+                                            {testimonial.product_image_2 && (
                                                 <img 
-                                                    src={`/storage/${t.product_image_2}`} 
+                                                    src={`/storage/${testimonial.product_image_2}`} 
                                                     alt="Product Image" 
                                                     className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border border-gray-200 dark:border-gray-700" 
-                                                    onClick={() => setLightboxImage(`/storage/${t.product_image_2}`)} 
+                                                    onClick={() => setLightboxImage(`/storage/${testimonial.product_image_2}`)} 
                                                 />
                                             )}
                                         </div>

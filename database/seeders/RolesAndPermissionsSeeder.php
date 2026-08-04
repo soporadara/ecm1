@@ -113,6 +113,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'roles.delete',
             'permissions.manage',
 
+            // Team Notes & Testimonials
+            'team_notes.view',
+            'testimonials.view',
+
             // Settings & Security
             'settings.view',
             'settings.update',
@@ -151,30 +155,14 @@ class RolesAndPermissionsSeeder extends Seeder
         $orderManager = Role::firstOrCreate(['name' => 'Logistics']);
         $orderManager->syncPermissions([
             'dashboard.view',
+            'customers.view',
             'orders.view', 'orders.update', 'orders.update_status',
-            'customers.view',
-            'receipts.view',
-        ]);
-
-        // Support
-        $customerSupport = Role::firstOrCreate(['name' => 'Support']);
-        $customerSupport->syncPermissions([
-            'dashboard.view',
-            'customers.view',
-            'orders.view'
-        ]);
-
-        // Content Manager
-        $contentEditor = Role::firstOrCreate(['name' => 'Content Manager']);
-        $contentEditor->syncPermissions([
-            'dashboard.view',
-            'pages.view', 'pages.create', 'pages.update', 'pages.publish',
-            'posts.view', 'posts.create', 'posts.update', 'posts.publish',
-            'media.view', 'media.upload', 'media.update',
-            'menus.view', 'menus.manage',
+            'reports.view',
+            'team_notes.view',
             'banners.view', 'banners.manage',
-            'available_sites.view', 'available_sites.manage',
+            'testimonials.view',
             'popups.view', 'popups.manage',
+            'receipts.view',
         ]);
 
         // Customer

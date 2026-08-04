@@ -56,7 +56,7 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                className="absolute inset-0 bg-black/40 transition-opacity duration-300"
                 onClick={handleClose}
             ></div>
             
@@ -72,28 +72,27 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
                     </svg>
                 </button>
 
-                <div className="relative max-h-[88vh] w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={creativeStyle}>
+                <div className="relative max-h-[88vh] w-full overflow-hidden bg-transparent" style={creativeStyle}>
                     {hasImage ? (
                         <img src={popup.image_path || ''} alt={popup.title} className="absolute inset-0 h-full w-full object-cover" onError={() => setImageFailed(true)} />
                     ) : (
                         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${popup.accent_color || '#ff4c3b'}, #021d35)` }} />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
 
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-center text-white sm:p-10">
+                    <div className="absolute inset-x-0 bottom-0 p-3 sm:p-10 text-center text-white drop-shadow-md">
                         {popup.badge_text && (
-                            <span className="mx-auto mb-5 inline-flex w-fit rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-white" style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}>
+                            <span className="mx-auto mb-2 sm:mb-5 inline-flex w-fit rounded-full px-3 py-1 sm:px-4 sm:py-2 text-[0.6rem] sm:text-xs font-black uppercase tracking-[0.22em] text-white" style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}>
                                 {popup.badge_text}
                             </span>
                         )}
                         {popup.heading && (
-                            <h2 className="text-3xl font-black leading-tight text-white sm:text-4xl font-serif">
+                            <h2 className="text-lg sm:text-4xl font-black leading-tight text-white font-serif drop-shadow-lg">
                                 {popup.heading}
                             </h2>
                         )}
 
                         {popup.description && (
-                            <p className="mx-auto mt-5 max-w-md text-base font-semibold leading-7 text-white/85">
+                            <p className="mx-auto mt-1 sm:mt-5 max-w-md text-xs sm:text-base font-semibold leading-snug sm:leading-7 text-white/90 drop-shadow-lg">
                                 {popup.description}
                             </p>
                         )}
@@ -102,7 +101,7 @@ export default function PromoPopup({ popup }: PromoPopupProps) {
                             <Link
                                 href={popup.link_url}
                                 onClick={handleClose}
-                                className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-8 text-sm font-black uppercase tracking-widest text-white shadow-lg transition hover:brightness-95 sm:mx-auto sm:w-auto"
+                                className="mt-3 sm:mt-8 inline-flex min-h-[2.25rem] sm:min-h-12 w-full items-center justify-center rounded-xl px-4 sm:px-8 text-[0.65rem] sm:text-sm font-black uppercase tracking-widest text-white shadow-lg transition hover:brightness-95 sm:mx-auto sm:w-auto"
                                 style={{ backgroundColor: popup.accent_color || '#ff4c3b' }}
                             >
                                 {popup.button_label || 'Shop Now'}

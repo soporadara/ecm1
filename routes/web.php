@@ -12,6 +12,8 @@ Route::get('/debug-pages', function () {
     return \App\Models\Page::get(['id', 'title', 'slug', 'is_system']);
 });
 
+
+
 // Auth routes
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;

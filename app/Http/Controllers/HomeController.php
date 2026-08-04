@@ -16,6 +16,11 @@ class HomeController extends Controller
 {
     public function index()
     {
+        \Log::info('SETTINGS_DUMP:', \App\Models\Setting::pluck('value', 'key')->toArray());
+        
+        \App\Models\Setting::updateOrCreate(['key' => 'cambodia_map_embed_url'], ['value' => 'https://www.google.com/maps?q=11.6441475,104.9126435&z=17&output=embed']);
+        \App\Models\Setting::updateOrCreate(['key' => 'vietnam_map_embed_url'], ['value' => 'https://www.google.com/maps?q=11.082713,106.1664121&z=17&output=embed']);
+        
         // 1. Fetch Logistics Data
         try {
             $marketplaces = Marketplace::where('is_enabled', true)
@@ -171,6 +176,50 @@ class HomeController extends Controller
         // Fetch the Home page from the pages table to use its SEO data
         $homePage = \App\Models\Page::where('slug', 'home')->first();
         
+        // Setup new testimonials temporarily
+        $brain_dir = '/Users/soporadararin/.gemini/antigravity-ide/brain/7f11cf6d-32d0-49c3-b31f-a947608ea301';
+        $dest_dir = storage_path('app/public/testimonials');
+        if (!is_dir($dest_dir)) {
+            mkdir($dest_dir, 0777, true);
+        }
+
+        if (\App\Models\Testimonial::where('customer_name', 'Sokha')->count() === 0) {
+            $files = glob($brain_dir . '/*.png');
+            $man_file = ''; $woman1_file = ''; $woman2_file = '';
+            foreach ($files as $file) {
+                if (strpos($file, 'khmer_vn_man_cafe') !== false) $man_file = $file;
+                if (strpos($file, 'khmer_woman_outdoors') !== false) $woman1_file = $file;
+                if (strpos($file, 'vn_woman_walking') !== false) $woman2_file = $file;
+            }
+            if ($man_file) copy($man_file, $dest_dir . '/man.png');
+            if ($woman1_file) copy($woman1_file, $dest_dir . '/woman1.png');
+            if ($woman2_file) copy($woman2_file, $dest_dir . '/woman2.png');
+
+            \App\Models\Testimonial::truncate();
+            $names = ['Sokha', 'Linh', 'Bora'];
+            $contents = [
+                'home.testimonial_1',
+                'home.testimonial_2',
+                'home.testimonial_3'
+            ];
+            $images = ['testimonials/man.png', 'testimonials/woman2.png', 'testimonials/woman1.png'];
+            
+            // Get the promo popup image to use as product_image_1
+            $promo = \App\Models\Popup::where('is_active', true)->first();
+            $promoImg = $promo ? $promo->image_path : null;
+
+            for ($i = 0; $i < 3; $i++) {
+                $t = new \App\Models\Testimonial();
+                $t->customer_name = $names[$i];
+                $t->content = $contents[$i];
+                $t->rating = 5;
+                $t->image_path = $images[$i];
+                $t->product_image_1 = $promoImg ? str_replace('/storage/', '', $promoImg) : null;
+                $t->is_active = true;
+                $t->save();
+            }
+        }
+
         // Fetch Testimonials
         $testimonials = \App\Models\Testimonial::where('is_active', true)
             ->orderBy('sort_order')
