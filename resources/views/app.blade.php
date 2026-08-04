@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title inertia>{{ config('app.name', 'Pengu') }}</title>
+        <title inertia>MVM Logistics - Cross-Border Logistics</title>
         <script>
             (() => {
                 try {
@@ -39,6 +39,13 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        <!-- Google Bot Crawler Data (Bots don't execute JS, so we need raw HTML here) -->
+        <div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
+            <h1>MVM Logistics</h1>
+            <p>MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.</p>
+            <a href="https://mvmlogistics.asia/privacy-policy">Privacy Policy</a>
+            <a href="https://mvmlogistics.asia/terms-of-service">Terms of Service</a>
+        </div>
         @inertia
     </body>
 </html>

@@ -35,7 +35,7 @@ export default function SupportFAB() {
                 ></div>
             )}
 
-            <div className="fixed bottom-6 right-6 z-[90] flex flex-col items-end gap-3">
+            <div className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-[110] flex flex-col items-end gap-3">
                 {/* Expanded Icons (Visible when clicked) */}
                 <div 
                     className={`flex flex-col gap-3 transition-all duration-300 transform origin-bottom ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-4 pointer-events-none'}`}

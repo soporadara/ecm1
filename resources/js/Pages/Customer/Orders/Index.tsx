@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '../../../Layouts/MainLayout';
 import { useCurrency } from '../../../Contexts/CurrencyContext';
+import MobileOrdersView from './MobileOrdersView';
 
 const statusToneClass: Record<string, string> = {
     green: 'bg-green-50 text-green-700',
@@ -17,7 +18,13 @@ export default function CustomerOrdersIndex({ orders }: any) {
         <MainLayout title="My Orders">
             <Head title="My Orders" />
 
-            <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full">
+            {/* Mobile View */}
+            <div className="block lg:hidden">
+                <MobileOrdersView orders={orders} statusToneClass={statusToneClass} />
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden lg:block max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full">
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <Link href="/dashboard" className="text-sm font-bold text-brand-primary hover:underline">Back to dashboard</Link>

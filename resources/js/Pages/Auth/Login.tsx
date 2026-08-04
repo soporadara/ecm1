@@ -10,11 +10,12 @@ import {
     getGoogleRedirectResult,
     signInWithFirebasePassword,
     signInWithGooglePopupOrRedirect,
+    signInWithFacebookPopupOrRedirect,
 } from '../../lib/firebase';
 
 type LanguageCode = 'km' | 'en' | 'vi';
 type AuthMode = 'signin' | 'signup';
-type LoadingAction = 'google-signin' | 'google-signup' | 'email-signin' | 'email-signup' | null;
+type LoadingAction = 'google-signin' | 'google-signup' | 'facebook-signin' | 'facebook-signup' | 'email-signin' | 'email-signup' | null;
 
 const languages: Array<{ code: LanguageCode; label: string }> = [
     { code: 'km', label: 'ខ្មែរ' },
@@ -29,6 +30,14 @@ function GoogleIcon() {
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
             <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z" />
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06L5.84 9.9C6.71 7.31 9.14 5.38 12 5.38z" />
+        </svg>
+    );
+}
+
+function FacebookIcon() {
+    return (
+        <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
     );
 }
@@ -129,6 +138,20 @@ export default function Login() {
 
         try {
             const result = await signInWithGooglePopupOrRedirect();
+            if (!result?.user) return;
+            await completeBackendLogin(await result.user.getIdToken(), intent);
+        } catch (authError: any) {
+            setError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
+            setLoading(null);
+        }
+    };
+
+    const handleFacebook = async (intent: AuthMode) => {
+        setLoading(intent === 'signin' ? 'facebook-signin' : 'facebook-signup');
+        setError(null);
+
+        try {
+            const result = await signInWithFacebookPopupOrRedirect();
             if (!result?.user) return;
             await completeBackendLogin(await result.user.getIdToken(), intent);
         } catch (authError: any) {
@@ -279,6 +302,16 @@ export default function Login() {
                                     {loading === 'google-signin' ? t('login.loading') : t('login.continue_google')}
                                 </button>
 
+                                <button
+                                    type="button"
+                                    onClick={() => handleFacebook('signin')}
+                                    disabled={busy || !firebaseIsConfigured}
+                                    className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-[#a3747d]/50 hover:bg-[#fffafa] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a3747d]/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                >
+                                    {loading === 'facebook-signin' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FacebookIcon />}
+                                    {loading === 'facebook-signin' ? t('login.loading') : 'Continue with Facebook'}
+                                </button>
+
                                 <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                     <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                     {t('login.or_continue_email')}
@@ -356,6 +389,16 @@ export default function Login() {
                                 >
                                     {loading === 'google-signup' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <GoogleIcon />}
                                     {loading === 'google-signup' ? t('login.loading') : t('login.signup_google')}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleFacebook('signup')}
+                                    disabled={busy || !firebaseIsConfigured}
+                                    className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-[#a3747d]/50 hover:bg-[#fffafa] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a3747d]/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                >
+                                    {loading === 'facebook-signup' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FacebookIcon />}
+                                    {loading === 'facebook-signup' ? t('login.loading') : 'Sign up with Facebook'}
                                 </button>
 
                                 <div className="flex items-center gap-4 py-1 text-sm font-bold text-slate-400 dark:text-slate-500">

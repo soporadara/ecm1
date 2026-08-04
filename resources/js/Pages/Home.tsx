@@ -5,6 +5,7 @@ import SupportFAB from '../Components/SupportFAB';
 import PromoPopup from '../Components/PromoPopup';
 import { useRef, useState, useEffect } from 'react';
 import { CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Globe2, PackageCheck, ShoppingBag, Truck } from 'lucide-react';
+import MobileDashboard from '../Components/Premium/MobileDashboard';
 
 export default function Home({ banners, bannerMode = 'slideshow', page, marketplaces = [], popup = null, testimonials = [], recentBlogs = [] }: any) {
     const { t, i18n } = useTranslation();
@@ -87,6 +88,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
             <Head>
                 <title>MVM Logistic — Cross-Border Logistics</title>
             </Head>
+
 
             {/* Slideshow Banner Section */}
             <section className="relative overflow-hidden bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
@@ -386,6 +388,35 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                     </div>
                 </section>
             )}
+
+            {/* About MVM Logistics Application Purpose Section (Google Verification & SEO) */}
+            <section className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-16 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-5xl mx-auto text-center">
+                    <span className="inline-block px-3 py-1 bg-brand-primary/10 text-brand-primary text-xs font-black uppercase tracking-wider rounded-full mb-3">
+                        Official Application Purpose
+                    </span>
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl mb-6">
+                        About MVM Logistics
+                    </h2>
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto mb-8 font-medium">
+                        <strong className="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> is a premier cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-4xl mx-auto">
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Cross-Border Logistics</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Streamlined freight forwarding and customs clearing for imported goods.</p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Manual Product Sourcing</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Submit manual buy requests and let our team handle purchasing and payment confirmation.</p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Secure Account Access</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Sign in securely via Google Authentication or Phone PIN to track your personal orders.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <SupportFAB />
             <PromoPopup popup={popup} />

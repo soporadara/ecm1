@@ -55,6 +55,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
             'role' => 'customer',
+            'customer_code' => \App\Models\User::generateCustomerCode(),
         ]);
 
         Auth::guard('web')->login($user);
@@ -305,6 +306,7 @@ class AuthController extends Controller
                 'password' => null,
                 'is_admin' => false,
                 'role' => 'customer',
+                'customer_code' => \App\Models\User::generateCustomerCode(),
             ]);
         }
 

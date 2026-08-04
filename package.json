@@ -36,6 +36,7 @@
         "@tiptap/react": "^3.28.0",
         "@tiptap/starter-kit": "^3.28.0",
         "firebase": "^12.16.0",
+        "framer-motion": "^12.43.0",
         "i18next": "^26.3.6",
         "laravel-echo": "^2.4.0",
         "lucide-react": "^1.25.0",

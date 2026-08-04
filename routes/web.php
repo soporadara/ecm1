@@ -278,3 +278,8 @@ Now, imagine doing that exact same job with a mini excavator.',
     );
 });
 
+Route::inertia('/notifications', 'Notifications')->name('notifications');
+Route::inertia('/settings', 'Settings')->name('settings');
+Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy');
+Route::inertia('/terms-of-service', 'TermsOfService')->name('terms');
+

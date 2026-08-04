@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import { signOutFirebase } from '@/lib/firebase';
+import MobileProfileView from '../Components/Premium/MobileProfileView';
 
 export default function Profile() {
     const { auth } = usePage().props as any;
@@ -133,7 +134,13 @@ export default function Profile() {
         <MainLayout>
             <Head title="My Profile" />
 
-            <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 space-y-8">
+            {/* Mobile View */}
+            <div className="block lg:hidden">
+                <MobileProfileView user={user} logout={logout} />
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden lg:block max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 space-y-8">
                 
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Account Settings</h1>
@@ -352,6 +359,7 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
+
 
             {/* SMS Verification Modal */}
             {showSmsModal && (

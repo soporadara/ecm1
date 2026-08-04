@@ -31,8 +31,10 @@ import {
     CheckCircle2,
 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
-import MobileMenu from '../Components/MobileMenu';
+import BottomNavigation from '../Components/Premium/BottomNavigation';
+import ManualOrderSheet from '../Components/Premium/ManualOrderSheet';
 import SupportFAB from '../Components/SupportFAB';
+
 import RegionSettings from '../Components/RegionSettings';
 import SeoHead from '../Components/SeoHead';
 import {
@@ -41,6 +43,7 @@ import {
     getGoogleRedirectResult,
     signInWithFirebasePassword,
     signInWithGooglePopupOrRedirect,
+    signInWithFacebookPopupOrRedirect,
     signOutFirebase,
 } from '../lib/firebase';
 
@@ -52,7 +55,7 @@ interface Props {
 
 type LanguageCode = 'km' | 'en' | 'vi';
 type AuthMode = 'signin' | 'signup';
-type AuthLoadingAction = 'google-signin' | 'google-signup' | 'email-signin' | 'email-signup' | null;
+type AuthLoadingAction = 'google-signin' | 'google-signup' | 'facebook-signin' | 'facebook-signup' | 'email-signin' | 'email-signup' | null;
 
 const languageStorageToCode: Record<string, LanguageCode> = {
     km: 'km',
@@ -92,12 +95,20 @@ function GoogleIcon() {
     );
 }
 
+function FacebookIcon() {
+    return (
+        <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+        </svg>
+    );
+}
+
 export default function MainLayout({ children, title, description }: Props) {
     const { auth, general_settings, flash, global_nav }: any = usePage().props;
     const { url, component } = usePage();
     const isHome = component === 'Home';
     const { t, i18n } = useTranslation();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [language, setLanguage] = useState<LanguageCode>('km');
@@ -110,7 +121,7 @@ export default function MainLayout({ children, title, description }: Props) {
     const [showModalSignupPassword, setShowModalSignupPassword] = useState(false);
     const [showModalConfirmPassword, setShowModalConfirmPassword] = useState(false);
     const [signinForm, setSigninForm] = useState({ email: '', password: '', remember: true });
-    const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', passwordConfirmation: '', acceptTerms: false });
+    const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '', password: '', passwordConfirmation: '', acceptTerms: false });
     const accountRef = useRef<HTMLDivElement>(null);
     const accountButtonRef = useRef<HTMLButtonElement>(null);
     const authCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -211,11 +222,11 @@ export default function MainLayout({ children, title, description }: Props) {
     }, []);
 
     useEffect(() => {
-        document.body.style.overflow = isMobileMenuOpen || isAuthChoiceOpen ? 'hidden' : 'unset';
+        document.body.style.overflow = isManualOrderOpen || isAuthChoiceOpen ? 'hidden' : 'unset';
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isMobileMenuOpen, isAuthChoiceOpen]);
+    }, [isManualOrderOpen, isAuthChoiceOpen]);
 
     useEffect(() => {
         if (!isAuthChoiceOpen) return;
@@ -335,6 +346,20 @@ export default function MainLayout({ children, title, description }: Props) {
         }
     };
 
+    const handleFacebookAuth = async (intent: AuthMode) => {
+        setAuthLoading(intent === 'signin' ? 'facebook-signin' : 'facebook-signup');
+        setAuthError(null);
+
+        try {
+            const result = await signInWithFacebookPopupOrRedirect();
+            if (!result?.user) return;
+            await completeBackendLogin(await result.user.getIdToken(), intent);
+        } catch (authError: any) {
+            setAuthError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
+            setAuthLoading(null);
+        }
+    };
+
     const submitModalSignIn = (event: FormEvent) => {
         event.preventDefault();
         setAuthLoading('email-signin');
@@ -379,6 +404,7 @@ export default function MainLayout({ children, title, description }: Props) {
         router.post('/register', {
             name: signupForm.name,
             email: signupForm.email,
+            phone: signupForm.phone,
             password: signupForm.password,
             password_confirmation: signupForm.passwordConfirmation,
         }, {
@@ -430,18 +456,17 @@ export default function MainLayout({ children, title, description }: Props) {
                 Skip to content
             </a>
 
-            <MobileMenu
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-                pages={global_nav?.pages || []}
-                auth={auth}
-                language={language}
-                changeLanguage={changeLanguage}
-                isDarkMode={isDarkMode}
-                toggleDarkMode={toggleDarkMode}
-                storeName={general_settings?.store_name || 'RafelEiffel'}
-                storeLogo={general_settings?.store_logo}
-                onLoginClick={() => openAuthModal('signin')}
+            <BottomNavigation onOpenManualOrder={() => {
+                if (!customerUser) {
+                    openAuthModal('signin');
+                } else {
+                    router.visit('/manual-order');
+                }
+            }} unreadNotificationsCount={auth?.user?.unread_notifications || 0} />
+            
+            <ManualOrderSheet 
+                isOpen={isManualOrderOpen}
+                onClose={() => setIsManualOrderOpen(false)}
             />
 
             <header
@@ -481,15 +506,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         })}
                     </nav>
 
-                    <button
-                        type="button"
-                        aria-label="Open navigation menu"
-                        aria-expanded={isMobileMenuOpen}
-                        className={`${iconButtonClass} justify-self-start lg:hidden`}
-                        onClick={() => setIsMobileMenuOpen(true)}
-                    >
-                        <Menu className="h-6 w-6" aria-hidden="true" />
-                    </button>
+
 
                     <Link href="/" prefetch={['mount', 'hover']} className="inline-flex justify-self-center rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60">
                         {general_settings?.store_logo ? (
@@ -503,7 +520,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         )}
                     </Link>
 
-                    <div className="flex items-center justify-end gap-1 lg:gap-2">
+                    <div className="hidden lg:flex items-center justify-end gap-1 lg:gap-2">
                         <div className="hidden xl:block">
                             <RegionSettings language={language} changeLanguage={changeLanguage} tone={isTransparent ? 'light' : 'dark'} />
                         </div>
@@ -752,6 +769,16 @@ export default function MainLayout({ children, title, description }: Props) {
                                         {authLoading === 'google-signin' ? t('login.loading') : t('login.continue_google')}
                                     </button>
 
+                                    <button
+                                        type="button"
+                                        onClick={() => handleFacebookAuth('signin')}
+                                        disabled={authLoading !== null || !firebaseIsConfigured}
+                                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                    >
+                                        {authLoading === 'facebook-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon />}
+                                        {authLoading === 'facebook-signin' ? t('login.loading') : 'Continue with Facebook'}
+                                    </button>
+
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                         {t('login.or_continue_email')}
@@ -836,8 +863,18 @@ export default function MainLayout({ children, title, description }: Props) {
                                         disabled={authLoading !== null || !firebaseIsConfigured}
                                         className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-900 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 dark:border-white/10 dark:bg-slate-800 dark:text-white"
                                     >
-                                        {authLoading === 'google-signup' ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <GoogleIcon />}
+                                        {authLoading === 'google-signup' ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
                                         {authLoading === 'google-signup' ? t('login.loading') : t('login.signup_google')}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleFacebookAuth('signup')}
+                                        disabled={authLoading !== null || !firebaseIsConfigured}
+                                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                    >
+                                        {authLoading === 'facebook-signup' ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon />}
+                                        {authLoading === 'facebook-signup' ? t('login.loading') : 'Sign up with Facebook'}
                                     </button>
 
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -869,6 +906,17 @@ export default function MainLayout({ children, title, description }: Props) {
                                                 placeholder={t('login.email')}
                                                 autoComplete="email"
                                                 required
+                                            />
+                                        </label>
+                                        <label className="block sm:col-span-2">
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number (Optional)</span>
+                                            <input
+                                                type="tel"
+                                                value={signupForm.phone}
+                                                onChange={(event) => setSignupForm({ ...signupForm, phone: event.target.value })}
+                                                className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                placeholder="e.g. +855 12 345 678"
+                                                autoComplete="tel"
                                             />
                                         </label>
                                     </div>
@@ -1020,13 +1068,18 @@ export default function MainLayout({ children, title, description }: Props) {
                         </div>
                     </div>
 
-                    <div className="mt-12 border-t border-gray-200 pt-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                        &copy; 2026 MVM Logistics. All Rights Reserved.
+                    <div className="mt-12 border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                        <div>&copy; 2026 MVM Logistics. All Rights Reserved.</div>
+                        <div className="flex gap-4 mt-4 md:mt-0 font-medium">
+                            <Link href="/privacy-policy" className="hover:text-brand-primary transition">Privacy Policy</Link>
+                            <Link href="/terms-of-service" className="hover:text-brand-primary transition">Terms of Service</Link>
+                        </div>
                     </div>
                 </div>
             </footer>
             
             <SupportFAB />
+
         </div>
     );
 }
