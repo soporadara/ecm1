@@ -218,9 +218,9 @@ export default function CustomerManagement({ customers, filters }: Props) {
                                 <input type="text" value={editForm.data.phone_e164} onChange={e => editForm.setData('phone_e164', e.target.value)} className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-2 text-admin-text focus:ring-2 focus:ring-admin-primary/50" />
                                 {editForm.errors.phone_e164 && <p className="text-xs text-admin-danger mt-1">{editForm.errors.phone_e164}</p>}
                             </div>
-                            <div className="flex justify-end gap-2 mt-6 mb-6">
-                                <button type="button" onClick={() => setEditingCustomer(null)} className="px-4 py-2 text-sm font-bold text-admin-text hover:bg-admin-surface-muted rounded-xl transition">Cancel</button>
-                                <button type="submit" disabled={editForm.processing} className="px-4 py-2 text-sm font-bold bg-admin-primary text-white rounded-xl shadow-lg hover:bg-admin-primary/90 transition disabled:opacity-50">Save Changes</button>
+                            <div className="flex justify-end gap-3 mt-6 mb-6">
+                                <button type="button" onClick={() => setEditingCustomer(null)} className="px-5 py-2.5 text-sm font-bold text-admin-text hover:bg-admin-surface-muted active:scale-[0.98] rounded-xl transition-all">Cancel</button>
+                                <button type="submit" disabled={editForm.processing} className="px-5 py-2.5 text-sm font-bold bg-admin-primary text-white rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] hover:bg-admin-primary/90 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:hover:translate-y-0">Save Changes</button>
                             </div>
 
                             <div className="pt-6 border-t border-admin-border/50 flex flex-col gap-3">
@@ -255,9 +255,9 @@ export default function CustomerManagement({ customers, filters }: Props) {
                                 <label className="block text-sm font-bold text-admin-text-muted mb-1">Confirm New Password</label>
                                 <input type="password" value={passwordForm.data.password_confirmation} onChange={e => passwordForm.setData('password_confirmation', e.target.value)} className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-2 text-admin-text focus:ring-2 focus:ring-admin-primary/50" />
                             </div>
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button type="button" onClick={() => { setResettingCustomer(null); passwordForm.reset(); }} className="px-4 py-2 text-sm font-bold text-admin-text hover:bg-admin-surface-muted rounded-xl transition">Cancel</button>
-                                <button type="submit" disabled={passwordForm.processing} className="px-4 py-2 text-sm font-bold bg-admin-danger text-white rounded-xl shadow-lg hover:bg-admin-danger/90 transition disabled:opacity-50">Reset Password</button>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button type="button" onClick={() => { setResettingCustomer(null); passwordForm.reset(); }} className="px-5 py-2.5 text-sm font-bold text-admin-text hover:bg-admin-surface-muted active:scale-[0.98] rounded-xl transition-all">Cancel</button>
+                                <button type="submit" disabled={passwordForm.processing} className="px-5 py-2.5 text-sm font-bold bg-admin-danger text-white rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] hover:bg-admin-danger/90 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:hover:translate-y-0">Reset Password</button>
                             </div>
                         </form>
                     </div>

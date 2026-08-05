@@ -23,13 +23,6 @@ class ManualOrderController extends Controller
     {
         $user = auth()->user();
 
-        if (!$completion->canCreateManualOrder($user)) {
-            session()->put('profile.redirect_after_completion', '/manual-order');
-
-            return redirect()->route('profile.complete', ['gate' => 'manual-order'])
-                ->with('error', 'Complete your contact and delivery information before creating a Manual Order.');
-        }
-
         $user->load('addresses');
 
         return Inertia::render('Customer/ManualOrderForm', [

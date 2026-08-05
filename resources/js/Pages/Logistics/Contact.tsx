@@ -13,26 +13,14 @@ export default function Contact() {
     const telegram = general_settings?.telegram_url || 'https://t.me/support';
     const whatsapp = general_settings?.whatsapp_url || 'https://wa.me/85512345678';
 
-    let customSocialLinks = [];
-    try {
-        const parsed = general_settings?.social_links ? JSON.parse(general_settings.social_links) : [];
-        if (Array.isArray(parsed)) {
-            customSocialLinks = parsed;
-        }
-    } catch (e) {}
-
     const contactCards = [
-        ...customSocialLinks.map((link: any) => ({
-            label: link?.name || 'Link',
-            value: (link?.url || '').replace(/^https?:\/\//, '') || link?.name || '',
-            href: link?.url || '#',
-            iconUrl: typeof link?.icon === 'string' && link.icon.startsWith('http') ? link.icon : null,
-            icon: MessageCircle,
-        })),
-        { label: 'Phone', value: phone, href: `tel:${phone.replace(/[^\d+]/g, '')}`, icon: Phone },
-        { label: 'Email', value: email, href: `mailto:${email}`, icon: Mail },
-        { label: 'Office', value: address, href: '#', icon: MapPin },
-        { label: 'Business Hours', value: 'Monday to Saturday, 8:30 AM - 6:00 PM', href: '#', icon: Clock },
+        { label: 'Messenger', value: 'MVMLogistics', href: 'https://m.me/MVMLogistics', icon: MessengerIcon, iconUrl: null },
+        { label: 'Zalo', value: '0317669555', href: 'https://zalo.me/0317669555', icon: ZaloIcon, iconUrl: null },
+        { label: 'Telegram', value: '0317669555', href: 'https://t.me/+855317669555', icon: TelegramIcon, iconUrl: null },
+        { label: 'Phone', value: '0317669555', href: 'tel:0317669555', icon: Phone, iconUrl: null },
+        { label: 'Email', value: 'info@mvmlogistics.asia', href: 'mailto:info@mvmlogistics.asia', icon: Mail, iconUrl: null },
+        { label: 'Office', value: address, href: '#', icon: MapPin, iconUrl: null },
+        { label: 'Business Hours', value: 'Monday to Saturday, 8:30 AM - 6:00 PM', href: '#', icon: Clock, iconUrl: null },
     ];
 
     const currentLang = i18n.language;
@@ -159,5 +147,29 @@ export default function Contact() {
                 </div>
             </section>
         </MainLayout>
+    );
+}
+
+function MessengerIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+            <path d="M12 2C6.36 2 2 6.13 2 11.7c0 3.22 1.45 6.06 3.73 7.89V22l2.31-1.28c1.2.33 2.5.51 3.96.51 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm1.18 12.35l-2.07-2.22-4.05 2.22 4.45-4.73 2.1 2.22 4.02-2.22-4.45 4.73z"/>
+        </svg>
+    );
+}
+
+function TelegramIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+            <path d="M9.78 18.65c-.27 0-.23-.1-.36-.47l-1.42-4.7 10.9-6.47c.5-.3.1-.14-.23.1L5.86 13.1l-.01.01-3.66-1.15c-.8-.25-.8-.8.16-1.18L21.2 3.1c.9-.33 1.7.22 1.4 1.58l-3.23 15.2c-.24 1.15-.92 1.43-1.88.9l-4.9-3.6-2.37 2.28c-.26.26-.48.48-.98.48z"/>
+        </svg>
+    );
+}
+
+function ZaloIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+            <path d="M12 2C6.48 2 2 5.82 2 10.5c0 2.65 1.43 5.01 3.67 6.54L4.5 21l4.83-2.12c.84.22 1.73.34 2.67.34 5.52 0 10-3.82 10-8.5S17.52 2 12 2zm-1.8 11.8H7.3v-1.2l2.3-3.2H7.5V8.2h4v1.2l-2.3 3.2h2.4v1.2z"/>
+        </svg>
     );
 }

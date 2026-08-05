@@ -7,7 +7,6 @@ import {
     EmailAuthProvider,
     getAuth,
     GoogleAuthProvider,
-    FacebookAuthProvider,
     getRedirectResult,
     linkWithCredential,
     reauthenticateWithCredential,
@@ -57,10 +56,6 @@ if (firebaseAuth && import.meta.env.DEV && import.meta.env.VITE_FIREBASE_AUTH_EM
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-export const facebookProvider = new FacebookAuthProvider();
-facebookProvider.setCustomParameters({
-  'display': 'popup'
-});
 
 export async function signInWithGooglePopupOrRedirect() {
     if (!firebaseAuth) {
@@ -79,22 +74,6 @@ export async function signInWithGooglePopupOrRedirect() {
     }
 }
 
-export async function signInWithFacebookPopupOrRedirect() {
-    if (!firebaseAuth) {
-        throw Object.assign(new Error('Firebase is not configured.'), { code: 'auth/not-configured' });
-    }
-
-    try {
-        return await signInWithPopup(firebaseAuth, facebookProvider);
-    } catch (error: any) {
-        if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment'].includes(error?.code)) {
-            await signInWithRedirect(firebaseAuth, facebookProvider);
-            return null;
-        }
-
-        throw error;
-    }
-}
 
 export async function getGoogleRedirectResult() {
     if (!firebaseAuth) return null;

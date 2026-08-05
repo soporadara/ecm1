@@ -17,6 +17,12 @@
     --color-brand-gray: #666666;
     --color-brand-light: #f5f5f5;
 
+    /* Override tailwind default dark colors to be slate-based and brighter */
+    --color-gray-950: #0f172a;
+    --color-gray-900: #1e293b;
+    --color-gray-800: #334155;
+    --color-gray-700: #475569;
+
     /* CMS Redesign Tokens */
     --color-admin-bg: var(--admin-bg);
     --color-admin-surface: var(--admin-surface);
@@ -42,12 +48,12 @@
         --admin-secondary: #FF8A4C;
     }
     .dark {
-        --admin-bg: #111815;
-        --admin-surface: #19221E;
-        --admin-surface-muted: #212D27;
+        --admin-bg: #0f172a;
+        --admin-surface: #1e293b;
+        --admin-surface-muted: #243049;
         --admin-text: #F3F7F5;
         --admin-text-muted: #AEB9B3;
-        --admin-border: #2D3933;
+        --admin-border: #334155;
         --admin-primary: #28B99B;
         --admin-primary-hover: #36C8A9;
         --admin-secondary: #F4A259;
@@ -109,6 +115,8 @@
         @apply transition duration-200 ease-out hover:-translate-y-px hover:shadow-md active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100;
     }
 }
+
+
 
 @media (prefers-reduced-motion: reduce) {
     *,

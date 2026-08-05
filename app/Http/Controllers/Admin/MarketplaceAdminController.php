@@ -59,6 +59,8 @@ class MarketplaceAdminController extends Controller
         if ($data['slug'] === '') {
             $data['slug'] = 'site-'.Str::lower(Str::random(8));
         }
+        $data['is_enabled'] = true;
+        $data['open_in_new_tab'] = true;
         $data['created_by'] = $request->user()->id;
         $data['updated_by'] = $request->user()->id;
 
@@ -111,6 +113,20 @@ class MarketplaceAdminController extends Controller
         $marketplace->update($data);
 
         return back()->with('success', 'Available site updated.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'required|integer|exists:marketplaces,id',
+        ]);
+
+        foreach ($data['order'] as $index => $id) {
+            Marketplace::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return back()->with('success', 'Order updated successfully.');
     }
 
     public function destroy(Marketplace $marketplace)

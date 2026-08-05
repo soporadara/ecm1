@@ -6,20 +6,13 @@ export default function SupportFAB() {
     const [isOpen, setIsOpen] = useState(false);
     const { general_settings }: any = usePage().props;
 
-    let links: any[] = [];
-    if (general_settings?.fab_links) {
-        try {
-            links = JSON.parse(general_settings.fab_links);
-        } catch (e) {
-            links = [];
-        }
-    } else {
-        // Fallback to legacy settings if fab_links is not configured
-        if (general_settings?.fab_email) links.push({ id: 'email', name: 'Email', url: `mailto:${general_settings.fab_email}`, icon_url: null });
-        if (general_settings?.fab_phone) links.push({ id: 'phone', name: 'Phone', url: `tel:${general_settings.fab_phone}`, icon_url: null });
-        if (general_settings?.fab_messenger) links.push({ id: 'messenger', name: 'Messenger', url: general_settings.fab_messenger, icon_url: null });
-        if (general_settings?.fab_telegram) links.push({ id: 'telegram', name: 'Telegram', url: general_settings.fab_telegram, icon_url: null });
-    }
+    const links = [
+        { id: 'messenger', name: 'Messenger', url: 'https://m.me/MVMLogistics', icon_url: null },
+        { id: 'zalo', name: 'Zalo', url: 'https://zalo.me/0317669555', icon_url: null },
+        { id: 'telegram', name: 'Telegram', url: 'https://t.me/+855317669555', icon_url: null },
+        { id: 'phone', name: 'Phone', url: 'tel:0317669555', icon_url: null },
+        { id: 'email', name: 'Email', url: 'mailto:info@mvmlogistics.asia', icon_url: null },
+    ];
 
     if (!links || links.length === 0) {
         return null;
@@ -51,6 +44,8 @@ export default function SupportFAB() {
                         if (link.id === 'phone' || link.name.toLowerCase().includes('whatsapp') || link.name.toLowerCase().includes('phone')) fallbackBg = 'bg-green-500';
                         else if (link.id === 'messenger' || link.name.toLowerCase().includes('messenger')) fallbackBg = 'bg-[#00B2FF]';
                         else if (link.id === 'telegram' || link.name.toLowerCase().includes('telegram')) fallbackBg = 'bg-[#0088cc]';
+                        else if (link.id === 'zalo' || link.name.toLowerCase().includes('zalo')) fallbackBg = 'bg-blue-600';
+                        else if (link.id === 'email' || link.name.toLowerCase().includes('email')) fallbackBg = 'bg-red-500';
                         else if (link.name.toLowerCase().includes('tiktok')) fallbackBg = 'bg-black';
 
                         return (
@@ -70,11 +65,16 @@ export default function SupportFAB() {
                                         <img src={link.icon_url} alt={link.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-5 h-5 flex items-center justify-center">
-                                            {/* Generic icon if no image provided */}
-                                            {link.name.toLowerCase().includes('phone') || link.id === 'phone' ? (
+                                            {link.id === 'phone' ? (
                                                 <Phone className="w-5 h-5" />
-                                            ) : link.name.toLowerCase().includes('mail') || link.id === 'email' ? (
+                                            ) : link.id === 'email' ? (
                                                 <Mail className="w-5 h-5" />
+                                            ) : link.id === 'messenger' ? (
+                                                <MessengerIcon />
+                                            ) : link.id === 'telegram' ? (
+                                                <TelegramIcon />
+                                            ) : link.id === 'zalo' ? (
+                                                <ZaloIcon />
                                             ) : (
                                                 <MessageCircle className="w-5 h-5" />
                                             )}
@@ -115,5 +115,29 @@ export default function SupportFAB() {
                 </div>
             </div>
         </>
+    );
+}
+
+function MessengerIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+            <path d="M12 2C6.36 2 2 6.13 2 11.7c0 3.22 1.45 6.06 3.73 7.89V22l2.31-1.28c1.2.33 2.5.51 3.96.51 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm1.18 12.35l-2.07-2.22-4.05 2.22 4.45-4.73 2.1 2.22 4.02-2.22-4.45 4.73z"/>
+        </svg>
+    );
+}
+
+function TelegramIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+            <path d="M9.78 18.65c-.27 0-.23-.1-.36-.47l-1.42-4.7 10.9-6.47c.5-.3.1-.14-.23.1L5.86 13.1l-.01.01-3.66-1.15c-.8-.25-.8-.8.16-1.18L21.2 3.1c.9-.33 1.7.22 1.4 1.58l-3.23 15.2c-.24 1.15-.92 1.43-1.88.9l-4.9-3.6-2.37 2.28c-.26.26-.48.48-.98.48z"/>
+        </svg>
+    );
+}
+
+function ZaloIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+            <path d="M12 2C6.48 2 2 5.82 2 10.5c0 2.65 1.43 5.01 3.67 6.54L4.5 21l4.83-2.12c.84.22 1.73.34 2.67.34 5.52 0 10-3.82 10-8.5S17.52 2 12 2zm-1.8 11.8H7.3v-1.2l2.3-3.2H7.5V8.2h4v1.2l-2.3 3.2h2.4v1.2z"/>
+        </svg>
     );
 }

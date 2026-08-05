@@ -65,7 +65,7 @@ export default function RegionSettings({ language, changeLanguage, variant = 'he
         isDrawer
             ? 'bg-gray-50 text-gray-900 hover:bg-white dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800'
             : transparentLightText
-                ? 'text-white hover:bg-white/12'
+                ? 'text-gray-950 lg:text-white hover:bg-black/5 lg:hover:bg-white/12 dark:text-white dark:hover:bg-white/10'
                 : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
     ].join(' ');
 
@@ -119,7 +119,7 @@ export default function RegionSettings({ language, changeLanguage, variant = 'he
                 )}
             </div>
 
-            <div className={isDrawer ? 'relative' : 'relative'}>
+            <div className={isDrawer ? 'relative' : 'relative hidden lg:block'}>
                 {isDrawer && <p className="mb-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Currency</p>}
                 <button
                     ref={currencyButtonRef}

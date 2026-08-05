@@ -17,10 +17,12 @@ class ProfileController extends Controller
      */
     public function editAdmin(Request $request)
     {
+        $socialProviders = ['google'];
+
         return Inertia::render('Admin/Profile', [
             'mustVerifyEmail' => $request->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail,
             'status' => session('status'),
-            'isGoogleOnly' => in_array(($request->user()->authentication_provider ?? $request->user()->firebase_provider), ['google', 'facebook']) && blank($request->user()->password),
+            'isGoogleOnly' => in_array(($request->user()->authentication_provider ?? $request->user()->firebase_provider), $socialProviders) && blank($request->user()->password),
             'hasGoogleLinked' => \Illuminate\Support\Facades\DB::table('staff_login_providers')
                 ->where('user_id', $request->user()->id)
                 ->where('provider', 'google')

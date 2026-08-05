@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm, router } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 
 interface AuthModalProps {
@@ -10,6 +11,8 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
     const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>(initialMode);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
     // Login Form
     const loginForm = useForm({
@@ -63,6 +66,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             setForgotStep('email');
             setForgotMessage(null);
             setForgotError(null);
+            setShowPassword(false);
+            setShowConfirmPassword(false);
         }
         return () => {
             document.body.style.overflow = '';
@@ -300,13 +305,23 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                             </div>
                             <div>
                                 <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white mb-2">Password</label>
-                                <input 
-                                    type="password" 
-                                    required 
-                                    value={loginForm.data.password}
-                                    onChange={e => loginForm.setData('password', e.target.value)}
-                                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
-                                />
+                                <div className="relative">
+                                    <input 
+                                        type={showPassword ? 'text' : 'password'} 
+                                        required 
+                                        value={loginForm.data.password}
+                                        onChange={e => loginForm.setData('password', e.target.value)}
+                                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl pl-4 pr-11 py-3.5 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="flex items-center justify-between pt-2">
                                 <label className="flex items-center gap-2 cursor-pointer group">
@@ -318,7 +333,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                             <button 
                                 type="submit" 
                                 disabled={loginForm.processing}
-                                className="w-full mt-4 bg-brand-primary hover:bg-brand-secondary text-white font-bold py-4 rounded-2xl shadow-[0_8px_20px_-8px_rgba(var(--brand-primary-rgb),0.5)] transition disabled:opacity-50"
+                                className="w-full mt-4 bg-brand-primary hover:bg-brand-secondary active:scale-[0.98] text-white font-bold py-4 rounded-2xl shadow-[0_8px_20px_-8px_rgba(var(--brand-primary-rgb),0.5)] hover:shadow-[0_12px_24px_-8px_rgba(var(--brand-primary-rgb),0.6)] transition-all disabled:opacity-50 disabled:active:scale-100"
                             >
                                 {loginForm.processing ? 'Signing In...' : 'Sign In'}
                             </button>
@@ -351,30 +366,50 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                             </div>
                             <div>
                                 <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white mb-2">Password</label>
-                                <input 
-                                    type="password" 
-                                    required 
-                                    value={signupForm.data.password}
-                                    onChange={e => signupForm.setData('password', e.target.value)}
-                                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
-                                />
+                                <div className="relative">
+                                    <input 
+                                        type={showPassword ? 'text' : 'password'} 
+                                        required 
+                                        value={signupForm.data.password}
+                                        onChange={e => signupForm.setData('password', e.target.value)}
+                                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl pl-4 pr-11 py-3 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white mb-2">Confirm Password</label>
-                                <input 
-                                    type="password" 
-                                    required 
-                                    value={signupForm.data.password_confirmation}
-                                    onChange={e => signupForm.setData('password_confirmation', e.target.value)}
-                                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
-                                />
+                                <div className="relative">
+                                    <input 
+                                        type={showConfirmPassword ? 'text' : 'password'} 
+                                        required 
+                                        value={signupForm.data.password_confirmation}
+                                        onChange={e => signupForm.setData('password_confirmation', e.target.value)}
+                                        className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl pl-4 pr-11 py-3 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                                        tabIndex={-1}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 {signupForm.errors.password && <p className="text-red-500 text-xs mt-1 font-bold">{signupForm.errors.password}</p>}
                             </div>
                             
                             <button 
                                 type="submit" 
                                 disabled={signupForm.processing}
-                                className="w-full mt-4 bg-brand-primary hover:bg-brand-secondary text-white font-bold py-4 rounded-2xl shadow-[0_8px_20px_-8px_rgba(var(--brand-primary-rgb),0.5)] transition disabled:opacity-50"
+                                className="w-full mt-4 bg-brand-primary hover:bg-brand-secondary active:scale-[0.98] text-white font-bold py-4 rounded-2xl shadow-[0_8px_20px_-8px_rgba(var(--brand-primary-rgb),0.5)] hover:shadow-[0_12px_24px_-8px_rgba(var(--brand-primary-rgb),0.6)] transition-all disabled:opacity-50 disabled:active:scale-100"
                             >
                                 {signupForm.processing ? 'Creating Account...' : 'Create Account'}
                             </button>
@@ -413,7 +448,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                                             {forgotPin.map((digit, index) => (
                                                 <input
                                                     key={index}
-                                                    ref={(el) => (pinRefs.current[index] = el)}
+                                                    ref={(el) => { pinRefs.current[index] = el; }}
                                                     type="text"
                                                     maxLength={6}
                                                     value={digit}

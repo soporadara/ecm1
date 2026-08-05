@@ -1,7 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function StaffCreate({ roles }: any) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
@@ -71,13 +74,23 @@ export default function StaffCreate({ roles }: any) {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={data.password}
-                                    onChange={e => setData('password', e.target.value)}
-                                    className="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-brand-primary focus:border-brand-primary"
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={data.password}
+                                        onChange={e => setData('password', e.target.value)}
+                                        className="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-brand-primary focus:border-brand-primary pr-10"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
                             </div>
                         </div>
@@ -117,13 +130,13 @@ export default function StaffCreate({ roles }: any) {
                     </div>
 
                     <div className="mt-8 flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 dark:border-gray-700 sm:flex-row sm:justify-end">
-                        <Link href="/admin/staff" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-black text-gray-700 transition hover:-translate-y-0.5 hover:border-brand-primary hover:text-brand-primary dark:border-gray-700 dark:text-gray-200">
+                        <Link href="/admin/staff" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-black text-gray-700 transition hover:-translate-y-0.5 hover:border-brand-primary hover:text-brand-primary active:scale-[0.98] dark:border-gray-700 dark:text-gray-200">
                             Cancel
                         </Link>
                         <button
                             type="submit"
                             disabled={processing}
-                            className="min-h-11 rounded-xl bg-brand-primary px-6 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-secondary disabled:opacity-50"
+                            className="min-h-11 rounded-xl bg-brand-primary px-6 text-sm font-black text-white shadow-[0_8px_20px_-8px_rgba(var(--brand-primary-rgb),0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(var(--brand-primary-rgb),0.6)] hover:bg-brand-secondary active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                         >
                             {processing ? 'Creating...' : 'Create Staff Member'}
                         </button>

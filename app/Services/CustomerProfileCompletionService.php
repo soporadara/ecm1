@@ -17,9 +17,6 @@ class CustomerProfileCompletionService
             $missing['name'] = 'Full name';
         }
 
-        if (blank($customer->email) || !$customer->email_verified_at) {
-            $missing['email_verified_at'] = 'Verified login email';
-        }
 
         if (blank($customer->phone_e164)) {
             $missing['phone_e164'] = 'Phone number';
@@ -55,7 +52,7 @@ class CustomerProfileCompletionService
 
     public function canCreateManualOrder(User $customer): bool
     {
-        return $this->isComplete($customer);
+        return true;
     }
 
     public function completionRoute(): string

@@ -5,31 +5,22 @@ import { useState, useEffect } from 'react';
 
 interface Props {
     onOpenManualOrder: () => void;
+    onOpenAuthModal?: () => void;
     unreadNotificationsCount?: number;
 }
 
-export default function BottomNavigation({ onOpenManualOrder, unreadNotificationsCount = 0 }: Props) {
-    const { url } = usePage();
+export default function BottomNavigation({ onOpenManualOrder, onOpenAuthModal, unreadNotificationsCount = 0 }: Props) {
+    const { url, props } = usePage();
+    const { auth }: any = props;
+    const user = auth?.user;
+
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
 
-    // Auto-hide navigation on scroll down, show on scroll up
+    // Always visible on mobile, no auto-hide needed for app-like experience
     useEffect(() => {
-        const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-            
-            if (currentScrollY > lastScrollY && currentScrollY > 50) {
-                setIsVisible(false); // Scrolling down
-            } else {
-                setIsVisible(true);  // Scrolling up
-            }
-            
-            setLastScrollY(currentScrollY);
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [lastScrollY]);
+        setIsVisible(true);
+    }, []);
 
     const navItems = [
         { href: '/', icon: Home, label: 'Home' },
@@ -47,9 +38,9 @@ export default function BottomNavigation({ onOpenManualOrder, unreadNotification
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="fixed bottom-6 left-0 right-0 z-[100] px-4 flex justify-center pointer-events-none lg:hidden"
+                    className="fixed bottom-0 left-0 right-0 z-[100] px-0 flex justify-center pointer-events-none lg:hidden"
                 >
-                    <div className="relative pointer-events-auto flex items-center justify-between w-full max-w-[400px] h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-800/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.2)] rounded-[32px] px-2">
+                    <div className="relative pointer-events-auto flex items-center justify-between w-full h-[calc(4rem+env(safe-area-inset-bottom))] rounded-t-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.2)] px-2 pb-[env(safe-area-inset-bottom)]">
                         
                         {navItems.map((item, index) => {
                             if (item.type === 'center-button') {
@@ -70,24 +61,43 @@ export default function BottomNavigation({ onOpenManualOrder, unreadNotification
 
                             const isActive = url === item.href || url.startsWith(`${item.href}/`);
                             const Icon = item.icon!;
+                            const requiresAuth = item.href !== '/';
+
+                            const inner = (
+                                <motion.div
+                                    whileTap={{ scale: 0.85 }}
+                                    className={`w-full h-full flex flex-col items-center justify-center transition-colors ${isActive ? 'text-brand-primary' : 'text-gray-400 dark:text-gray-500'}`}
+                                >
+                                    <div className="relative p-2 rounded-2xl">
+                                        <Icon className="w-6 h-6 stroke-[1.5]" />
+                                        
+                                        {item.count ? (
+                                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-gray-900" />
+                                        ) : null}
+                                    </div>
+                                </motion.div>
+                            );
+
+                            if (requiresAuth && !user) {
+                                return (
+                                    <button
+                                        key={item.href}
+                                        onClick={onOpenAuthModal}
+                                        className="flex-1 h-full relative flex items-center justify-center focus:outline-none"
+                                    >
+                                        {inner}
+                                    </button>
+                                );
+                            }
 
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href!}
                                     prefetch={['mount', 'hover']}
-                                    className="flex-1 flex flex-col items-center justify-center h-full relative"
+                                    className="flex-1 h-full relative flex items-center justify-center"
                                 >
-                                    <motion.div
-                                        whileTap={{ scale: 0.85 }}
-                                        className={`relative p-2 rounded-2xl transition-colors ${isActive ? 'text-brand-primary' : 'text-gray-400 dark:text-gray-500'}`}
-                                    >
-                                        <Icon className="w-6 h-6 stroke-[1.5]" />
-                                        
-                                        {item.count ? (
-                                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-gray-900" />
-                                        ) : null}
-                                    </motion.div>
+                                    {inner}
                                 </Link>
                             );
                         })}

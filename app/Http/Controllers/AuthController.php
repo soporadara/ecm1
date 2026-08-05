@@ -326,17 +326,8 @@ class AuthController extends Controller
         $intended = $request->session()->pull('url.intended');
         $local = $this->safeLocalIntendedUrl($intended);
 
-        if ($local && str_starts_with($local, '/manual-order') && !$user->profile_completed_at) {
-            $request->session()->put('profile.redirect_after_completion', '/manual-order');
-            return '/profile/complete?gate=manual-order';
-        }
-
         if ($local) {
             return $local;
-        }
-
-        if ($intent === 'signup' && !$user->profile_completed_at) {
-            return '/profile/complete?onboarding=1';
         }
 
         return '/';

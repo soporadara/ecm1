@@ -43,7 +43,6 @@ import {
     getGoogleRedirectResult,
     signInWithFirebasePassword,
     signInWithGooglePopupOrRedirect,
-    signInWithFacebookPopupOrRedirect,
     signOutFirebase,
 } from '../lib/firebase';
 
@@ -346,19 +345,6 @@ export default function MainLayout({ children, title, description }: Props) {
         }
     };
 
-    const handleFacebookAuth = async (intent: AuthMode) => {
-        setAuthLoading(intent === 'signin' ? 'facebook-signin' : 'facebook-signup');
-        setAuthError(null);
-
-        try {
-            const result = await signInWithFacebookPopupOrRedirect();
-            if (!result?.user) return;
-            await completeBackendLogin(await result.user.getIdToken(), intent);
-        } catch (authError: any) {
-            setAuthError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
-            setAuthLoading(null);
-        }
-    };
 
     const submitModalSignIn = (event: FormEvent) => {
         event.preventDefault();
@@ -421,7 +407,7 @@ export default function MainLayout({ children, title, description }: Props) {
     };
 
     const navToneClass = isTransparent
-        ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]'
+        ? 'text-gray-950 dark:text-white lg:text-white lg:drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]'
         : 'text-gray-950 dark:text-white';
 
     const navLinkClass = (href: string) => {
@@ -446,7 +432,9 @@ export default function MainLayout({ children, title, description }: Props) {
 
     const iconButtonClass = [
         'inline-flex h-11 w-11 items-center justify-center rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-[0.98] motion-reduce:active:scale-100',
-        isTransparent ? 'text-white hover:bg-white/12' : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
+        isTransparent 
+            ? 'text-gray-950 lg:text-white hover:bg-black/5 lg:hover:bg-white/12 dark:text-white dark:hover:bg-white/10' 
+            : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
     ].join(' ');
 
     return (
@@ -456,13 +444,17 @@ export default function MainLayout({ children, title, description }: Props) {
                 Skip to content
             </a>
 
-            <BottomNavigation onOpenManualOrder={() => {
-                if (!customerUser) {
-                    openAuthModal('signin');
-                } else {
-                    router.visit('/manual-order');
-                }
-            }} unreadNotificationsCount={auth?.user?.unread_notifications || 0} />
+            <BottomNavigation 
+                onOpenManualOrder={() => {
+                    if (!customerUser) {
+                        openAuthModal('signin');
+                    } else {
+                        router.visit('/manual-order');
+                    }
+                }} 
+                onOpenAuthModal={() => openAuthModal('signin')}
+                unreadNotificationsCount={auth?.user?.unread_notifications || 0} 
+            />
             
             <ManualOrderSheet 
                 isOpen={isManualOrderOpen}
@@ -473,15 +465,21 @@ export default function MainLayout({ children, title, description }: Props) {
                 data-header-state={isScrolled ? 'solid' : 'transparent'}
                 data-header-theme={headerTheme}
                 className={[
-                    'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out motion-reduce:transition-none',
+                    !isHome ? 'hidden lg:block' : '',
+                    'relative lg:fixed w-full inset-x-0 top-0 z-[60] transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out motion-reduce:transition-none',
                     isTransparent
-                        ? 'border-b border-transparent bg-transparent'
+                        ? 'border-b lg:border-transparent border-gray-200/80 bg-white lg:bg-transparent shadow-sm lg:shadow-none dark:border-gray-800/80 dark:bg-gray-950/95 lg:dark:bg-transparent'
                         : 'border-b border-gray-200/80 bg-white/95 shadow-sm backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-950/95',
                 ].join(' ')}
             >
-                {isTransparent && <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/45 via-black/20 to-transparent" />}
+                {isTransparent && <div className="pointer-events-none absolute inset-x-0 top-0 h-28 hidden lg:block bg-gradient-to-b from-black/45 via-black/20 to-transparent" />}
 
                 <div className="relative mx-auto grid h-20 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:h-24 lg:px-8">
+                    <div className="flex items-center lg:hidden">
+                        <button type="button" onClick={toggleDarkMode} className={iconButtonClass} aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                            {isDarkMode ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
+                        </button>
+                    </div>
                     <nav aria-label="Primary navigation" className="hidden items-center gap-1 lg:flex">
                         {dynamicCustomerNav.map((item) => {
                             if (item.href === '/manual-order' && !customerUser) {
@@ -520,21 +518,21 @@ export default function MainLayout({ children, title, description }: Props) {
                         )}
                     </Link>
 
-                    <div className="hidden lg:flex items-center justify-end gap-1 lg:gap-2">
-                        <div className="hidden xl:block">
+                    <div className="flex items-center justify-end gap-1 lg:gap-2">
+                        <div className="block">
                             <RegionSettings language={language} changeLanguage={changeLanguage} tone={isTransparent ? 'light' : 'dark'} />
                         </div>
 
-                        <Link href="/my-orders" prefetch={['mount', 'hover']} className={iconButtonClass} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
+                        <Link href="/my-orders" prefetch={['mount', 'hover']} className={`!hidden lg:!inline-flex ${iconButtonClass}`} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
                             <ShoppingCart className="h-5 w-5" aria-hidden="true" />
                         </Link>
 
-                        <button type="button" onClick={toggleDarkMode} className={iconButtonClass} aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                        <button type="button" onClick={toggleDarkMode} className={`!hidden lg:!inline-flex ${iconButtonClass}`} aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
                             {isDarkMode ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />}
                         </button>
 
                         {customerUser ? (
-                            <div ref={accountRef} className="relative">
+                            <div ref={accountRef} className="relative hidden lg:block">
                                 <button
                                     ref={accountButtonRef}
                                     type="button"
@@ -635,7 +633,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             <button
                                 type="button"
                                 onClick={() => openAuthModal('signin')}
-                                className={`${iconButtonClass} lg:w-auto lg:px-3`}
+                                className={`${iconButtonClass} hidden lg:inline-flex lg:w-auto lg:px-3`}
                                 aria-label="Customer login"
                                 aria-haspopup="dialog"
                             >
@@ -649,7 +647,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
             {isAuthChoiceOpen && (
                 <div
-                    className="fixed inset-0 z-[180] flex items-center justify-center p-4 sm:p-6"
+                    className="fixed inset-0 z-[180] flex items-end sm:items-center justify-center p-0 sm:p-4 sm:p-6"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="customer-auth-choice-title"
@@ -660,7 +658,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         onClick={() => setIsAuthChoiceOpen(false)}
                         aria-label="Close login options"
                     />
-                    <section className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-[0_28px_80px_rgba(15,23,42,0.32)] ring-1 ring-white/40 dark:bg-[#0f172a] dark:ring-white/10 sm:rounded-3xl lg:max-w-6xl">
+                    <section className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden bg-white shadow-[0_-4px_60px_rgba(15,23,42,0.24)] ring-1 ring-white/40 dark:bg-[#0f172a] dark:ring-white/10 sm:max-w-6xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
                         {/* Compact close button — top-right, small and clean */}
                         <button
                             ref={authCloseButtonRef}
@@ -705,7 +703,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             </aside>
 
                             {/* ── FORM PANEL ── */}
-                            <div className="relative flex max-h-[90vh] flex-col overflow-y-auto p-6 sm:p-10">
+                            <div className="relative flex flex-col overflow-y-auto p-6 sm:p-10 max-h-[80dvh] sm:max-h-none">
                             {/* Compact heading — hidden on lg since it's in the left panel */}
                             <div className="mb-3 flex items-center gap-3 pr-10 lg:hidden">
                                 <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow ring-1 ring-slate-200 dark:bg-white">
@@ -769,15 +767,6 @@ export default function MainLayout({ children, title, description }: Props) {
                                         {authLoading === 'google-signin' ? t('login.loading') : t('login.continue_google')}
                                     </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleFacebookAuth('signin')}
-                                        disabled={authLoading !== null || !firebaseIsConfigured}
-                                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
-                                    >
-                                        {authLoading === 'facebook-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon />}
-                                        {authLoading === 'facebook-signin' ? t('login.loading') : 'Continue with Facebook'}
-                                    </button>
 
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
@@ -867,15 +856,6 @@ export default function MainLayout({ children, title, description }: Props) {
                                         {authLoading === 'google-signup' ? t('login.loading') : t('login.signup_google')}
                                     </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleFacebookAuth('signup')}
-                                        disabled={authLoading !== null || !firebaseIsConfigured}
-                                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
-                                    >
-                                        {authLoading === 'facebook-signup' ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon />}
-                                        {authLoading === 'facebook-signup' ? t('login.loading') : 'Sign up with Facebook'}
-                                    </button>
 
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
@@ -1017,11 +997,11 @@ export default function MainLayout({ children, title, description }: Props) {
                 </div>
             )}
 
-            <main id="main-content" className={`flex min-h-[100dvh] flex-1 flex-col ${isHome ? '' : 'pt-[var(--public-header-offset)]'}`}>
+            <main id="main-content" className={`flex min-h-[100dvh] flex-1 flex-col ${isHome ? '' : 'lg:pt-[var(--public-header-offset)]'}`}>
                 {children}
             </main>
 
-            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 py-14 pb-[calc(3.5rem+env(safe-area-inset-bottom))] dark:border-gray-800 dark:bg-gray-950">
+            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 py-14 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-14 dark:border-gray-800 dark:bg-gray-950">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                         <div>

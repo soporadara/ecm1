@@ -19,7 +19,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 
 Route::middleware('guest')->group(function () {
-    Route::middleware('throttle:6,1')->group(function () {
+    Route::middleware('throttle:60,1')->group(function () {
         Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
         Route::post('/login', [AuthController::class, 'storeLogin']);
         Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -152,6 +152,7 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class)->except(['show']);
     Route::get('available-sites', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'index'])->name('available-sites.index');
     Route::post('available-sites', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'store'])->name('available-sites.store');
+    Route::post('available-sites/reorder', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'reorder'])->name('available-sites.reorder');
     Route::match(['put', 'patch'], 'available-sites/{marketplace}', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'update'])->name('available-sites.update');
     Route::delete('available-sites/{marketplace}', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'destroy'])->name('available-sites.destroy');
     Route::redirect('marketplaces', '/admin/available-sites')->name('marketplaces.index');

@@ -138,6 +138,15 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
     const initialPhone = parsePhone(auth?.user?.phone_e164 || '');
     const [phoneCode, setPhoneCode] = useState(initialPhone.code);
     const [phoneNum, setPhoneNum] = useState(initialPhone.num);
+    const [expandedProducts, setExpandedProducts] = useState<boolean[]>([true]);
+
+    const toggleProductExpanded = (index: number) => {
+        setExpandedProducts(prev => {
+            const next = [...prev];
+            next[index] = !next[index];
+            return next;
+        });
+    };
 
     // Multi-address state
     const savedAddresses: UserAddress[] = auth?.user?.addresses || [];
@@ -211,17 +220,29 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
 
     const addProduct = () => {
         if (data.products.length >= (limits?.max_products || 20)) return;
+        const newIndex = data.products.length;
+        setExpandedProducts(prev => [...prev, true]);
         setData('products', [...data.products, blankProduct()]);
+        
+        setTimeout(() => {
+            document.getElementById(`product-card-${newIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
     };
 
     const duplicateProduct = (index: number) => {
         if (data.products.length >= (limits?.max_products || 20)) return;
         const clone = { ...data.products[index], images: [], pdfs: [], urls: [...data.products[index].urls] };
+        setExpandedProducts(prev => [...prev.slice(0, index + 1), true, ...prev.slice(index + 1)]);
         setData('products', [...data.products.slice(0, index + 1), clone, ...data.products.slice(index + 1)]);
+        
+        setTimeout(() => {
+            document.getElementById(`product-card-${index + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
     };
 
     const removeProduct = (index: number) => {
         if (data.products.length === 1) return;
+        setExpandedProducts(prev => prev.filter((_, i) => i !== index));
         setData('products', data.products.filter((_, i) => i !== index));
     };
 
@@ -548,16 +569,36 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                             </div>
 
                             {data.products.map((product, index) => (
-                                <div key={index} className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-brand-primary/50 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+                                <div id={`product-card-${index}`} key={index} className="scroll-mt-24 group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-brand-primary/50 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
                                     <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 bg-gray-50/50 dark:bg-gray-800/50 transition-colors duration-300 group-hover:bg-brand-primary/5">
-                                        <h3 className="font-black text-gray-900 dark:text-white transition-colors group-hover:text-brand-primary">Product {index + 1}</h3>
+                                        <h3 className="font-black text-gray-900 dark:text-white transition-colors group-hover:text-brand-primary flex items-center gap-3 cursor-pointer" onClick={() => toggleProductExpanded(index)}>
+                                            <button
+                                                type="button"
+                                                className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                aria-label={expandedProducts[index] ? "Collapse product" : "Expand product"}
+                                            >
+                                                <svg
+                                                    className={`w-5 h-5 transform transition-transform duration-300 ${expandedProducts[index] ? 'rotate-180' : ''}`}
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            Product {index + 1}
+                                            {!expandedProducts[index] && product.name && (
+                                                <span className="text-sm font-semibold text-gray-500 ml-2 truncate max-w-[200px] md:max-w-xs block">
+                                                    — {product.name}
+                                                </span>
+                                            )}
+                                        </h3>
                                         <div className="flex gap-2">
                                             <button type="button" onClick={() => duplicateProduct(index)} className="text-sm font-bold px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-green-500 hover:bg-green-500 hover:text-white hover:shadow-md">Duplicate</button>
                                             <button type="button" disabled={data.products.length === 1} onClick={() => removeProduct(index)} className="text-sm font-bold px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm text-red-600 transition-all duration-300 hover:border-red-500 hover:bg-red-500 hover:text-white hover:shadow-md disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:text-red-600">Remove</button>
                                         </div>
                                     </div>
-
-                                    <div className="grid grid-cols-1 gap-5 px-6 pb-6 md:grid-cols-12 pt-5">
+                                    
+                                    <div className={`transition-all duration-500 overflow-hidden ${expandedProducts[index] ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        <div className="grid grid-cols-1 gap-5 px-6 pb-6 md:grid-cols-12 pt-5">
                                         <div className="rounded-2xl border border-brand-primary/20 bg-red-50/50 p-4 dark:bg-red-950/10 md:col-span-12">
                                             <div className="mb-2 flex items-center justify-between gap-3">
                                                 <label className="block text-sm font-black text-gray-900 dark:text-white">Product name</label>
@@ -626,8 +667,9 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                         />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
+                    </div>
 
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
                             <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">Additional Notes</h2>

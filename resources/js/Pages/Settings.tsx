@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
 import MainLayout from '../Layouts/MainLayout';
@@ -7,6 +8,19 @@ import { Link, usePage } from '@inertiajs/react';
 export default function Settings() {
     const { t, i18n } = useTranslation();
     const { general_settings }: any = usePage().props;
+
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        setIsDark(document.documentElement.classList.contains('dark'));
+    }, []);
+
+    const toggleDark = () => {
+        const next = !isDark;
+        setIsDark(next);
+        document.documentElement.classList.toggle('dark', next);
+        localStorage.setItem('theme', next ? 'dark' : 'light');
+    };
 
     const languages = [
         { code: 'en', name: 'English', nativeName: 'English' },
@@ -41,10 +55,12 @@ export default function Settings() {
                                     </div>
                                     <span className="font-bold text-gray-950 dark:text-white">Dark Mode</span>
                                 </div>
-                                {/* Mock Toggle Switch since actual toggle is handled by MainLayout in this demo */}
-                                <div className="w-12 h-7 bg-brand-primary rounded-full relative cursor-pointer">
-                                    <div className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full" />
-                                </div>
+                                <button 
+                                    onClick={toggleDark}
+                                    className={`w-12 h-7 rounded-full relative transition-colors duration-200 focus:outline-none ${isDark ? 'bg-brand-primary' : 'bg-gray-200 dark:bg-gray-700'}`}
+                                >
+                                    <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-200 transform ${isDark ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </button>
                             </div>
                         </div>
                     </motion.div>
@@ -89,11 +105,11 @@ export default function Settings() {
                                 </div>
                                 <span className="text-sm font-bold text-gray-500">v2.0.0</span>
                             </div>
-                            <Link href="/terms" className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800">
+                            <Link href="/terms-of-service" className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800">
                                 <span className="font-bold text-gray-950 dark:text-white ml-[56px]">Terms of Service</span>
                                 <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600" />
                             </Link>
-                            <Link href="/privacy" className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <Link href="/privacy-policy" className="flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                 <span className="font-bold text-gray-950 dark:text-white ml-[56px]">Privacy Policy</span>
                                 <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600" />
                             </Link>

@@ -37,6 +37,7 @@ def main():
         f"--exclude 'storage/logs' "
         f"--exclude 'storage/framework' "
         f"--exclude 'bootstrap/cache' "
+        f"--exclude 'public/hot' "
         f"./ {SSH_USER}@{SSH_HOST}:{REMOTE_PATH}"
     )
     print("NOTE: We are using sshpass to authenticate.")
@@ -54,6 +55,7 @@ def main():
     clear_cmd = (
         f"sshpass -p '{SSH_PASSWORD}' ssh -o StrictHostKeyChecking=no -p {SSH_PORT} {SSH_USER}@{SSH_HOST} 'cd {REMOTE_PATH} && "
         f"rm -f default.php && "
+        f"rm -f public/hot && "
         f"rm -rf bootstrap/cache/*.php && "
         f"sed -i \"s/^# DB_HOST/DB_HOST/\" .env && "
         f"sed -i \"s/^# DB_PORT/DB_PORT/\" .env && "
@@ -61,6 +63,8 @@ def main():
         f"sed -i \"s/^# DB_USERNAME/DB_USERNAME/\" .env && "
         f"sed -i \"s/^# DB_PASSWORD/DB_PASSWORD/\" .env && "
         f"sed -i \"s/DB_CONNECTION=sqlite/DB_CONNECTION=mysql/\" .env && "
+        f"sed -i \"s|^FIREBASE_CREDENTIALS=.*|FIREBASE_CREDENTIALS=storage/app/firebase-credentials.json|\" .env && "
+        f"sed -i \"s|^GOOGLE_APPLICATION_CREDENTIALS=.*|GOOGLE_APPLICATION_CREDENTIALS=storage/app/firebase-credentials.json|\" .env && "
         f"rm -f public/storage && "
         f"cd public && ln -s ../storage/app/public storage && cd .. && "
         f"php artisan optimize:clear && "
