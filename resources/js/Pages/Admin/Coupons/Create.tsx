@@ -27,7 +27,7 @@ export default function CouponCreate() {
 
             <div className="w-full">
                 <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <Link href="/admin/coupons" className="hover:text-indigo-600 dark:hover:text-indigo-400">Coupons</Link>
+                    <Link href="/admin/coupons" className="hover:text-indigo-600 dark:hover:text-white">Coupons</Link>
                     <span>/</span>
                     <span className="text-gray-800 dark:text-gray-200 font-medium">New</span>
                 </div>

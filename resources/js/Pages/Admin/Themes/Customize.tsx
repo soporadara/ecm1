@@ -32,7 +32,7 @@ export default function Customize({ colors }: CustomizeProps) {
             <Head title="Customize Theme — Rafel CMS" />
 
             <div className="mb-6 flex items-center gap-4">
-                <Link href="/admin/themes" className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link href="/admin/themes" className="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>

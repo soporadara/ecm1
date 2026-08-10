@@ -22,7 +22,8 @@
     "dark_mode": "Chế độ tối",
     "light_mode": "Chế độ sáng",
     "profile_incomplete": "Hồ sơ chưa hoàn thiện",
-    "complete_profile": "Hoàn thiện hồ sơ"
+    "complete_profile": "Hoàn thiện hồ sơ",
+    "prohibited_items": "Hàng hóa bị cấm"
   },
   "home": {
     "shop_now": "Mua Ngay",
@@ -40,6 +41,7 @@
     "store_locator": "Địa điểm cửa hàng",
     "privacy": "Chính sách quyền riêng tư",
     "terms": "Điều khoản dịch vụ",
+    "prohibited_items": "Hàng hóa bị cấm",
     "rights": "Đã đăng ký bản quyền.",
     "navigation": "Điều hướng",
     "customer_service": "Dịch vụ khách hàng",
@@ -164,8 +166,30 @@
     "about_text": "Tại MVM Logistics, chúng tôi chuyên hỗ trợ khách hàng đặt mua sản phẩm và vận chuyển hàng hóa an toàn, hiệu quả giữa Việt Nam và Campuchia. Cho dù quý khách cần hỗ trợ mua hàng, tạo đơn hàng thủ công hay sắp xếp vận chuyển xuyên biên giới, đội ngũ của chúng tôi luôn cung cấp sự hỗ trợ đáng tin cậy trong từng giai đoạn.\n\nTrang web của chúng tôi giúp việc gửi yêu cầu đặt hàng, theo dõi giao hàng và liên lạc với đội ngũ hậu cần trở nên dễ dàng. Khách hàng cũng có thể liên hệ trực tiếp với chúng tôi để nhận được sự hỗ trợ cá nhân hóa trong việc tìm kiếm nguồn hàng, vận chuyển, điều phối hải quan và sắp xếp giao nhận.\n\nChúng tôi vận hành hai kho hàng nhằm đảm bảo quá trình xử lý nhanh chóng và hoạt động hậu cần suôn sẻ hơn: một kho tại Việt Nam và một kho tại Campuchia. Điều này cho phép chúng tôi quản lý các chuyến hàng một cách hiệu quả theo cả hai chiều, từ Việt Nam sang Campuchia và từ Campuchia về Việt Nam.\n\nTại MVM Logistics, mục tiêu của chúng tôi là mang đến trải nghiệm dịch vụ hậu cần đơn giản, minh bạch và đáng tin cậy—từ yêu cầu đầu tiên của quý khách cho đến khi giao hàng tận cửa. Vui lòng xem vị trí kho hàng tại Việt Nam và Campuchia của chúng tôi dưới đây để biết thêm thông tin."
   },
   "home": {
+    "about": {
+      "eyebrow": "Mục đích ứng dụng chính thức",
+      "title": "Về MVM Logistics",
+      "description": "<strong class=\"text-gray-900 dark:text-white font-bold\">MVM Logistics</strong> là ứng dụng quản lý đơn hàng thủ công và logistics xuyên biên giới hàng đầu. Nền tảng của chúng tôi hỗ trợ người dùng yêu cầu mua sản phẩm từ các nhà cung cấp quốc tế, tính toán chi phí vận chuyển, theo dõi trạng thái giao hàng theo thời gian thực từ khi đến kho đến điểm đích và quản lý biên lai thanh toán một cách an toàn.",
+      "feature1": {
+        "title": "Logistics xuyên biên giới",
+        "desc": "Tối ưu hóa việc giao nhận hàng hóa và thông quan cho hàng hóa nhập khẩu."
+      },
+      "feature2": {
+        "title": "Tìm kiếm sản phẩm thủ công",
+        "desc": "Gửi yêu cầu mua hàng thủ công và để đội ngũ của chúng tôi xử lý việc mua hàng cũng như xác nhận thanh toán."
+      },
+      "feature3": {
+        "title": "Truy cập tài khoản an toàn",
+        "desc": "Đăng nhập an toàn qua Google hoặc Mật khẩu để theo dõi các đơn hàng cá nhân của bạn."
+      }
+    },
     "testimonial_1": "Dịch vụ chính xác là những gì tôi cần. Họ đã giúp điều phối hậu cần của tôi một cách hoàn hảo và việc theo dõi rất đáng tin cậy. Rất khuyến khích!",
     "testimonial_2": "Đội ngũ rất chuyên nghiệp! Quy trình đặt hàng thủ công rất đơn giản và nhanh chóng. Gói hàng của tôi đã đến Việt Nam an toàn mà không có bất kỳ vấn đề nào.",
     "testimonial_3": "Trải nghiệm tuyệt vời. Họ đã lo việc tìm nguồn hàng và vận chuyển, giúp tôi tiết kiệm rất nhiều thời gian. Chắc chắn sẽ sử dụng dịch vụ của họ một lần nữa."
+  },
+  "footer": {
+    "privacy_policy": "Chính sách bảo mật",
+    "terms_of_service": "Điều khoản dịch vụ",
+    "prohibited_items": "Hàng hoá cấm"
   }
 }

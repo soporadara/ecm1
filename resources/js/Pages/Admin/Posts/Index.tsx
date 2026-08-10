@@ -98,7 +98,7 @@ export default function Index({ posts, filters = {} }: any) {
                                         </td>
                                         <td className="px-6 py-4">
                                             {post.category ? (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-white">
                                                     {post.category.name}
                                                 </span>
                                             ) : (

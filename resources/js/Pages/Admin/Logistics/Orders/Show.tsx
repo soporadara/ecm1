@@ -42,7 +42,7 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                 <div>
                     <Link href="/admin/logistics/orders" className="text-admin-text-muted hover:text-admin-text text-sm font-medium mb-2 inline-block">Back to Orders</Link>
                     <h1 className="text-3xl font-bold text-admin-text">Order {order.order_number}</h1>
-                    <p className="text-sm font-medium text-admin-text-muted">{label(order.status)} · {order.items?.length || 0} product request(s)</p>
+                    <p className="text-sm font-medium text-admin-text-muted">{label(order.status)} · {order.items?.length || 0} product request(s) · {new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <Link href={`/admin/receipts/generate/${order.id}`} className="rounded-xl bg-admin-primary px-5 py-3 text-sm font-black uppercase tracking-wider text-white hover:opacity-90">
                     Generate Receipt
@@ -78,54 +78,96 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                         </div>
                     </section>
 
-                    <section className="rounded-2xl border border-admin-border/50 bg-admin-surface p-6 shadow-sm">
-                        <h2 className="text-xl font-bold text-admin-text mb-4">Requested Products</h2>
-                        <div className="space-y-5">
-                            {order.items?.map((item: any, index: number) => (
-                                <article key={item.id} className="rounded-xl border border-admin-border/60 p-4">
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                        <div>
-                                            <p className="text-xs font-black uppercase tracking-wider text-admin-text-muted">Product {index + 1}</p>
-                                            <h3 className="text-lg font-bold text-admin-text">{item.product_name}</h3>
-                                        <p className="text-sm text-admin-text-muted">Qty {item.quantity} · Unit {money(item.price || item.estimated_unit_price, order.currency_code || 'USD')}</p>
-                                        </div>
-                                        <p className="font-black text-admin-text">{money(item.line_total || Number(item.price || 0) * Number(item.quantity || 0), order.currency_code || 'USD')}</p>
-                                    </div>
-                                    {(item.type || item.color || item.size) && <p className="mt-3 text-sm font-medium text-admin-text">{[item.type, item.color, item.size].filter(Boolean).join(' / ')}</p>}
-                                    {item.description && <p className="mt-3 text-sm text-admin-text-muted">{item.description}</p>}
-                                    {item.customer_notes && <p className="mt-3 rounded-lg bg-admin-surface-muted p-3 text-sm text-admin-text">{item.customer_notes}</p>}
-
-                                    {item.urls?.length > 0 && (
-                                        <div className="mt-4 space-y-2">
-                                            {item.urls.map((url: any) => (
-                                                <a key={url.id} href={url.url} target="_blank" rel="noreferrer" className="block truncate text-sm font-semibold text-admin-primary hover:underline">
-                                                    {url.domain || url.url}
-                                                </a>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {item.images?.length > 0 && (
-                                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                                            {item.images.map((image: any) => (
-                                                <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border border-admin-border">
-                                                    <img src={image.thumbnail_url || image.url} alt={image.original_filename || 'Reference'} className="h-full w-full object-cover" />
-                                                </a>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {item.attachments?.length > 0 && (
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                            {item.attachments.map((file: any) => (
-                                                <a key={file.id} href={file.download_url} className="rounded-lg border border-admin-border px-3 py-2 text-xs font-bold text-admin-text hover:text-admin-primary">
-                                                    {file.original_filename}
-                                                </a>
-                                            ))}
-                                        </div>
-                                    )}
-                                </article>
-                            ))}
+                    <section className="rounded-2xl border border-admin-border/50 bg-admin-surface p-0 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-admin-border/50">
+                            <h2 className="text-xl font-bold text-admin-text">Requested Products</h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-admin-surface-muted/50 text-admin-text-muted uppercase text-[10px] font-black tracking-wider">
+                                    <tr>
+                                        <th className="px-6 py-4">Product Details</th>
+                                        <th className="px-6 py-4">Attributes</th>
+                                        <th className="px-6 py-4">Pricing</th>
+                                        <th className="px-6 py-4">References</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-admin-border/50">
+                                    {order.items?.map((item: any, index: number) => (
+                                        <tr key={item.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                            <td className="px-6 py-4 align-top whitespace-normal min-w-[250px]">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-black uppercase text-admin-text-muted">Item {index + 1}</span>
+                                                    <strong className="text-admin-text text-base">{item.product_name}</strong>
+                                                    {item.description && <p className="text-xs text-admin-text-muted mt-1">{item.description}</p>}
+                                                    {item.customer_notes && (
+                                                        <div className="mt-2 rounded-lg bg-admin-surface-muted p-2 text-xs text-admin-text">
+                                                            <span className="font-bold block mb-1">Note:</span>
+                                                            {item.customer_notes}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 align-top">
+                                                {(item.type || item.color || item.size) ? (
+                                                    <div className="flex flex-col gap-1 text-xs text-admin-text font-medium">
+                                                        {item.type && <span>Type: {item.type}</span>}
+                                                        {item.color && <span>Color: {item.color}</span>}
+                                                        {item.size && <span>Size: {item.size}</span>}
+                                                    </div>
+                                                ) : <span className="text-admin-text-muted text-xs italic">N/A</span>}
+                                            </td>
+                                            <td className="px-6 py-4 align-top">
+                                                <div className="flex flex-col gap-1 text-sm">
+                                                    <span className="text-admin-text-muted text-xs">Qty: <strong className="text-admin-text">{item.quantity}</strong></span>
+                                                    <span className="text-admin-text-muted text-xs">Unit: <strong className="text-admin-text">{money(item.price || item.estimated_unit_price, order.currency_code || 'USD')}</strong></span>
+                                                    <span className="mt-1 font-black text-admin-primary">{money(item.line_total || Number(item.price || 0) * Number(item.quantity || 0), order.currency_code || 'USD')}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 align-top min-w-[200px] whitespace-normal">
+                                                <div className="flex flex-col gap-3">
+                                                    {item.urls?.length > 0 && (
+                                                        <div className="flex flex-col gap-1">
+                                                            {item.urls.map((url: any) => (
+                                                                <a key={url.id} href={url.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-admin-primary hover:underline break-all">
+                                                                    {url.domain || url.url}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {item.images?.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {item.images.map((image: any) => (
+                                                                <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block w-12 h-12 overflow-hidden rounded-md border border-admin-border shrink-0 bg-admin-surface-muted hover:border-admin-primary transition-colors">
+                                                                    <img 
+                                                                        src={image.thumbnail_url || image.url} 
+                                                                        alt={image.original_filename || 'Reference'} 
+                                                                        className="h-full w-full object-cover" 
+                                                                        onError={(e) => {
+                                                                            e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                                                                            e.currentTarget.className = 'h-full w-full object-cover p-2 opacity-50';
+                                                                        }}
+                                                                    />
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {item.attachments?.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            {item.attachments.map((file: any) => (
+                                                                <a key={file.id} href={file.download_url} className="inline-flex items-center gap-1 rounded bg-admin-surface-muted px-2 py-1 text-[10px] font-bold text-admin-text hover:text-admin-primary border border-admin-border">
+                                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                                                    {file.original_filename || 'File'}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </section>
 

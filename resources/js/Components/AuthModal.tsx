@@ -520,7 +520,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                             <div className="mt-6 text-center">
                                 <button 
                                     type="button" 
-                                    onClick={() => setMode('signin')}
+                                    onClick={() => router.visit('/login')}
                                     className="text-[13px] font-bold text-[#64748b] hover:text-[#0c162c] dark:hover:text-white transition-colors"
                                 >
                                     Back to Sign In

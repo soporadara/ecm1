@@ -32,10 +32,12 @@ export default function Customers({ customers, filters }: Props) {
     const [startDate, setStartDate] = React.useState(filters.start_date || '');
     const [endDate, setEndDate] = React.useState(filters.end_date || '');
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get('/admin/logistics/customers', { search, start_date: startDate, end_date: endDate }, { preserveState: true });
-    };
+    React.useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            router.get('/admin/logistics/customers', { search, start_date: startDate, end_date: endDate }, { preserveState: true });
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [search, startDate, endDate]);
 
     return (
         <AdminLayout title="Logistics CRM - Customers">
@@ -50,7 +52,7 @@ export default function Customers({ customers, filters }: Props) {
 
             <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
                 <div className="p-4 border-b border-admin-border bg-admin-surface-muted/30">
-                    <form onSubmit={handleSearch} className="flex flex-wrap gap-3 max-w-3xl items-center">
+                    <div className="flex flex-wrap gap-3 max-w-3xl items-center">
                         <div className="relative flex-1 min-w-[200px]">
                             <input
                                 type="text"
@@ -80,17 +82,13 @@ export default function Customers({ customers, filters }: Props) {
                                 title="End Date"
                             />
                         </div>
-                        <button type="submit" className="px-5 py-2 bg-admin-primary text-white text-sm font-semibold rounded-xl hover:bg-admin-primary-hover shadow-sm transition-colors">
-                            Filter
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-admin-surface-muted/50 border-b border-admin-border">
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider w-16">Nº</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer Code</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Customer Name</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Contact Info</th>
@@ -102,9 +100,6 @@ export default function Customers({ customers, filters }: Props) {
                         <tbody className="divide-y divide-admin-border/50">
                             {customers.data.map((customer, idx) => (
                                 <tr key={customer.id} className="hover:bg-admin-surface-muted/30 transition-colors">
-                                    <td className="px-6 py-4 font-semibold text-admin-text-muted">
-                                        {(customers.current_page - 1) * customers.per_page + idx + 1}
-                                    </td>
                                     <td className="px-6 py-4 font-bold text-admin-primary">{customer.customer_code || 'N/A'}</td>
                                     <td className="px-6 py-4 font-semibold text-admin-text">{customer.name}</td>
                                     <td className="px-6 py-4">
@@ -132,7 +127,7 @@ export default function Customers({ customers, filters }: Props) {
                             ))}
                             {customers.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-admin-text-muted">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-admin-text-muted">
                                         No customers found.
                                     </td>
                                 </tr>

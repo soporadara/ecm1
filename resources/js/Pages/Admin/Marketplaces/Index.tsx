@@ -159,6 +159,7 @@ function DraggableRow({ site, index, startEdit, deleteSite, editingId, saveEdit,
 export default function MarketplacesIndex({ marketplaces }: Props) {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editData, setEditData] = useState(emptySite);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const createForm = useForm(emptySite);
 
     const [items, setItems] = useState(marketplaces);
@@ -209,7 +210,10 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
         event.preventDefault();
         createForm.post('/admin/available-sites', {
             preserveScroll: true,
-            onSuccess: () => createForm.reset(),
+            onSuccess: () => {
+                createForm.reset();
+                setIsAddModalOpen(false);
+            },
         });
     };
 
@@ -223,40 +227,58 @@ export default function MarketplacesIndex({ marketplaces }: Props) {
             <Head title="Available Sites - Admin" />
 
             <div className="mx-auto max-w-7xl">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-black text-admin-text">Available Sites</h1>
-                    <p className="mt-1 text-sm font-semibold text-admin-text-muted">Manage the shopping-site carousel shown on the public homepage. Drag to reorder.</p>
+                <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black text-admin-text">Available Sites</h1>
+                        <p className="mt-1 text-sm font-semibold text-admin-text-muted">Manage the shopping-site carousel shown on the public homepage. Drag to reorder.</p>
+                    </div>
+                    <button 
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="rounded-xl bg-admin-primary px-5 py-2.5 text-sm font-black uppercase tracking-wider text-white hover:opacity-90 transition-opacity whitespace-nowrap"
+                    >
+                        + Add Site
+                    </button>
                 </div>
 
-                <form onSubmit={createSite} className="mb-8 rounded-2xl border border-admin-border bg-admin-surface p-5 shadow-sm">
-                    <h2 className="mb-4 text-lg font-black text-admin-text">Add Site</h2>
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        <Field label="Name">
-                            <input className={inputClass} value={createForm.data.name} onChange={(event) => createForm.setData('name', event.target.value)} required />
-                        </Field>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <div className="bg-admin-surface border border-admin-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <div className="p-6 border-b border-admin-border flex justify-between items-center sticky top-0 bg-admin-surface z-10">
+                                <h2 className="text-lg font-black text-admin-text">Add New Site</h2>
+                                <button onClick={() => setIsAddModalOpen(false)} className="text-admin-text-muted hover:text-admin-text p-2 bg-admin-surface-muted rounded-full transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                            <form onSubmit={createSite} className="p-6">
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                    <Field label="Name">
+                                        <input className={inputClass} value={createForm.data.name} onChange={(event) => createForm.setData('name', event.target.value)} required />
+                                    </Field>
 
-                        <Field label="Website URL">
-                            <input className={inputClass} value={createForm.data.website_url} onChange={(event) => createForm.setData('website_url', event.target.value)} placeholder="https://example.com" />
-                        </Field>
-                        <Field label="Khmer Name">
-                            <input className={inputClass} value={createForm.data.name_km} onChange={(event) => createForm.setData('name_km', event.target.value)} />
-                        </Field>
-                        <Field label="English Name">
-                            <input className={inputClass} value={createForm.data.name_en} onChange={(event) => createForm.setData('name_en', event.target.value)} />
-                        </Field>
-                        <Field label="Vietnamese Name">
-                            <input className={inputClass} value={createForm.data.name_vi} onChange={(event) => createForm.setData('name_vi', event.target.value)} />
-                        </Field>
-                        <Field label="Icon URL">
-                            <input className={inputClass} value={createForm.data.icon_source_url} onChange={(event) => createForm.setData('icon_source_url', event.target.value)} placeholder="https://..." />
-                        </Field>
+                                    <Field label="Website URL">
+                                        <input className={inputClass} value={createForm.data.website_url} onChange={(event) => createForm.setData('website_url', event.target.value)} placeholder="https://example.com" />
+                                    </Field>
+                                    <Field label="Khmer Name">
+                                        <input className={inputClass} value={createForm.data.name_km} onChange={(event) => createForm.setData('name_km', event.target.value)} />
+                                    </Field>
+                                    <Field label="English Name">
+                                        <input className={inputClass} value={createForm.data.name_en} onChange={(event) => createForm.setData('name_en', event.target.value)} />
+                                    </Field>
+                                    <Field label="Vietnamese Name">
+                                        <input className={inputClass} value={createForm.data.name_vi} onChange={(event) => createForm.setData('name_vi', event.target.value)} />
+                                    </Field>
+                                    <Field label="Icon URL">
+                                        <input className={inputClass} value={createForm.data.icon_source_url} onChange={(event) => createForm.setData('icon_source_url', event.target.value)} placeholder="https://..." />
+                                    </Field>
+                                </div>
+                                <div className="mt-6 flex justify-end gap-3 border-t border-admin-border pt-4">
+                                    <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-black uppercase tracking-wider text-admin-text hover:bg-admin-surface-muted transition-colors">Cancel</button>
+                                    <button type="submit" disabled={createForm.processing} className="rounded-xl bg-admin-primary px-5 py-2.5 text-sm font-black uppercase tracking-wider text-white hover:opacity-90 disabled:opacity-50">Create Site</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div className="mt-6 flex justify-end">
-                        <button disabled={createForm.processing} className="min-h-11 rounded-xl bg-admin-primary px-6 text-sm font-black text-white shadow-[0_8px_20px_-8px_rgba(var(--admin-primary-rgb),0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(var(--admin-primary-rgb),0.6)] active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:translate-y-0">
-                            {createForm.processing ? 'Saving...' : 'Create Site'}
-                        </button>
-                    </div>
-                </form>
+                )}
 
                 <div className="overflow-hidden rounded-2xl border border-admin-border bg-admin-surface shadow-sm">
                     <div className="grid grid-cols-[0.35fr_1.4fr_1.8fr_0.9fr] gap-4 border-b border-admin-border bg-admin-surface-muted px-5 py-3 text-xs font-black uppercase tracking-wide text-admin-text-muted">

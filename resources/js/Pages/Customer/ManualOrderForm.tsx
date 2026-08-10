@@ -623,9 +623,9 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 gap-4 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800/70 md:col-span-8 md:grid-cols-3">
-                                            <input placeholder="Color" value={product.color} onChange={e => updateProduct(index, { color: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3" />
-                                            <input placeholder="Type, model, or material" value={product.type} onChange={e => updateProduct(index, { type: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3" />
-                                            <input placeholder="Size or dimensions" value={product.size} onChange={e => updateProduct(index, { size: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3" />
+                                            <input placeholder="Color" value={product.color} onChange={e => updateProduct(index, { color: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                            <input placeholder="Type, model, or material" value={product.type} onChange={e => updateProduct(index, { type: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                            <input placeholder="Size or dimensions" value={product.size} onChange={e => updateProduct(index, { size: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
                                         </div>
                                         <textarea placeholder="Product note" value={product.customer_note} onChange={e => updateProduct(index, { customer_note: e.target.value })} rows={2} className="md:col-span-12 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
                                     </div>

@@ -25,10 +25,21 @@ class AuthController extends Controller
 
     public function storeLogin(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'email' => ['required'],
             'password' => ['required'],
         ]);
+
+        $loginId = $request->input('email');
+        $password = $request->input('password');
+
+        $credentials = ['password' => $password];
+
+        if (filter_var($loginId, FILTER_VALIDATE_EMAIL)) {
+            $credentials['email'] = $loginId;
+        } else {
+            $credentials['phone_e164'] = $loginId;
+        }
 
         if (Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
@@ -46,13 +57,31 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $email = $validated['email'] ?? null;
+        $phone = $validated['phone'] ?? null;
+
+        if (empty($email) && empty($phone)) {
+            throw ValidationException::withMessages(['email' => 'Please provide an email or phone number.']);
+        }
+
+        if (empty($email) && !empty($phone)) {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+            $email = 'phone_' . $cleanPhone . '@mvmlogistics.asia';
+            
+            if (User::where('email', $email)->exists()) {
+                throw ValidationException::withMessages(['phone' => 'This phone number is already registered.']);
+            }
+        }
+
         $user = User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'email' => $email,
+            'phone_e164' => $phone,
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
             'role' => 'customer',
             'customer_code' => \App\Models\User::generateCustomerCode(),

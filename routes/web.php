@@ -130,8 +130,8 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::get('logistics/customers/{customer}/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportCustomerOrders'])->name('logistics.customer-orders.export');
     Route::get('logistics/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'allOrders'])->name('logistics.orders');
     Route::get('logistics/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportAllOrders'])->name('logistics.orders.export');
-    Route::get('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'show'])->name('logistics.orders.show');
-    Route::put('logistics/orders/{order}', [\App\Http\Controllers\Admin\ManualOrderController::class, 'update'])->name('logistics.orders.update');
+    Route::get('logistics/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('logistics.orders.show');
+    Route::put('logistics/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('logistics.orders.update');
     
     // Receipt Integration
     Route::get('receipts/generate', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
@@ -168,6 +168,7 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::delete('menus/{menu}/items/{item}', [\App\Http\Controllers\Admin\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
     
     // Banner management
+    Route::post('banners/reorder', [\App\Http\Controllers\Admin\BannerController::class, 'reorder'])->name('banners.reorder');
     Route::patch('banners/mode', [\App\Http\Controllers\Admin\BannerController::class, 'updateMode'])->name('banners.mode');
     Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
 
@@ -195,6 +196,10 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::delete('audit-logs/clear', [\App\Http\Controllers\Admin\AuditLogController::class, 'clear'])->name('audit.clear');
     Route::get('security/access-control', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'index'])->name('security.access-control');
     Route::delete('security/access-control/{block}', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'destroy'])->name('security.access-control.destroy');
+
+    // Telegram FAQs
+    Route::post('telegram-faqs/reorder', [\App\Http\Controllers\Admin\TelegramFaqController::class, 'updateOrder'])->name('telegram-faqs.reorder');
+    Route::resource('telegram-faqs', \App\Http\Controllers\Admin\TelegramFaqController::class)->except(['show', 'create', 'edit']);
 });
 
     // Logistics Customer Routes
@@ -283,4 +288,14 @@ Route::inertia('/notifications', 'Notifications')->name('notifications');
 Route::inertia('/settings', 'Settings')->name('settings');
 Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy');
 Route::inertia('/terms-of-service', 'TermsOfService')->name('terms');
+Route::inertia('/prohibited-items', 'ProhibitedItems')->name('prohibited-items');
+
+// Telegram Authentication Routes
+use App\Http\Controllers\TelegramAuthController;
+Route::post('/api/auth/telegram-widget', [TelegramAuthController::class, 'verifyWidget']);
+Route::post('/api/auth/telegram-miniapp', [TelegramAuthController::class, 'verifyMiniApp']);
+Route::post('/api/telegram/webhook', [TelegramAuthController::class, 'handleWebhook']);
+Route::post('/api/auth/send-telegram-otp', [TelegramAuthController::class, 'sendOtp']);
+Route::post('/api/auth/verify-telegram-otp', [TelegramAuthController::class, 'verifyOtp']);
+
 

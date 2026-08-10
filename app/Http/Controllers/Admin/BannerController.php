@@ -201,4 +201,18 @@ class BannerController extends Controller
         $banner->delete();
         return redirect()->route('admin.banners.index')->with('success', 'Banner deleted successfully.');
     }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'exists:banners,id',
+        ]);
+
+        foreach ($request->order as $index => $id) {
+            Banner::where('id', $id)->update(['sort_order' => $index]);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

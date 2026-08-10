@@ -172,7 +172,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
             <section className="relative z-30 border-y border-gray-100 bg-gray-50 py-20 dark:border-gray-800 dark:bg-gray-950">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl text-center">
-                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">{t('services.title')}</p>
+                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary dark:text-white">{t('services.title')}</p>
                         <h2 className="mt-3 text-3xl font-black text-gray-950 dark:text-white lg:text-5xl font-serif">{t('services.subtitle')}</h2>
                     </div>
                     <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -182,7 +182,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                 data-service-card="true"
                                 className="group flex min-h-64 flex-col rounded-2xl border border-gray-100 bg-white p-8 shadow-sm transition hover:-translate-y-px hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900"
                             >
-                                <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary transition group-hover:scale-105">
+                                <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary transition group-hover:scale-105 dark:bg-white/10 dark:text-white">
                                     <service.icon className="h-8 w-8" aria-hidden="true" />
                                 </span>
                                 <h3 className="mt-8 text-2xl font-black leading-tight text-gray-950 dark:text-white">{service.title}</h3>
@@ -266,10 +266,10 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                         {workflowSteps.map((step, index) => (
                             <div key={step.title} className="rounded-2xl border border-gray-100 bg-white p-7 text-left shadow-sm transition hover:-translate-y-px hover:shadow-xl dark:border-gray-800 dark:bg-gray-950">
-                                <span className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
+                                <span className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary dark:bg-white/10 dark:text-white">
                                     <step.icon className="h-7 w-7" aria-hidden="true" />
                                 </span>
-                                <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-brand-primary">0{index + 1}</p>
+                                <p className="mb-2 text-xs font-black uppercase tracking-[0.22em] text-brand-primary dark:text-white">0{index + 1}</p>
                                 <h3 className="text-xl font-black text-brand-secondary dark:text-white">{step.title}</h3>
                                 <p className="mt-3 text-sm font-semibold leading-6 text-gray-500 dark:text-gray-400">{step.description}</p>
                             </div>
@@ -282,7 +282,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
             {testimonials && testimonials.length > 0 && (
                 <section className="py-20 bg-white dark:bg-gray-950">
                     <div className="container mx-auto px-4 lg:px-8 text-center">
-                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">Testimonials</p>
+                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary dark:text-white">Testimonials</p>
                         <h2 className="mt-3 text-3xl lg:text-4xl font-black text-gray-950 dark:text-white mb-12 font-serif">What Our Customers Say</h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
@@ -342,7 +342,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                     <div className="container mx-auto px-4 lg:px-8">
                         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                             <div>
-                                <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">Latest Updates</p>
+                                <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary dark:text-white">Latest Updates</p>
                                 <h2 className="mt-3 text-3xl lg:text-4xl font-black text-gray-950 dark:text-white font-serif">Recent Articles</h2>
                             </div>
                             <Link href="/blog" className="shrink-0 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-700 dark:text-gray-300 hover:border-brand-primary hover:text-brand-primary transition-colors inline-flex items-center gap-2">
@@ -392,27 +392,29 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
             {/* About MVM Logistics Application Purpose Section (Google Verification & SEO) */}
             <section className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-5xl mx-auto text-center">
-                    <span className="inline-block px-3 py-1 bg-brand-primary/10 text-brand-primary text-xs font-black uppercase tracking-wider rounded-full mb-3">
-                        Official Application Purpose
+                    <span className="inline-block px-3 py-1 bg-brand-primary/10 text-brand-primary dark:text-white dark:bg-white/10 text-xs font-black uppercase tracking-wider rounded-full mb-3">
+                        {t('home.about.eyebrow', 'Official Application Purpose')}
                     </span>
                     <h2 className="text-3xl font-black text-gray-900 dark:text-white sm:text-4xl mb-6">
-                        About MVM Logistics
+                        {t('home.about.title', 'About MVM Logistics')}
                     </h2>
                     <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto mb-8 font-medium">
-                        <strong className="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> is a premier cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.
+                        {t('home.about.description', '<strong class="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> is a premier cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.') && (
+                            <span dangerouslySetInnerHTML={{ __html: t('home.about.description', '<strong class="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> is a premier cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.') }} />
+                        )}
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-4xl mx-auto">
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Cross-Border Logistics</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Streamlined freight forwarding and customs clearing for imported goods.</p>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">{t('home.about.feature1.title', 'Cross-Border Logistics')}</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('home.about.feature1.desc', 'Streamlined freight forwarding and customs clearing for imported goods.')}</p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Manual Product Sourcing</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Submit manual buy requests and let our team handle purchasing and payment confirmation.</p>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">{t('home.about.feature2.title', 'Manual Product Sourcing')}</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('home.about.feature2.desc', 'Submit manual buy requests and let our team handle purchasing and payment confirmation.')}</p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/50">
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">Secure Account Access</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Sign in securely via Google Authentication or Phone PIN to track your personal orders.</p>
+                            <h3 className="font-bold text-gray-900 dark:text-white mb-2">{t('home.about.feature3.title', 'Secure Account Access')}</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('home.about.feature3.desc', 'Sign in securely via Google Authentication or Phone PIN to track your personal orders.')}</p>
                         </div>
                     </div>
                 </div>

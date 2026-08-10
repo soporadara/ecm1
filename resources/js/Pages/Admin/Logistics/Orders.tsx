@@ -5,12 +5,10 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 interface Order {
     id: number;
     order_number: string;
-    invoice_number: string;
-    receipt_number: string;
     status: string;
     payment_status: string;
     total_amount: string;
-    budget: string | null;
+    estimated_total: string | null;
     created_at: string;
     paid_at: string | null;
     delivered_at: string | null;
@@ -158,7 +156,7 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-admin-text">${Number(order.total_amount).toFixed(2)}</div>
-                                        {order.budget && <div className="text-xs text-admin-text-muted mt-1">Budget: ${Number(order.budget).toFixed(2)}</div>}
+                                        {order.estimated_total && <div className="text-xs text-admin-text-muted mt-1">Estimated: ${Number(order.estimated_total).toFixed(2)}</div>}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2 items-start">
@@ -182,7 +180,7 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                                             <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Edit Order
                                             </Link>
-                                            <Link href={`/admin/receipts/generate?manual_order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
+                                            <Link href={`/admin/receipts/generate?order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Generate Receipt
                                             </Link>
                                         </div>

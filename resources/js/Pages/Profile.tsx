@@ -5,7 +5,7 @@ import { signOutFirebase } from '@/lib/firebase';
 import MobileProfileView from '../Components/Premium/MobileProfileView';
 
 export default function Profile() {
-    const { auth } = usePage().props as any;
+    const { auth, telegram_bot_username } = usePage().props as any;
     const user = auth.user;
 
     // Personal Info Form
@@ -340,7 +340,7 @@ export default function Profile() {
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Security</h3>
 
                         <div className="space-y-4">
-                            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
+                            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-white">
                                 <p className="font-bold">Sign-in provider: Google</p>
                                 <p className="mt-2">Your customer login is protected by Google Firebase Authentication. Manage passwords and two-step verification from your Google Account.</p>
                             </div>
@@ -356,6 +356,46 @@ export default function Profile() {
                                 Request Account Help
                             </Link>
                         </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-3xl p-8 mt-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Telegram Integration</h3>
+
+                        {user.telegram_id ? (
+                            <div className="rounded-2xl border border-green-100 bg-green-50/50 p-5 text-sm text-green-900 dark:border-green-900/50 dark:bg-green-950/20 dark:text-green-100">
+                                <p className="font-bold flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block animate-pulse"></span>
+                                    Linked with Telegram
+                                </p>
+                                <p className="mt-2">
+                                    Your account is linked to Telegram ID: <strong className="font-mono">{user.telegram_id}</strong> {user.telegram_username ? `(@${user.telegram_username})` : ''}. You can use Telegram Bot OTP verification codes to log in securely.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-5 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100">
+                                <p className="font-bold flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                    Telegram Not Linked
+                                </p>
+                                <p className="mt-2 mb-4">
+                                    Link your Telegram account to receive 6-digit login verification codes (OTP) directly to your Telegram chat.
+                                </p>
+                                {telegram_bot_username ? (
+                                    <a
+                                        href={`https://t.me/${telegram_bot_username}?start=link_${user.id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center justify-center rounded-xl bg-brand-primary px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-brand-secondary transition"
+                                    >
+                                        Link Telegram Account
+                                    </a>
+                                ) : (
+                                    <p className="text-xs text-red-500 font-bold">
+                                        Telegram configuration missing. Please check .env settings.
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

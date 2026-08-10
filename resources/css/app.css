@@ -293,5 +293,65 @@ input[type="radio"] {
 .cms-login-page.cms-login-dark input[type="password"]:focus,
 .cms-login-page.cms-login-dark input[type="text"]:focus {
     border-color: #60a5fa !important;
-    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.22) !important;
+}
+
+/* Global Dark Mode Text Color Fixes */
+.dark .text-brand-primary {
+    color: #ffffff !important;
+}
+
+.dark .text-brand-primary:hover,
+.dark .hover\:text-brand-primary:hover,
+.dark .group:hover .group-hover\:text-brand-primary,
+.dark a:hover .text-brand-primary,
+.dark button:hover .text-brand-primary {
+    color: #f09433 !important;
+}
+
+.dark .text-blue-500,
+.dark .text-blue-600 {
+    color: #ffffff !important;
+}
+
+.dark .hover\:text-blue-500:hover,
+.dark .hover\:text-blue-600:hover {
+    color: #f09433 !important;
+}
+
+/* Also target the border for the 'Available Sites' underline */
+.dark .border-brand-primary {
+    border-color: #ffffff !important;
+}
+.dark .border-brand-primary:hover,
+.dark .hover\:border-brand-primary:hover,
+.dark a:hover .border-brand-primary {
+    border-color: #f09433 !important;
+}
+
+/* Fix for blue buttons to be white in dark mode with dark text */
+.dark .bg-brand-primary,
+.dark .bg-blue-600 {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+.dark .bg-brand-primary *,
+.dark .bg-blue-600 * {
+    color: inherit !important;
+}
+
+/* Hover state for buttons -> Orange */
+.dark .bg-brand-primary:hover,
+.dark .hover\:bg-brand-secondary:hover,
+.dark .hover\:bg-blue-700:hover,
+.dark button:hover .bg-brand-primary,
+.dark a:hover .bg-brand-primary {
+    background-color: #f09433 !important;
+    color: #ffffff !important;
+}
+.dark .bg-brand-primary:hover *,
+.dark .hover\:bg-brand-secondary:hover *,
+.dark .hover\:bg-blue-700:hover *,
+.dark button:hover .bg-brand-primary *,
+.dark a:hover .bg-brand-primary * {
+    color: inherit !important;
 }

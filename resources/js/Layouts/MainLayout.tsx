@@ -34,6 +34,8 @@ import { useTranslation } from '../hooks/useTranslation';
 import BottomNavigation from '../Components/Premium/BottomNavigation';
 import ManualOrderSheet from '../Components/Premium/ManualOrderSheet';
 import SupportFAB from '../Components/SupportFAB';
+import TelegramWidget from '../Components/Premium/TelegramWidget';
+import { AlertTriangle, Send } from 'lucide-react';
 
 import RegionSettings from '../Components/RegionSettings';
 import SeoHead from '../Components/SeoHead';
@@ -102,13 +104,22 @@ function FacebookIcon() {
     );
 }
 
+function TelegramIcon() {
+    return (
+        <svg className="h-5 w-5 shrink-0 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.02-.27 0-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.52-1.4.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.36-.49.99-.75 3.88-1.69 6.46-2.8 7.74-3.33 3.68-1.5 4.44-1.76 4.94-1.77.11 0 .36.03.52.16.14.11.18.27.19.38 0 .08.01.21 0 .32z"/>
+        </svg>
+    );
+}
+
 export default function MainLayout({ children, title, description }: Props) {
-    const { auth, general_settings, flash, global_nav }: any = usePage().props;
+    const { auth, general_settings, flash, global_nav, telegram_bot_username, telegram_bot_id }: any = usePage().props;
     const { url, component } = usePage();
     const isHome = component === 'Home';
     const { t, i18n } = useTranslation();
     const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [language, setLanguage] = useState<LanguageCode>('km');
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -116,14 +127,44 @@ export default function MainLayout({ children, title, description }: Props) {
     const [authMode, setAuthMode] = useState<AuthMode>('signin');
     const [authLoading, setAuthLoading] = useState<AuthLoadingAction>(null);
     const [authError, setAuthError] = useState<string | null>(null);
+    const [firebaseIsConfiguredState, setFirebaseIsConfiguredState] = useState(false);
+    const [isMiniApp, setIsMiniApp] = useState(false);
     const [showModalSigninPassword, setShowModalSigninPassword] = useState(false);
     const [showModalSignupPassword, setShowModalSignupPassword] = useState(false);
     const [showModalConfirmPassword, setShowModalConfirmPassword] = useState(false);
     const [signinForm, setSigninForm] = useState({ email: '', password: '', remember: true });
+    const [signupMethod, setSignupMethod] = useState<'email' | 'phone'>('email');
+    const [countryCode, setCountryCode] = useState('+855');
     const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '', password: '', passwordConfirmation: '', acceptTerms: false });
     const accountRef = useRef<HTMLDivElement>(null);
     const accountButtonRef = useRef<HTMLButtonElement>(null);
     const authCloseButtonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (telegram_bot_id && !document.getElementById('telegram-widget-script')) {
+            const script = document.createElement('script');
+            script.id = 'telegram-widget-script';
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, [telegram_bot_id]);
+
+    const handleTelegramWidgetAuth = async (user: any) => {
+        setAuthLoading('telegram-widget');
+        setAuthError(null);
+        try {
+            const response = await axios.post('/api/auth/telegram-widget', user);
+            if (response.data.success) {
+                setIsAuthChoiceOpen(false);
+                window.location.assign('/');
+            }
+        } catch (err: any) {
+            setAuthError(err.response?.data?.error || 'Telegram authentication failed.');
+        } finally {
+            setAuthLoading(null);
+        }
+    };
 
     const translatedLabel = (key: string, fallback: string) => {
         const translated = t(key);
@@ -155,7 +196,7 @@ export default function MainLayout({ children, title, description }: Props) {
     const isCmsUser = Boolean(auth?.user?.is_admin) || ['admin', 'super_admin', 'logistics', 'content', 'support'].includes(auth?.user?.role);
     const customerUser = auth?.user && !isCmsUser ? auth.user : null;
     const isCustomerProfileIncomplete = Boolean(customerUser && customerUser.profile_is_complete === false);
-    const isTransparent = isHome && !isScrolled;
+    const isTransparent = isHome && !isScrolled && !isMobile;
     const headerTheme = isTransparent ? 'light' : 'dark';
 
     const isActiveNavItem = (href: string) => {
@@ -181,8 +222,14 @@ export default function MainLayout({ children, title, description }: Props) {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        
         window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', checkMobile, { passive: true });
         handleScroll();
+        checkMobile();
 
         const handleOpenLoginModal = () => {
             openAuthModal('signin');
@@ -195,9 +242,34 @@ export default function MainLayout({ children, title, description }: Props) {
 
         return () => {
             window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', checkMobile);
             window.removeEventListener('open-login-modal', handleOpenLoginModal);
         };
     }, [flash?.open_login_modal]);
+
+    useEffect(() => {
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg && tg.initData && !customerUser) {
+            setIsMiniApp(true);
+            tg.ready();
+            tg.expand();
+            
+            setAuthLoading('telegram-miniapp');
+            axios.post('/api/auth/telegram-miniapp', { initData: tg.initData })
+                .then(res => {
+                    if (res.data.success) {
+                        router.reload({ only: ['auth'] });
+                    }
+                })
+                .catch(err => {
+                    console.error("Mini App Auth Error:", err);
+                    setAuthError(err.response?.data?.error || 'Mini App authentication failed');
+                })
+                .finally(() => {
+                    setAuthLoading(null);
+                });
+        }
+    }, [customerUser]);
 
     useEffect(() => {
         const handlePointerDown = (event: MouseEvent) => {
@@ -246,7 +318,7 @@ export default function MainLayout({ children, title, description }: Props) {
             },
         });
 
-        window.location.assign(response.data?.next_url || '/manual-order');
+        window.location.assign('/');
     };
 
     useEffect(() => {
@@ -389,14 +461,14 @@ export default function MainLayout({ children, title, description }: Props) {
 
         router.post('/register', {
             name: signupForm.name,
-            email: signupForm.email,
-            phone: signupForm.phone,
+            email: signupMethod === 'email' ? signupForm.email : '',
+            phone: signupMethod === 'phone' ? (countryCode === 'other' ? signupForm.phone : `${countryCode} ${signupForm.phone}`) : '',
             password: signupForm.password,
             password_confirmation: signupForm.passwordConfirmation,
         }, {
             preserveScroll: true,
             onError: (errors) => {
-                setAuthError(errors.email || errors.password || errors.name || t('login.error_backend'));
+                setAuthError(errors.email || errors.phone || errors.password || errors.name || t('login.error_backend'));
                 setAuthLoading(null);
             },
             onSuccess: () => {
@@ -407,7 +479,7 @@ export default function MainLayout({ children, title, description }: Props) {
     };
 
     const navToneClass = isTransparent
-        ? 'text-gray-950 dark:text-white lg:text-white lg:drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]'
+        ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]'
         : 'text-gray-950 dark:text-white';
 
     const navLinkClass = (href: string) => {
@@ -424,7 +496,7 @@ export default function MainLayout({ children, title, description }: Props) {
         } else {
             stateClass = isTransparent
                 ? `hover:text-white hover:${glassEffect} hover:scale-105`
-                : `hover:text-brand-primary hover:bg-black/5 dark:hover:bg-white/10 hover:shadow-sm`;
+                : `hover:text-brand-primary hover:bg-black/5 hover:shadow-sm`;
         }
         
         return [base, navToneClass, stateClass].join(' ');
@@ -432,9 +504,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
     const iconButtonClass = [
         'inline-flex h-11 w-11 items-center justify-center rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-[0.98] motion-reduce:active:scale-100',
-        isTransparent 
-            ? 'text-gray-950 lg:text-white hover:bg-black/5 lg:hover:bg-white/12 dark:text-white dark:hover:bg-white/10' 
-            : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
+        isTransparent ? 'text-white hover:bg-white/12' : 'text-gray-950 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
     ].join(' ');
 
     return (
@@ -468,7 +538,7 @@ export default function MainLayout({ children, title, description }: Props) {
                     !isHome ? 'hidden lg:block' : '',
                     'relative lg:fixed w-full inset-x-0 top-0 z-[60] transition-[background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out motion-reduce:transition-none',
                     isTransparent
-                        ? 'border-b lg:border-transparent border-gray-200/80 bg-white lg:bg-transparent shadow-sm lg:shadow-none dark:border-gray-800/80 dark:bg-gray-950/95 lg:dark:bg-transparent'
+                        ? 'border-b border-transparent bg-transparent'
                         : 'border-b border-gray-200/80 bg-white/95 shadow-sm backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-950/95',
                 ].join(' ')}
             >
@@ -506,7 +576,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
 
 
-                    <Link href="/" prefetch={['mount', 'hover']} className="inline-flex justify-self-center rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60">
+                    <Link href="/" prefetch={['mount', 'hover']} className={`inline-flex justify-self-center rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 ${!isTransparent ? 'dark:bg-white dark:p-1.5 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.1)]' : ''}`}>
                         {general_settings?.store_logo ? (
                             <img
                                 src={general_settings.store_logo}
@@ -576,30 +646,10 @@ export default function MainLayout({ children, title, description }: Props) {
                                                 <p className="truncate text-sm font-black text-gray-950 dark:text-white">{customerUser.name}</p>
                                                 <p className="truncate text-xs font-semibold text-gray-500 dark:text-gray-400">{customerUser.email}</p>
                                                 <p className="mt-1 truncate font-mono text-xs font-black text-brand-primary">{customerUser.customer_code || translatedLabel('nav.customer_id_pending', 'Customer ID pending')}</p>
-                                                {isCustomerProfileIncomplete ? (
-                                                    <span className="mt-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-wider text-amber-800 dark:bg-amber-900/40 dark:text-amber-100">
-                                                        {translatedLabel('nav.profile_incomplete', 'Profile incomplete')}
-                                                    </span>
-                                                ) : (
-                                                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-wider text-green-800 dark:bg-green-900/40 dark:text-green-100">
-                                                        <CheckCircle2 className="h-3 w-3" />
-                                                        {translatedLabel('nav.profile_verified', 'Profile verified')}
-                                                    </span>
-                                                )}
                                             </div>
                                         </div>
                                         <div className="p-1">
-                                            {isCustomerProfileIncomplete && (
-                                                <Link
-                                                    href="/profile/complete"
-                                                    role="menuitem"
-                                                    className="mb-1 flex min-h-11 items-center gap-3 rounded-xl bg-amber-50 px-3 text-sm font-black text-amber-800 transition hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-900/40"
-                                                    onClick={() => setIsAccountMenuOpen(false)}
-                                                >
-                                                    <UserRound className="h-4 w-4" aria-hidden="true" />
-                                                    {translatedLabel('nav.complete_profile', 'Complete Your Profile')}
-                                                </Link>
-                                            )}
+
                                             {customerLinks.map((item) => (
                                                 <Link
                                                     key={item.href}
@@ -756,7 +806,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             )}
 
                             {authMode === 'signin' ? (
-                                <form onSubmit={submitModalSignIn} className="mt-4 space-y-3">
+                                <div className="mt-4 space-y-3">
                                     <button
                                         type="button"
                                         onClick={() => handleGoogleAuth('signin')}
@@ -766,7 +816,34 @@ export default function MainLayout({ children, title, description }: Props) {
                                         {authLoading === 'google-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
                                         {authLoading === 'google-signin' ? t('login.loading') : t('login.continue_google')}
                                     </button>
-
+                                    
+                                    {telegram_bot_id && !isMiniApp && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if ((window as any).Telegram?.Login?.auth) {
+                                                    setAuthLoading('telegram-widget');
+                                                    (window as any).Telegram.Login.auth(
+                                                        { bot_id: telegram_bot_id, request_access: 'write' },
+                                                        (user: any) => {
+                                                            if (user) {
+                                                                handleTelegramWidgetAuth(user);
+                                                            } else {
+                                                                setAuthLoading(null);
+                                                            }
+                                                        }
+                                                    );
+                                                } else {
+                                                    setAuthError('Telegram login is not available yet. Please wait a moment.');
+                                                }
+                                            }}
+                                            disabled={authLoading !== null}
+                                            className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                        >
+                                            {authLoading === 'telegram-widget' ? <Loader2 className="h-5 w-5 animate-spin" /> : <TelegramIcon />}
+                                            {authLoading === 'telegram-widget' ? t('login.loading') : 'Continue with Telegram'}
+                                        </button>
+                                    )}
 
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
@@ -774,97 +851,150 @@ export default function MainLayout({ children, title, description }: Props) {
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                     </div>
 
-                                    {/* Email field */}
-                                    <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
-                                        <span className="relative block">
-                                            <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                            <input
-                                                type="email"
-                                                value={signinForm.email}
-                                                onChange={(event) => setSigninForm({ ...signinForm, email: event.target.value })}
-                                                className="auth-input-left-icon h-[52px] w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                placeholder={t('login.email')}
-                                                autoComplete="email"
-                                                required
-                                            />
-                                        </span>
-                                    </label>
+                                    <form onSubmit={submitModalSignIn} className="space-y-3">
+                                        {/* Email or Phone field */}
+                                        <label className="block">
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Email address or phone number</span>
+                                            <span className="relative block">
+                                                <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                                <input
+                                                    type="text"
+                                                    value={signinForm.email}
+                                                    onChange={(event) => setSigninForm({ ...signinForm, email: event.target.value })}
+                                                    className="auth-input-left-icon h-[52px] w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                    placeholder="Email address or phone number"
+                                                    autoComplete="username"
+                                                    required
+                                                />
+                                            </span>
+                                        </label>
 
-                                    {/* Password field */}
-                                    <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.password')}</span>
-                                        <span className="relative block">
-                                            <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                            <input
-                                                type={showModalSigninPassword ? 'text' : 'password'}
-                                                value={signinForm.password}
-                                                onChange={(event) => setSigninForm({ ...signinForm, password: event.target.value })}
-                                                className="auth-input-left-icon auth-input-has-action h-[52px] w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                placeholder={t('login.password')}
-                                                autoComplete="current-password"
-                                                required
-                                            />
+                                        {/* Password field */}
+                                        <label className="block">
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.password')}</span>
+                                            <span className="relative block">
+                                                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                                <input
+                                                    type={showModalSigninPassword ? 'text' : 'password'}
+                                                    value={signinForm.password}
+                                                    onChange={(event) => setSigninForm({ ...signinForm, password: event.target.value })}
+                                                    className="auth-input-left-icon auth-input-has-action h-[52px] w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                    placeholder={t('login.password')}
+                                                    autoComplete="current-password"
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowModalSigninPassword(!showModalSigninPassword)}
+                                                    className="absolute right-2.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 dark:hover:bg-white/10"
+                                                    aria-label={showModalSigninPassword ? 'Hide password' : 'Show password'}
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
+                                            </span>
+                                        </label>
+
+                                        <div className="flex items-center justify-between gap-4 text-xs">
+                                            <label className="inline-flex min-h-[44px] cursor-pointer items-center gap-2.5 font-bold text-slate-500 dark:text-slate-300">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={signinForm.remember}
+                                                    onChange={(event) => setSigninForm({ ...signinForm, remember: event.target.checked })}
+                                                    className="rounded border-slate-300 bg-white"
+                                                />
+                                                {t('login.remember_me')}
+                                            </label>
                                             <button
                                                 type="button"
-                                                onClick={() => setShowModalSigninPassword(!showModalSigninPassword)}
-                                                className="absolute right-2.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 dark:hover:bg-white/10"
-                                                aria-label={showModalSigninPassword ? 'Hide password' : 'Show password'}
+                                                onClick={() => window.location.assign('/forgot-password')}
+                                                className="font-black text-brand-primary hover:text-brand-secondary hover:underline"
                                             >
-                                                <Eye className="h-4 w-4" />
+                                                {t('login.forgot_password')}
                                             </button>
-                                        </span>
-                                    </label>
+                                        </div>
 
-                                    <div className="flex items-center justify-between gap-4 text-xs">
-                                        <label className="inline-flex min-h-[44px] cursor-pointer items-center gap-2.5 font-bold text-slate-500 dark:text-slate-300">
-                                            <input
-                                                type="checkbox"
-                                                checked={signinForm.remember}
-                                                onChange={(event) => setSigninForm({ ...signinForm, remember: event.target.checked })}
-                                                className="rounded border-slate-300 bg-white"
-                                            />
-                                            {t('login.remember_me')}
-                                        </label>
                                         <button
-                                            type="button"
-                                            onClick={() => window.location.assign('/forgot-password')}
-                                            className="font-black text-brand-primary hover:text-brand-secondary hover:underline"
+                                            type="submit"
+                                            disabled={authLoading !== null}
+                                            className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-brand-primary px-5 text-sm font-black text-white shadow-lg shadow-brand-primary/25 transition hover:-translate-y-0.5 hover:bg-brand-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
-                                            {t('login.forgot_password')}
+                                            {authLoading === 'email-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
+                                            {authLoading === 'email-signin' ? t('login.loading') : t('login.signin_button')}
                                         </button>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={authLoading !== null}
-                                        className="inline-flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-xl bg-brand-primary px-5 text-sm font-black text-white shadow-lg shadow-brand-primary/25 transition hover:-translate-y-0.5 hover:bg-brand-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                        {authLoading === 'email-signin' ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
-                                        {authLoading === 'email-signin' ? t('login.loading') : t('login.signin_button')}
-                                    </button>
-                                </form>
+                                    </form>
+                                </div>
                             ) : (
                                 <form onSubmit={submitModalSignUp} className="mt-4 space-y-3">
                                     <button
                                         type="button"
                                         onClick={() => handleGoogleAuth('signup')}
                                         disabled={authLoading !== null || !firebaseIsConfigured}
-                                        className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-900 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                        className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
                                     >
                                         {authLoading === 'google-signup' ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
                                         {authLoading === 'google-signup' ? t('login.loading') : t('login.signup_google')}
                                     </button>
 
-
+                                    {telegram_bot_id && !isMiniApp && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if ((window as any).Telegram?.Login?.auth) {
+                                                    setAuthLoading('telegram-widget');
+                                                    (window as any).Telegram.Login.auth(
+                                                        { bot_id: telegram_bot_id, request_access: 'write' },
+                                                        (user: any) => {
+                                                            if (user) {
+                                                                handleTelegramWidgetAuth(user);
+                                                            } else {
+                                                                setAuthLoading(null);
+                                                            }
+                                                        }
+                                                    );
+                                                } else {
+                                                    setAuthError('Telegram login is not available yet. Please wait a moment.');
+                                                }
+                                            }}
+                                            disabled={authLoading !== null}
+                                            className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
+                                        >
+                                            {authLoading === 'telegram-widget' ? <Loader2 className="h-5 w-5 animate-spin" /> : <TelegramIcon />}
+                                            {authLoading === 'telegram-widget' ? t('login.loading') : 'Sign up with Telegram'}
+                                        </button>
+                                    )}
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                         {t('login.or_signup_email')}
                                         <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                     </div>
 
+                                    <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-white/5 mb-2 mt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSignupMethod('email')}
+                                            className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-colors ${
+                                                signupMethod === 'email'
+                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                            }`}
+                                        >
+                                            Sign up with Email
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSignupMethod('phone')}
+                                            className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-colors ${
+                                                signupMethod === 'phone'
+                                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                            }`}
+                                        >
+                                            Sign up with Phone
+                                        </button>
+                                    </div>
+
                                     <div className="grid gap-3 sm:grid-cols-2">
-                                        <label className="block">
+                                        <label className="block sm:col-span-2">
                                             <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.full_name')}</span>
                                             <input
                                                 type="text"
@@ -876,29 +1006,47 @@ export default function MainLayout({ children, title, description }: Props) {
                                                 required
                                             />
                                         </label>
-                                        <label className="block">
-                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
-                                            <input
-                                                type="email"
-                                                value={signupForm.email}
-                                                onChange={(event) => setSignupForm({ ...signupForm, email: event.target.value })}
-                                                className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                placeholder={t('login.email')}
-                                                autoComplete="email"
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block sm:col-span-2">
-                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number (Optional)</span>
-                                            <input
-                                                type="tel"
-                                                value={signupForm.phone}
-                                                onChange={(event) => setSignupForm({ ...signupForm, phone: event.target.value })}
-                                                className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                placeholder="e.g. +855 12 345 678"
-                                                autoComplete="tel"
-                                            />
-                                        </label>
+                                        
+                                        {signupMethod === 'email' ? (
+                                            <label className="block sm:col-span-2">
+                                                <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
+                                                <input
+                                                    type="email"
+                                                    value={signupForm.email}
+                                                    onChange={(event) => setSignupForm({ ...signupForm, email: event.target.value })}
+                                                    className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                    placeholder={t('login.email')}
+                                                    autoComplete="email"
+                                                    required
+                                                />
+                                            </label>
+                                        ) : (
+                                            <label className="block sm:col-span-2">
+                                                <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number</span>
+                                                <div className="flex gap-2">
+                                                    <select
+                                                        value={countryCode}
+                                                        onChange={(e) => setCountryCode(e.target.value)}
+                                                        className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                    >
+                                                        <option value="+855">🇰🇭 +855</option>
+                                                        <option value="+84">🇻🇳 +84</option>
+                                                        <option value="+856">🇱🇦 +856</option>
+                                                        <option value="+62">🇮🇩 +62</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
+                                                    <input
+                                                        type="tel"
+                                                        value={signupForm.phone}
+                                                        onChange={(event) => setSignupForm({ ...signupForm, phone: event.target.value })}
+                                                        className="h-[52px] flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                        placeholder="e.g. 12 345 678"
+                                                        autoComplete="tel"
+                                                        required
+                                                    />
+                                                </div>
+                                            </label>
+                                        )}
                                     </div>
 
                                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1001,11 +1149,11 @@ export default function MainLayout({ children, title, description }: Props) {
                 {children}
             </main>
 
-            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 py-14 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-14 dark:border-gray-800 dark:bg-gray-950">
+            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 py-14 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-14 dark:border-gray-800 dark:bg-gray-950">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                         <div>
-                            <Link href="/" className="inline-flex rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60">
+                            <Link href="/" className="inline-flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 dark:bg-white dark:p-1.5 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.1)]">
                                 {general_settings?.store_logo ? (
                                     <img src={general_settings.store_logo} alt={general_settings?.store_name || 'Store Logo'} className="h-16 w-auto object-contain" />
                                 ) : (
@@ -1036,6 +1184,7 @@ export default function MainLayout({ children, title, description }: Props) {
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
                                 <li><Link href="/my-orders" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PackageCheck className="h-4 w-4" />{translatedLabel('nav.my_orders', 'My Orders')}</Link></li>
                                 <li><Link href="/receipts" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><FileText className="h-4 w-4" />{translatedLabel('nav.receipts', 'Receipts')}</Link></li>
+                                <li><Link href="/prohibited-items" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><AlertTriangle className="h-4 w-4" />{translatedLabel('nav.prohibited_items', 'Prohibited Items')}</Link></li>
                                 <li><Link href="/contact" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PhoneCall className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
                             </ul>
                         </div>
@@ -1051,8 +1200,9 @@ export default function MainLayout({ children, title, description }: Props) {
                     <div className="mt-12 border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
                         <div>&copy; 2026 MVM Logistics. All Rights Reserved.</div>
                         <div className="flex gap-4 mt-4 md:mt-0 font-medium">
-                            <Link href="/privacy-policy" className="hover:text-brand-primary transition">Privacy Policy</Link>
-                            <Link href="/terms-of-service" className="hover:text-brand-primary transition">Terms of Service</Link>
+                            <Link href="/privacy-policy" className="hover:text-brand-primary transition">{translatedLabel('footer.privacy_policy', 'Privacy Policy')}</Link>
+                            <Link href="/terms-of-service" className="hover:text-brand-primary transition">{translatedLabel('footer.terms_of_service', 'Terms of Service')}</Link>
+                            <Link href="/prohibited-items" className="hover:text-brand-primary transition">{translatedLabel('footer.prohibited_items', 'Prohibited Items')}</Link>
                         </div>
                     </div>
                 </div>

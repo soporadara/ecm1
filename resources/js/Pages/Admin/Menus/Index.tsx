@@ -123,7 +123,7 @@ export default function MenusIndex({ menus, pages = [] }: any) {
                                     onClick={() => setSelectedMenu(menu)}
                                     className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors flex justify-between items-center ${
                                         selectedMenu?.id === menu.id 
-                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 font-medium' 
+                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-white font-medium' 
                                         : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent text-gray-600 dark:text-gray-400'
                                     }`}
                                 >

@@ -35,7 +35,7 @@ export default function CategoryCreate({ parents }: { parents: Parent[] }) {
 
             <div className="w-full">
                 <div className="mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <Link href="/admin/categories" className="hover:text-indigo-600 dark:hover:text-indigo-400">Categories</Link>
+                    <Link href="/admin/categories" className="hover:text-indigo-600 dark:hover:text-white">Categories</Link>
                     <span>/</span>
                     <span className="text-gray-900 dark:text-gray-200 font-medium">New</span>
                 </div>

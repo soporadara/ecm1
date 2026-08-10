@@ -55,7 +55,7 @@ export default function CouponsIndex({ coupons }: { coupons: Coupon[] }) {
                         {coupons.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm">
-                                    No coupons yet. <Link href="/admin/coupons/create" className="text-indigo-600 dark:text-indigo-400 hover:underline">Create one →</Link>
+                                    No coupons yet. <Link href="/admin/coupons/create" className="text-indigo-600 dark:text-white hover:underline">Create one →</Link>
                                 </td>
                             </tr>
                         )}
@@ -82,7 +82,7 @@ export default function CouponsIndex({ coupons }: { coupons: Coupon[] }) {
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-3">
                                         <Link href={`/admin/coupons/${c.id}/edit`}
-                                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium">
+                                            className="text-indigo-600 dark:text-white hover:text-indigo-900 dark:hover:text-white font-medium">
                                             Edit
                                         </Link>
                                         <button onClick={() => handleDelete(c.id)}

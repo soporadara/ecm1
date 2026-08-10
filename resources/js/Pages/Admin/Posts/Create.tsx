@@ -140,7 +140,7 @@ export default function Create({ categories = [] }: { categories?: any[] }) {
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-gray-100 dark:border-gray-700 transform transition-all">
                         <div className="border-b border-gray-100 dark:border-gray-700 px-6 py-4 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-white rounded-lg">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Smart Import Content</h3>
@@ -151,8 +151,8 @@ export default function Create({ categories = [] }: { categories?: any[] }) {
                         </div>
                         <div className="p-6">
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 mb-6">
-                                <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">How it works:</h4>
-                                <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
+                                <h4 className="text-sm font-semibold text-blue-800 dark:text-white mb-1">How it works:</h4>
+                                <ul className="text-sm text-blue-700 dark:text-white space-y-1 list-disc list-inside">
                                     <li>Paste a public <strong>Google Docs URL</strong> to automatically fetch its text.</li>
                                     <li>Or paste your <strong>raw text</strong> directly below.</li>
                                     <li>The first line automatically becomes the Post Title.</li>

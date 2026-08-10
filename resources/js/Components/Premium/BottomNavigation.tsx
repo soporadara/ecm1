@@ -40,7 +40,7 @@ export default function BottomNavigation({ onOpenManualOrder, onOpenAuthModal, u
                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
                     className="fixed bottom-0 left-0 right-0 z-[100] px-0 flex justify-center pointer-events-none lg:hidden"
                 >
-                    <div className="relative pointer-events-auto flex items-center justify-between w-full h-[calc(4rem+env(safe-area-inset-bottom))] rounded-t-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.2)] px-2 pb-[env(safe-area-inset-bottom)]">
+                    <div className="relative pointer-events-auto flex items-center justify-between w-full h-[calc(4.75rem+env(safe-area-inset-bottom))] rounded-t-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.2)] px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
                         
                         {navItems.map((item, index) => {
                             if (item.type === 'center-button') {

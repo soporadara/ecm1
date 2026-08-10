@@ -6,13 +6,23 @@ export default function SupportFAB() {
     const [isOpen, setIsOpen] = useState(false);
     const { general_settings }: any = usePage().props;
 
-    const links = [
-        { id: 'messenger', name: 'Messenger', url: 'https://m.me/MVMLogistics', icon_url: null },
-        { id: 'zalo', name: 'Zalo', url: 'https://zalo.me/0317669555', icon_url: null },
-        { id: 'telegram', name: 'Telegram', url: 'https://t.me/+855317669555', icon_url: null },
-        { id: 'phone', name: 'Phone', url: 'tel:0317669555', icon_url: null },
-        { id: 'email', name: 'Email', url: 'mailto:info@mvmlogistics.asia', icon_url: null },
-    ];
+    let links: any[] = [];
+    if (general_settings?.fab_links) {
+        try {
+            links = JSON.parse(general_settings.fab_links);
+        } catch (e) {
+            links = [];
+        }
+    }
+    
+    // Fallback to legacy settings if no fab_links
+    if (links.length === 0 && general_settings) {
+        if (general_settings.fab_email) links.push({ id: 'email', name: 'Email', url: `mailto:${general_settings.fab_email}`, icon_url: null });
+        if (general_settings.fab_phone) links.push({ id: 'phone', name: 'Phone', url: `tel:${general_settings.fab_phone}`, icon_url: null });
+        if (general_settings.fab_messenger) links.push({ id: 'messenger', name: 'Messenger', url: general_settings.fab_messenger, icon_url: null });
+        if (general_settings.fab_telegram) links.push({ id: 'telegram', name: 'Telegram', url: general_settings.fab_telegram, icon_url: null });
+    }
+
 
     if (!links || links.length === 0) {
         return null;
@@ -28,15 +38,33 @@ export default function SupportFAB() {
                 ></div>
             )}
 
-            <div className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-[110] flex flex-col items-end gap-3">
+            <div className="fixed bottom-32 right-4 lg:bottom-6 lg:right-6 z-[110] flex flex-col items-end gap-3">
                 {/* Expanded Icons (Visible when clicked) */}
                 <div 
                     className={`flex flex-col gap-3 transition-all duration-300 transform origin-bottom ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-4 pointer-events-none'}`}
                 >
                     {links.map((link) => {
-                        let linkUrl = link.url;
+                        let linkUrl = link.url || '';
+                        
                         if (!linkUrl.startsWith('http') && !linkUrl.startsWith('mailto:') && !linkUrl.startsWith('tel:')) {
-                            linkUrl = `https://${linkUrl}`;
+                            const nameLower = (link.name || '').toLowerCase();
+                            const cleanPhone = linkUrl.replace(/[\s\+]/g, '');
+                            
+                            if (nameLower.includes('zalo')) {
+                                let zaloPhone = cleanPhone;
+                                if (zaloPhone.startsWith('84')) zaloPhone = '0' + zaloPhone.substring(2);
+                                linkUrl = `https://zalo.me/${zaloPhone}`;
+                            } else if (nameLower.includes('telegram') || nameLower.includes('tg')) {
+                                linkUrl = `https://t.me/+${cleanPhone}`;
+                            } else if (nameLower.includes('messenger') || nameLower.includes('fb') || nameLower.includes('facebook')) {
+                                linkUrl = `https://m.me/${linkUrl.replace(/\s+/g, '')}`;
+                            } else if (nameLower.includes('whatsapp') || nameLower.includes('wa')) {
+                                linkUrl = `https://wa.me/${cleanPhone}`;
+                            } else if (/^\+?[0-9\s]+$/.test(linkUrl)) {
+                                linkUrl = `tel:${linkUrl.replace(/\s+/g, '')}`;
+                            } else {
+                                linkUrl = `https://${linkUrl}`;
+                            }
                         }
 
                         // Determine fallback colors for legacy keys (if no icon provided)
@@ -52,6 +80,14 @@ export default function SupportFAB() {
                             <a 
                                 key={link.id}
                                 href={linkUrl} 
+                                onClick={(e) => {
+                                    // @ts-ignore
+                                    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+                                        e.preventDefault();
+                                        // @ts-ignore
+                                        window.Telegram.WebApp.openLink(linkUrl);
+                                    }
+                                }}
                                 target={linkUrl.startsWith('http') ? '_blank' : '_self'}
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-2 group"

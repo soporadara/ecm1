@@ -1,13 +1,103 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '@/Layouts/AdminLayout';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
+function SortableTableRow({ t, openModal, handleDelete }: any) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: t.id });
+    
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        backgroundColor: isDragging ? 'var(--admin-surface-muted)' : undefined,
+        zIndex: isDragging ? 1 : 0,
+        position: isDragging ? 'relative' as const : undefined,
+    };
 
-export default function Index({ testimonials }: any) {
+    return (
+        <tr ref={setNodeRef} style={style} className="hover:bg-admin-surface/30 transition-colors">
+            <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                    <button {...attributes} {...listeners} className="cursor-grab text-admin-text-muted hover:text-admin-text">
+                        <GripVertical className="w-5 h-5" />
+                    </button>
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-admin-surface-muted shrink-0 border border-admin-border/50">
+                        {t.image_path ? (
+                            <img src={`/storage/${t.image_path}`} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-admin-text-muted font-bold text-lg">
+                                {t.customer_name.charAt(0)}
+                            </div>
+                        )}
+                    </div>
+                    <div className="font-bold text-admin-text">{t.customer_name}</div>
+                </div>
+            </td>
+            <td className="px-6 py-4">
+                <div className="line-clamp-2 max-w-md" title={t.content}>{t.content}</div>
+            </td>
+            <td className="px-6 py-4 text-center text-yellow-400 font-bold">
+                {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
+            </td>
+            <td className="px-6 py-4 text-center">
+                <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${t.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {t.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td className="px-6 py-4">
+                <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => openModal(t)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
+                    <button onClick={() => handleDelete(t.id)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity">Delete</button>
+                </div>
+            </td>
+        </tr>
+    );
+}
+export default function Index({ testimonials: initialTestimonials }: any) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+    const [items, setItems] = useState(initialTestimonials);
+
+    useEffect(() => {
+        setItems(initialTestimonials);
+    }, [initialTestimonials]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = async (event: any) => {
+        const { active, over } = event;
+        if (active.id !== over.id) {
+            setItems((prev: any[]) => {
+                const oldIndex = prev.findIndex((item) => item.id === active.id);
+                const newIndex = prev.findIndex((item) => item.id === over.id);
+                const newItems = arrayMove(prev, oldIndex, newIndex);
+                
+                const updatedItems = newItems.map((item, index) => ({ ...item, sort_order: index }));
+                
+                axios.post('/admin/testimonials/reorder', {
+                    items: updatedItems.map(i => ({ id: i.id, sort_order: i.sort_order }))
+                }).then(() => {
+                    toast.success('Testimonials reordered');
+                }).catch(() => {
+                    toast.error('Failed to reorder testimonials');
+                    setItems(prev);
+                });
+
+                return updatedItems;
+            });
+        }
+    };
 
     const { data, setData, post, clearErrors, reset, errors, processing } = useForm({
         customer_name: '',
@@ -125,50 +215,22 @@ export default function Index({ testimonials }: any) {
                                     <th className="px-6 py-4 font-bold tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-admin-border/40">
-                                {testimonials.map((t: any) => (
-                                    <tr key={t.id} className="hover:bg-admin-surface/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full overflow-hidden bg-admin-surface-muted shrink-0 border border-admin-border/50">
-                                                    {t.image_path ? (
-                                                        <img src={`/storage/${t.image_path}`} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-admin-text-muted font-bold text-lg">
-                                                            {t.customer_name.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="font-bold text-admin-text">{t.customer_name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="line-clamp-2 max-w-md" title={t.content}>{t.content}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center text-yellow-400 font-bold">
-                                            {'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${t.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {t.is_active ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => openModal(t)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
-                                                <button onClick={() => handleDelete(t.id)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 dark:bg-red-600 dark:text-white hover:opacity-80 transition-opacity">Delete</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {testimonials.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-admin-text-muted">
-                                            No reviews found. Click "Add Review" to get started.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <SortableContext items={items.map((t: any) => t.id)} strategy={verticalListSortingStrategy}>
+                                    <tbody className="divide-y divide-admin-border/40">
+                                        {items.map((t: any) => (
+                                            <SortableTableRow key={t.id} t={t} openModal={openModal} handleDelete={handleDelete} />
+                                        ))}
+                                        {items.length === 0 && (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-12 text-center text-admin-text-muted">
+                                                    No reviews found. Click "Add Review" to get started.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </SortableContext>
+                            </DndContext>
                         </table>
                     </div>
                 </div>

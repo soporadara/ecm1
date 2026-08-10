@@ -147,7 +147,7 @@ function MenuView({ user, logout, menuGroups, onEditProfile }: any) {
                         <div className="bg-white dark:bg-gray-900 rounded-[20px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
                             {group.items.map((item: any, j: number) => {
                                 const inner = (
-                                    <>
+                                    <div className="flex items-center justify-between w-full px-4 py-3.5 pointer-events-none">
                                         <div className="flex items-center gap-4 flex-1">
                                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${item.bg} ${item.color}`}>
                                                 <item.icon className="w-5 h-5" />
@@ -155,13 +155,13 @@ function MenuView({ user, logout, menuGroups, onEditProfile }: any) {
                                             <span className="font-bold text-gray-900 dark:text-white">{item.label}</span>
                                         </div>
                                         <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                                    </>
+                                    </div>
                                 );
-                                const rowClass = `w-full flex items-center justify-between px-4 py-3.5 active:bg-gray-50 dark:active:bg-gray-800 transition-colors ${j !== group.items.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`;
+                                const rowClass = `relative block w-full text-left cursor-pointer touch-manipulation active:bg-gray-50 dark:active:bg-gray-800 transition-colors ${j !== group.items.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`;
                                 if (item.href) {
                                     return <Link key={item.label} href={item.href} className={rowClass}>{inner}</Link>;
                                 }
-                                return <button key={item.label} type="button" onClick={item.onPress} className={`${rowClass} text-left`}>{inner}</button>;
+                                return <button key={item.label} type="button" onClick={item.onPress} className={rowClass}>{inner}</button>;
                             })}
                         </div>
                     </motion.div>
@@ -424,8 +424,8 @@ function SecurityView({ user, onBack }: { user: any; onBack: () => void }) {
             </div>
             <div className="px-5 pt-6 space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
-                    <p className="font-bold text-blue-900 dark:text-blue-100">Sign-in Provider</p>
-                    <p className="mt-1 text-sm text-blue-700 dark:text-blue-200">
+                    <p className="font-bold text-blue-900 dark:text-white">Sign-in Provider</p>
+                    <p className="mt-1 text-sm text-blue-700 dark:text-white">
                         Your account is secured via <strong>{user.authentication_provider === 'google' ? 'Google' : 'Email & Password'}</strong>.
                     </p>
                 </div>
@@ -462,19 +462,25 @@ function SecurityView({ user, onBack }: { user: any; onBack: () => void }) {
                     user.authentication_provider === 'google' && { label: 'Manage Google Account Security', href: 'https://myaccount.google.com/security', external: true },
                     { label: 'Request Account Help', href: '/contact' },
                     { label: 'Change / Reset Password', href: '/forgot-password' },
-                ].filter(Boolean).map((item: any) => (
-                    item.external ? (
-                        <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="w-full flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                ].filter(Boolean).map((item: any) => {
+                    const rowClass = "block w-full text-left bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-50 dark:active:bg-gray-800 transition-colors cursor-pointer touch-manipulation mb-2 last:mb-0";
+                    const inner = (
+                        <div className="flex items-center justify-between w-full px-5 py-4 pointer-events-none">
                             <span className="text-sm font-bold text-gray-900 dark:text-white">{item.label}</span>
                             <ArrowRight className="w-4 h-4 text-gray-400" />
+                        </div>
+                    );
+
+                    return item.external ? (
+                        <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className={rowClass}>
+                            {inner}
                         </a>
                     ) : (
-                        <Link key={item.label} href={item.href} className="w-full flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            <span className="text-sm font-bold text-gray-900 dark:text-white">{item.label}</span>
-                            <ArrowRight className="w-4 h-4 text-gray-400" />
+                        <Link key={item.label} href={item.href} className={rowClass}>
+                            {inner}
                         </Link>
-                    )
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

@@ -225,13 +225,13 @@ export default function CustomerManagement({ customers, filters }: Props) {
 
                             <div className="pt-6 border-t border-admin-border/50 flex flex-col gap-3">
                                 <h3 className="text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-1">Advanced Actions</h3>
-                                <button type="button" onClick={() => { setResettingCustomer(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/10 dark:hover:bg-yellow-900/20 rounded-xl transition-colors">
+                                <button type="button" onClick={() => { setResettingCustomer(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-yellow-700 bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300 hover:shadow-sm dark:bg-yellow-900/20 dark:border-yellow-700/50 dark:text-yellow-400 dark:hover:bg-yellow-900/40 rounded-xl transition-all">
                                     Reset Password
                                 </button>
-                                <button type="button" onClick={() => { toggleStatus(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-admin-text bg-admin-surface-muted hover:bg-admin-border/50 rounded-xl transition-colors">
+                                <button type="button" onClick={() => { toggleStatus(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700 rounded-xl transition-all">
                                     {editingCustomer.account_status === 'frozen' ? 'Unfreeze Account' : 'Freeze Account'}
                                 </button>
-                                <button type="button" onClick={() => { deleteCustomer(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-admin-danger bg-admin-danger/10 hover:bg-admin-danger/20 rounded-xl transition-colors">
+                                <button type="button" onClick={() => { deleteCustomer(editingCustomer); setEditingCustomer(null); }} className="w-full px-4 py-3 text-sm font-bold text-left text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 hover:shadow-sm dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400 dark:hover:bg-red-900/40 rounded-xl transition-all">
                                     Delete Customer
                                 </button>
                             </div>

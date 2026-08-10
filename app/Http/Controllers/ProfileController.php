@@ -111,8 +111,8 @@ class ProfileController extends Controller
     {
         return Inertia::render('Customer/CompleteProfile', [
             'missingFields' => $completion->missingFields($request->user()),
-            'isManualOrderGate' => $request->query('gate') === 'manual-order' || $request->session()->get('profile.redirect_after_completion') === '/manual-order',
-            'canSkip' => $request->query('gate') !== 'manual-order' && $request->session()->get('profile.redirect_after_completion') !== '/manual-order',
+            'isManualOrderGate' => false,
+            'canSkip' => true,
         ]);
     }
 
@@ -190,7 +190,7 @@ class ProfileController extends Controller
             ]);
         }
 
-        return redirect('/')->with('success', 'Your account was created. Complete your profile before creating a Manual Order.');
+        return redirect('/')->with('success', 'Welcome to MVM Logistics!');
     }
 
     private function normalizePhone(?string $phone): ?string

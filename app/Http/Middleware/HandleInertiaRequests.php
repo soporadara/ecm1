@@ -132,6 +132,8 @@ class HandleInertiaRequests extends Middleware
                     'staff' => \App\Models\User::where('is_admin', true)->orWhereIn('role', ['admin', 'super_admin'])->count(),
                 ];
             }) : [],
+            'telegram_bot_username' => config('services.telegram.bot_username') ?: env('TELEGRAM_BOT_USERNAME'),
+            'telegram_bot_id' => explode(':', config('services.telegram.bot_token') ?: env('TELEGRAM_BOT_TOKEN'))[0] ?? null,
             'cart' => $cart,
         ];
     }

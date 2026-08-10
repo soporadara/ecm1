@@ -21,40 +21,7 @@ export default function Notifications() {
 
     const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
         if (!user) return [];
-        return [
-            {
-                id: '1',
-                title: 'Order Completed Successfully',
-                description: 'Your manual order #ORD-9282 has been delivered to your Phnom Penh warehouse.',
-                time: '2 hours ago',
-                type: 'order',
-                read: false,
-            },
-            {
-                id: '2',
-                title: 'Receipt Verified',
-                description: 'Your payment receipt of $120.00 for order #ORD-9283 has been successfully verified.',
-                time: 'Yesterday',
-                type: 'payment',
-                read: false,
-            },
-            {
-                id: '3',
-                title: 'Complete Your Profile Info',
-                description: 'Please complete your address details to avoid any delays in manual order shipping.',
-                time: '2 days ago',
-                type: 'account',
-                read: true,
-            },
-            {
-                id: '4',
-                title: 'Customs Clearance Update',
-                description: 'Shipment container #MVM-8829 has cleared customs inspection at the border.',
-                time: '3 days ago',
-                type: 'order',
-                read: true,
-            },
-        ];
+        return [];
     });
 
     const markAllAsRead = () => {

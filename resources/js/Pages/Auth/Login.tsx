@@ -5,12 +5,12 @@ import { ArrowLeft, HelpCircle, Loader2, LockKeyhole, ShieldCheck, Truck, Zap } 
 import { useTranslation } from '../../hooks/useTranslation';
 import MainLayout from '../../Layouts/MainLayout';
 import {
-    createFirebasePasswordAccount,
     firebaseIsConfigured,
     getGoogleRedirectResult,
-    signInWithFirebasePassword,
     signInWithGooglePopupOrRedirect,
 } from '../../lib/firebase';
+import { router } from '@inertiajs/react';
+import TelegramWidget from '../../Components/Premium/TelegramWidget';
 
 type LanguageCode = 'km' | 'en' | 'vi';
 type AuthMode = 'signin' | 'signup';
@@ -40,7 +40,10 @@ export default function Login() {
     const [loading, setLoading] = useState<LoadingAction>(null);
     const [error, setError] = useState<string | null>(null);
     const [signinForm, setSigninForm] = useState({ email: '', password: '', remember: true });
-    const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '', passwordConfirmation: '', acceptTerms: false });
+    const [signupMethod, setSignupMethod] = useState<'email' | 'phone'>('email');
+    const [countryCode, setCountryCode] = useState('+855');
+    const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '', password: '', passwordConfirmation: '', acceptTerms: false });
+    const { telegram_bot_username } = pageProps;
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
@@ -80,7 +83,7 @@ export default function Login() {
             },
         });
 
-        window.location.assign(response.data?.next_url || '/manual-order');
+        window.location.assign(response.data?.next_url || '/');
     };
 
     const errorMessage = (code?: string) => {
@@ -138,21 +141,43 @@ export default function Login() {
     };
 
 
-    const submitSignIn = async (event: FormEvent) => {
-        event.preventDefault();
+    const handleTelegramWidgetAuth = async (user: any) => {
         setLoading('email-signin');
         setError(null);
-
         try {
-            const result = await signInWithFirebasePassword(signinForm.email, signinForm.password, signinForm.remember);
-            await completeBackendLogin(await result.user.getIdToken(), 'signin');
-        } catch (authError: any) {
-            setError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
+            const response = await axios.post('/api/auth/telegram-widget', user);
+            if (response.data.success) {
+                window.location.assign('/');
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.error || 'Telegram authentication failed.');
+        } finally {
             setLoading(null);
         }
     };
 
-    const submitSignUp = async (event: FormEvent) => {
+    const submitSignIn = (event: FormEvent) => {
+        event.preventDefault();
+        setLoading('email-signin');
+        setError(null);
+
+        router.post('/login', {
+            email: signinForm.email,
+            password: signinForm.password,
+            remember: signinForm.remember,
+        }, {
+            preserveScroll: true,
+            onError: (errors) => {
+                setError(errors.email || errors.password || t('login.error_invalid_credentials'));
+                setLoading(null);
+            },
+            onSuccess: () => {
+                setLoading(null);
+            },
+        });
+    };
+
+    const submitSignUp = (event: FormEvent) => {
         event.preventDefault();
         setError(null);
 
@@ -168,13 +193,22 @@ export default function Login() {
 
         setLoading('email-signup');
 
-        try {
-            const result = await createFirebasePasswordAccount(signupForm.name, signupForm.email, signupForm.password);
-            await completeBackendLogin(await result.user.getIdToken(true), 'signup', signupForm.name);
-        } catch (authError: any) {
-            setError(authError?.response?.data?.message || authError?.response?.data?.errors?.id_token?.[0] || errorMessage(authError?.code));
-            setLoading(null);
-        }
+        router.post('/register', {
+            name: signupForm.name,
+            email: signupMethod === 'email' ? signupForm.email : '',
+            phone: signupMethod === 'phone' ? (countryCode === 'other' ? signupForm.phone : `${countryCode} ${signupForm.phone}`) : '',
+            password: signupForm.password,
+            password_confirmation: signupForm.passwordConfirmation,
+        }, {
+            preserveScroll: true,
+            onError: (errors) => {
+                setError(errors.email || errors.phone || errors.password || errors.name || t('login.error_backend'));
+                setLoading(null);
+            },
+            onSuccess: () => {
+                setLoading(null);
+            },
+        });
     };
 
     const busy = loading !== null;
@@ -279,6 +313,15 @@ export default function Login() {
                                     {loading === 'google-signin' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <GoogleIcon />}
                                     {loading === 'google-signin' ? t('login.loading') : t('login.continue_google')}
                                 </button>
+                                
+                                {telegram_bot_username && (
+                                    <div className="flex justify-center pt-2 min-h-[58px]">
+                                        <TelegramWidget
+                                            botUsername={telegram_bot_username}
+                                            onAuth={handleTelegramWidgetAuth}
+                                        />
+                                    </div>
+                                )}
 
 
                                 <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -288,15 +331,15 @@ export default function Login() {
                                 </div>
 
                                 <label className="block">
-                                    <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
+                                    <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Email address or phone number</span>
                                     <span className="relative block">
                                         <input
-                                            type="email"
+                                            type="text"
                                             value={signinForm.email}
                                             onChange={(event) => setSigninForm({ ...signinForm, email: event.target.value })}
                                             className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-                                            placeholder={t('login.email')}
-                                            autoComplete="email"
+                                            placeholder="Email address or phone number"
+                                            autoComplete="username"
                                             required
                                         />
                                     </span>
@@ -359,12 +402,51 @@ export default function Login() {
                                     {loading === 'google-signup' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <GoogleIcon />}
                                     {loading === 'google-signup' ? t('login.loading') : t('login.signup_google')}
                                 </button>
+                                
+                                {telegram_bot_username && (
+                                    <div className="flex justify-center pt-2 pb-1 min-h-[58px] relative">
+                                        <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+                                            <div className="w-[220px] h-[40px] bg-slate-200 dark:bg-slate-700 animate-pulse rounded-full" />
+                                        </div>
+                                        <div className="relative z-10 w-full flex justify-center">
+                                            <TelegramWidget
+                                                botUsername={telegram_bot_username}
+                                                onAuth={handleTelegramWidgetAuth}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
 
                                 <div className="flex items-center gap-4 py-1 text-sm font-bold text-slate-400 dark:text-slate-500">
                                     <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                                     {t('login.or_signup_email')}
                                     <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                                </div>
+
+                                <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800 mb-2 mt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSignupMethod('email')}
+                                        className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-colors ${
+                                            signupMethod === 'email'
+                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                        }`}
+                                    >
+                                        Sign up with Email
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSignupMethod('phone')}
+                                        className={`flex-1 rounded-md py-1.5 text-xs font-bold transition-colors ${
+                                            signupMethod === 'phone'
+                                                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                        }`}
+                                    >
+                                        Sign up with Phone
+                                    </button>
                                 </div>
 
                                 <div className="grid gap-3 sm:grid-cols-2">
@@ -383,20 +465,48 @@ export default function Login() {
                                         </span>
                                     </label>
 
-                                    <label className="block sm:col-span-2">
-                                        <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
-                                        <span className="relative block">
-                                            <input
-                                                type="email"
-                                                value={signupForm.email}
-                                                onChange={(event) => setSignupForm({ ...signupForm, email: event.target.value })}
-                                                className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-                                                placeholder={t('login.email')}
-                                                autoComplete="email"
-                                                required
-                                            />
-                                        </span>
-                                    </label>
+                                    {signupMethod === 'email' ? (
+                                        <label className="block sm:col-span-2">
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email')}</span>
+                                            <span className="relative block">
+                                                <input
+                                                    type="email"
+                                                    value={signupForm.email}
+                                                    onChange={(event) => setSignupForm({ ...signupForm, email: event.target.value })}
+                                                    className="h-[52px] w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                                                    placeholder={t('login.email')}
+                                                    autoComplete="email"
+                                                    required
+                                                />
+                                            </span>
+                                        </label>
+                                    ) : (
+                                        <label className="block sm:col-span-2">
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number</span>
+                                            <div className="flex gap-2">
+                                                <select
+                                                    value={countryCode}
+                                                    onChange={(e) => setCountryCode(e.target.value)}
+                                                    className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                >
+                                                    <option value="+855">🇰🇭 +855</option>
+                                                    <option value="+84">🇻🇳 +84</option>
+                                                    <option value="+856">🇱🇦 +856</option>
+                                                    <option value="+62">🇮🇩 +62</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <input
+                                                    type="tel"
+                                                    value={signupForm.phone}
+                                                    onChange={(event) => setSignupForm({ ...signupForm, phone: event.target.value })}
+                                                    className="h-[52px] flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                                                    placeholder="e.g. 12 345 678"
+                                                    autoComplete="tel"
+                                                    required
+                                                />
+                                            </div>
+                                        </label>
+                                    )}
 
                                     <label className="block">
                                         <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.password')}</span>

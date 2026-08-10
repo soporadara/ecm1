@@ -5,12 +5,10 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 interface Order {
     id: number;
     order_number: string;
-    invoice_number: string;
-    receipt_number: string;
     status: string;
     payment_status: string;
     total_amount: string;
-    budget: string;
+    estimated_total: string;
     paid_at: string | null;
     delivered_at: string | null;
     created_at: string;
@@ -45,12 +43,14 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
     const [paymentStatus, setPaymentStatus] = React.useState(filters.payment_status || '');
     const [sort, setSort] = React.useState(filters.sort || 'newest');
 
-    const handleFilter = (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
-        router.get(`/admin/logistics/customers/${customer.id}/orders`, { 
-            search, status, payment_status: paymentStatus, sort 
-        }, { preserveState: true });
-    };
+    React.useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            router.get(`/admin/logistics/customers/${customer.id}/orders`, { 
+                search, status, payment_status: paymentStatus, sort 
+            }, { preserveState: true });
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [search, status, paymentStatus, sort, customer.id]);
 
     const statusColors: Record<string, string> = {
         pending: 'bg-admin-warning/10 text-admin-warning',
@@ -92,7 +92,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
 
             {/* Filters */}
             <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-4 mb-6 shadow-sm shadow-admin-border/20">
-                <form onSubmit={handleFilter} className="flex flex-wrap gap-4 items-end">
+                <div className="flex flex-wrap gap-4 items-end">
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Search Order Number</label>
                         <input
@@ -107,7 +107,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Status</label>
                         <select 
                             value={status} 
-                            onChange={e => { setStatus(e.target.value); handleFilter(); }}
+                            onChange={e => setStatus(e.target.value)}
                             className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
                         >
                             <option value="">All Statuses</option>
@@ -118,7 +118,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Payment</label>
                         <select 
                             value={paymentStatus} 
-                            onChange={e => { setPaymentStatus(e.target.value); handleFilter(); }}
+                            onChange={e => setPaymentStatus(e.target.value)}
                             className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
                         >
                             <option value="">All Payments</option>
@@ -129,23 +129,20 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                         <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Sort By</label>
                         <select 
                             value={sort} 
-                            onChange={e => { setSort(e.target.value); handleFilter(); }}
+                            onChange={e => setSort(e.target.value)}
                             className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
                         >
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
                         </select>
                     </div>
-                    <button type="submit" className="px-6 py-2 bg-admin-primary text-white text-sm font-semibold rounded-lg hover:bg-admin-primary-hover transition-colors">
-                        Filter
-                    </button>
                     <a 
                         href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}`}
                         className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
                     >
                         Export CSV
                     </a>
-                </form>
+                </div>
             </div>
 
             {/* Orders List */}
@@ -154,7 +151,6 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-admin-surface-muted/50 border-b border-admin-border">
-                                <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider w-16">No</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Order Details</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Products</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-admin-text-muted uppercase tracking-wider">Budget / Total</th>
@@ -166,15 +162,8 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                         <tbody className="divide-y divide-admin-border/50">
                             {orders.data.map((order, index) => (
                                 <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
-                                    <td className="px-6 py-4 text-admin-text-muted font-medium">
-                                        {(orders.current_page - 1) * orders.per_page + index + 1}
-                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-admin-primary text-base">{order.order_number}</div>
-                                        <div className="text-xs text-admin-text-muted mt-1 flex flex-col gap-0.5">
-                                            {order.invoice_number && <span>INV: {order.invoice_number}</span>}
-                                            {order.receipt_number && <span>REC: {order.receipt_number}</span>}
-                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="font-semibold text-admin-text">{order.items?.length || 0} Products</div>
@@ -184,7 +173,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-admin-text">${Number(order.total_amount).toFixed(2)}</div>
-                                        {order.budget && <div className="text-xs text-admin-text-muted mt-1">Budget: ${Number(order.budget).toFixed(2)}</div>}
+                                        {order.estimated_total && <div className="text-xs text-admin-text-muted mt-1">Estimated: ${Number(order.estimated_total).toFixed(2)}</div>}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2 items-start">
@@ -208,7 +197,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                                             <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Edit Order
                                             </Link>
-                                            <Link href={`/admin/receipts/generate?manual_order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
+                                            <Link href={`/admin/receipts/generate?order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Generate Receipt
                                             </Link>
                                         </div>
@@ -217,7 +206,7 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                             ))}
                             {orders.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-admin-text-muted">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-admin-text-muted">
                                         No manual orders found for this customer.
                                     </td>
                                 </tr>

@@ -98,8 +98,8 @@ export default function MediaIndex({ media }: { media: Paginated }) {
             {uploading && progress && (
                 <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm">
                     <div className="flex justify-between text-sm font-medium mb-1">
-                        <span className="text-indigo-700 dark:text-indigo-400">Uploading files...</span>
-                        <span className="text-indigo-700 dark:text-indigo-400">{progress.percentage}%</span>
+                        <span className="text-indigo-700 dark:text-white">Uploading files...</span>
+                        <span className="text-indigo-700 dark:text-white">{progress.percentage}%</span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                         <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${progress.percentage}%` }}></div>
@@ -116,7 +116,7 @@ export default function MediaIndex({ media }: { media: Paginated }) {
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by uploading a file.</p>
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="mt-4 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                        className="mt-4 text-sm font-medium text-indigo-600 dark:text-white hover:text-indigo-500 dark:hover:text-white"
                     >
                         Upload a file
                     </button>
@@ -140,14 +140,14 @@ export default function MediaIndex({ media }: { media: Paginated }) {
                                 <div className="absolute inset-0 bg-gray-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button 
                                         onClick={() => copyToClipboard(file.url)}
-                                        className="p-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                        className="p-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-white"
                                         title="Copy URL"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
                                     </button>
                                     <a 
                                         href={file.url} target="_blank" rel="noreferrer"
-                                        className="p-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                        className="p-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-white"
                                         title="Open in new tab"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>

@@ -61,6 +61,14 @@ export default function Contact() {
                             <a
                                 key={card.label}
                                 href={card.href}
+                                onClick={(e) => {
+                                    // @ts-ignore
+                                    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+                                        e.preventDefault();
+                                        // @ts-ignore
+                                        window.Telegram.WebApp.openLink(card.href);
+                                    }
+                                }}
                                 className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-brand-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/30 dark:border-gray-800 dark:bg-gray-900"
                             >
                                 <div className="flex items-start gap-4">

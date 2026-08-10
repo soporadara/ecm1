@@ -1,9 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Plus, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
+
+function SortableLink({ link, index, removeLink, updateLink, previews, errors }: any) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: link.id });
+    
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        backgroundColor: isDragging ? 'var(--admin-surface-muted)' : undefined,
+        zIndex: isDragging ? 1 : 0,
+        position: isDragging ? 'relative' as const : undefined,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="p-4 bg-admin-surface-muted rounded-xl border border-admin-border flex flex-col md:flex-row gap-4 items-start md:items-center relative">
+            <button type="button" {...attributes} {...listeners} className="cursor-grab text-admin-text-muted hover:text-admin-text hidden md:block">
+                <GripVertical className="w-5 h-5" />
+            </button>
+            <button 
+                type="button" 
+                onClick={() => removeLink(link.id)}
+                className="absolute top-4 right-4 md:static p-2 text-admin-danger hover:bg-admin-danger/10 rounded-lg transition"
+                title="Remove Link"
+            >
+                <Trash2 className="w-5 h-5" />
+            </button>
+
+            <div className="flex-shrink-0 relative group">
+                <div className="w-16 h-16 rounded-full border-2 border-admin-border overflow-hidden bg-white flex items-center justify-center relative">
+                    {previews[link.id] || link.icon_url ? (
+                        <img src={previews[link.id] || link.icon_url} alt="Icon preview" className="w-full h-full object-cover" />
+                    ) : (
+                        <ImageIcon className="w-6 h-6 text-admin-text-muted opacity-50" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition cursor-pointer">
+                        <span className="text-white text-xs font-bold">Upload</span>
+                    </div>
+                    <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => updateLink(index, 'icon_file', e.target.files?.[0])}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                </div>
+            </div>
+
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                <div>
+                    <label className="block text-xs font-bold text-admin-text-muted mb-1">Name</label>
+                    <input
+                        type="text"
+                        value={link.name}
+                        onChange={e => updateLink(index, 'name', e.target.value)}
+                        className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
+                        placeholder="e.g. WhatsApp"
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-admin-text-muted mb-1">URL / Link</label>
+                    <input
+                        type="text"
+                        value={link.url}
+                        onChange={e => updateLink(index, 'url', e.target.value)}
+                        className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
+                        placeholder="e.g. https://wa.me/..."
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-admin-text-muted mb-1">Icon URL (Optional)</label>
+                    <input
+                        type="text"
+                        value={link.icon_url || ''}
+                        onChange={e => updateLink(index, 'icon_url', e.target.value)}
+                        className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
+                        placeholder="e.g. https://example.com/icon.png"
+                    />
+                </div>
+            </div>
+            
+            {errors[`links.${index}.name`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.name`]}</p>}
+            {errors[`links.${index}.url`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.url`]}</p>}
+            {errors[`links.${index}.icon_file`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.icon_file`]}</p>}
+        </div>
+    );
+}
 
 export default function FlyIcons({ settings }: { settings: any }) {
     let initialLinks: any[] = [];
@@ -59,6 +149,20 @@ export default function FlyIcons({ settings }: { settings: any }) {
         setData('links', newLinks);
     };
 
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = (event: any) => {
+        const { active, over } = event;
+        if (active.id !== over.id) {
+            const oldIndex = data.links.findIndex((item: any) => item.id === active.id);
+            const newIndex = data.links.findIndex((item: any) => item.id === over.id);
+            setData('links', arrayMove(data.links, oldIndex, newIndex));
+        }
+    };
+
     return (
         <AdminLayout title="Fly Icons">
             <Head title="Fly Icons" />
@@ -84,76 +188,21 @@ export default function FlyIcons({ settings }: { settings: any }) {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {data.links.map((link: any, index: number) => (
-                                <div key={link.id} className="p-4 bg-admin-surface-muted rounded-xl border border-admin-border flex flex-col md:flex-row gap-4 items-start md:items-center relative">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeLink(link.id)}
-                                        className="absolute top-4 right-4 md:static p-2 text-admin-danger hover:bg-admin-danger/10 rounded-lg transition"
-                                        title="Remove Link"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-
-                                    <div className="flex-shrink-0 relative group">
-                                        <div className="w-16 h-16 rounded-full border-2 border-admin-border overflow-hidden bg-white flex items-center justify-center relative">
-                                            {previews[link.id] || link.icon_url ? (
-                                                <img src={previews[link.id] || link.icon_url} alt="Icon preview" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <ImageIcon className="w-6 h-6 text-admin-text-muted opacity-50" />
-                                            )}
-                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition cursor-pointer">
-                                                <span className="text-white text-xs font-bold">Upload</span>
-                                            </div>
-                                            <input 
-                                                type="file" 
-                                                accept="image/*"
-                                                onChange={(e) => updateLink(index, 'icon_file', e.target.files?.[0])}
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                                        <div>
-                                            <label className="block text-xs font-bold text-admin-text-muted mb-1">Name</label>
-                                            <input
-                                                type="text"
-                                                value={link.name}
-                                                onChange={e => updateLink(index, 'name', e.target.value)}
-                                                className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
-                                                placeholder="e.g. WhatsApp"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-admin-text-muted mb-1">URL / Link</label>
-                                            <input
-                                                type="text"
-                                                value={link.url}
-                                                onChange={e => updateLink(index, 'url', e.target.value)}
-                                                className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
-                                                placeholder="e.g. https://wa.me/..."
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-admin-text-muted mb-1">Icon URL (Optional)</label>
-                                            <input
-                                                type="text"
-                                                value={link.icon_url || ''}
-                                                onChange={e => updateLink(index, 'icon_url', e.target.value)}
-                                                className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
-                                                placeholder="e.g. https://example.com/icon.png"
-                                            />
-                                        </div>
-                                    </div>
-                                    
-                                    {errors[`links.${index}.name`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.name`]}</p>}
-                                    {errors[`links.${index}.url`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.url`]}</p>}
-                                    {errors[`links.${index}.icon_file`] && <p className="text-xs text-admin-danger mt-1 absolute bottom-1">{errors[`links.${index}.icon_file`]}</p>}
-                                </div>
-                            ))}
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <SortableContext items={data.links.map((l: any) => l.id)} strategy={verticalListSortingStrategy}>
+                                    {data.links.map((link: any, index: number) => (
+                                        <SortableLink 
+                                            key={link.id} 
+                                            link={link} 
+                                            index={index} 
+                                            removeLink={removeLink} 
+                                            updateLink={updateLink} 
+                                            previews={previews} 
+                                            errors={errors} 
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     )}
 
