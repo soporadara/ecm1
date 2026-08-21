@@ -4,9 +4,71 @@ use App\Http\Controllers\ProductController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
+Route::get('/api/test-log', function () {
+    try {
+        $logPath = storage_path('logs/laravel.log');
+        if (!file_exists($logPath)) return 'no log file';
+        
+        $lines = file($logPath);
+        $lastLines = array_slice($lines, -100);
+        
+        return response()->json(['log' => $lastLines]);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+});
+
 Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::post('/quote-requests', [\App\Http\Controllers\QuoteRequestController::class, 'store'])->name('quote-requests.store');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+
+Route::get('/fix-links', function () {
+    $links = [
+        [
+            'id' => uniqid(),
+            'name' => 'Email',
+            'type' => 'email',
+            'url' => 'https://mail.google.com/mail/?view=cm&fs=1&to=info@mvmlogistics.asia',
+            'icon_url' => null,
+        ],
+        [
+            'id' => uniqid(),
+            'name' => 'Phone',
+            'type' => 'phone',
+            'url' => '+855317669555',
+            'icon_url' => null,
+        ],
+        [
+            'id' => uniqid(),
+            'name' => 'Messenger',
+            'type' => 'messenger',
+            'url' => 'https://m.me/MVMLogistics',
+            'icon_url' => null,
+        ],
+        [
+            'id' => uniqid(),
+            'name' => 'Telegram',
+            'type' => 'telegram',
+            'url' => '855317669555',
+            'icon_url' => null,
+        ],
+        [
+            'id' => uniqid(),
+            'name' => 'Zalo',
+            'type' => 'zalo',
+            'url' => '84813308055',
+            'icon_url' => null,
+        ]
+    ];
+    \App\Models\Setting::updateOrCreate(
+        ['group' => 'general', 'key' => 'fab_links'],
+        ['value' => json_encode($links)]
+    );
+    return "Fixed links successfully!";
+});
 
 Route::get('/debug-pages', function () {
     return \App\Models\Page::get(['id', 'title', 'slug', 'is_system']);
@@ -43,9 +105,7 @@ Route::post('/auth/firebase/cms', [AuthController::class, 'cmsFirebase'])->middl
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 Route::redirect('/cms/dashboard', '/admin')->middleware(['auth', 'is_admin']);
 
-Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
-Route::get('/shop/{product:slug}', [ProductController::class, 'show'])->name('shop.show');
-Route::get('/api/search', [ProductController::class, 'searchLive'])->name('api.search');
+
 Route::get('/auth/google', [\App\Http\Controllers\AuthController::class, 'socialiteRedirect'])->name('auth.google');
 Route::get('/auth/google/callback', [\App\Http\Controllers\AuthController::class, 'socialiteCallback']);
 
@@ -53,12 +113,7 @@ Route::get('/auth/google/callback', [\App\Http\Controllers\AuthController::class
 Route::get('/cms/login', [\App\Http\Controllers\AuthController::class, 'showCmsLogin'])->name('cms.login');
 Route::post('/cms/login', [\App\Http\Controllers\AuthController::class, 'cmsLogin']);
 Route::post('/cms/firebase', [\App\Http\Controllers\AuthController::class, 'cmsFirebase'])->name('cms.firebase');
-Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
-Route::post('/cart', [\App\Http\Controllers\CartController::class, 'store'])->name('cart.store');
-Route::put('/cart/{item}', [\App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{item}', [\App\Http\Controllers\CartController::class, 'destroy'])->name('cart.destroy');
-Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [\App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     $canManageFeatureFlags = static function (?User $user): bool {
@@ -102,6 +157,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::middleware('auth:web')->group(function () {
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::post('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePasswordCustomer'])->name('profile.password.update.customer');
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::post('/profile/send-pin', [\App\Http\Controllers\ProfileController::class, 'sendPin'])->name('profile.send-pin');
     Route::post('/profile/verify-pin', [\App\Http\Controllers\ProfileController::class, 'verifyPin'])->name('profile.verify-pin');
@@ -114,27 +170,32 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'editAdmin'])->name('profile.edit');
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/generate-telegram-link', [\App\Http\Controllers\ProfileController::class, 'generateTelegramLink'])->name('profile.generate-telegram-link');
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::post('/profile/send-pin', [\App\Http\Controllers\ProfileController::class, 'sendPin'])->name('profile.send-pin');
     Route::post('/profile/verify-pin', [\App\Http\Controllers\ProfileController::class, 'verifyPin'])->name('profile.verify-pin');
     Route::post('/profile/google-link', [\App\Http\Controllers\ProfileController::class, 'linkGoogle'])->name('profile.google-link');
     Route::post('/profile/google-unlink', [\App\Http\Controllers\ProfileController::class, 'unlinkGoogle'])->name('profile.google-unlink');
+    Route::post('/profile/telegram-unlink', [\App\Http\Controllers\ProfileController::class, 'unlinkTelegram'])->name('profile.telegram-unlink');
     
 
     // Logistics Customers & Orders
-    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['show']);
 
     Route::get('logistics/customers', [\App\Http\Controllers\Admin\ManualOrderController::class, 'index'])->name('logistics.customers');
     Route::get('logistics/customers/{customer}/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'customerOrders'])->name('logistics.customer-orders');
     Route::get('logistics/customers/{customer}/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportCustomerOrders'])->name('logistics.customer-orders.export');
+    Route::get('logistics/customers/{customer}/images/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportCustomerImages'])->name('logistics.customer-images.export');
     Route::get('logistics/orders', [\App\Http\Controllers\Admin\ManualOrderController::class, 'allOrders'])->name('logistics.orders');
     Route::get('logistics/orders/export', [\App\Http\Controllers\Admin\ManualOrderController::class, 'exportAllOrders'])->name('logistics.orders.export');
     Route::get('logistics/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('logistics.orders.show');
+    Route::get('logistics/orders/{order}/export', [\App\Http\Controllers\Admin\OrderController::class, 'exportOrderCsv'])->name('logistics.orders.export-single');
+    Route::get('logistics/orders/{order}/images/export', [\App\Http\Controllers\Admin\OrderController::class, 'exportOrderImages'])->name('logistics.order-images.export');
     Route::put('logistics/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->name('logistics.orders.update');
     
     // Receipt Integration
-    Route::get('receipts/generate', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
+    // Route::resource('receipt-payments', \App\Http\Controllers\Admin\ReceiptPaymentMethodController::class)->except(['show']);
+    Route::get('receipts/generate/{order}', [\App\Http\Controllers\Admin\ReceiptController::class, 'generate'])->name('receipts.generate');
     Route::get('receipts/{receipt}', [\App\Http\Controllers\Admin\ReceiptController::class, 'show'])->name('receipts.show');
 
     // Reports
@@ -179,6 +240,8 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     // Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+    // Quote Requests
+    Route::resource('quote-requests', \App\Http\Controllers\Admin\QuoteRequestController::class)->only(['index', 'update', 'destroy']);
     
     Route::get('/fly-icons', [\App\Http\Controllers\Admin\FlyIconController::class, 'index'])->name('fly-icons.index');
     Route::post('/fly-icons', [\App\Http\Controllers\Admin\FlyIconController::class, 'store'])->name('fly-icons.store');
@@ -188,13 +251,15 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::resource('staff', \App\Http\Controllers\Admin\StaffController::class)->except(['show']);
 
     // Customers & Users (Super Admin Only)
-    Route::resource('customers-management', \App\Http\Controllers\Admin\CustomerManagementController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('customers-management', \App\Http\Controllers\Admin\CustomerManagementController::class)->parameters(['customers-management' => 'user'])->only(['index', 'update', 'destroy']);
     Route::post('customers-management/{user}/reset-password', [\App\Http\Controllers\Admin\CustomerManagementController::class, 'resetPassword'])->name('customers-management.reset-password');
     Route::post('customers-management/{user}/toggle-status', [\App\Http\Controllers\Admin\CustomerManagementController::class, 'toggleStatus'])->name('customers-management.toggle-status');
     
     Route::get('audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit.index');
     Route::delete('audit-logs/clear', [\App\Http\Controllers\Admin\AuditLogController::class, 'clear'])->name('audit.clear');
     Route::get('security/access-control', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'index'])->name('security.access-control');
+    Route::post('security/access-control', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'storeBlock'])->name('security.access-control.store');
+    Route::post('security/access-control/settings', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'updateSettings'])->name('security.access-control.settings');
     Route::delete('security/access-control/{block}', [\App\Http\Controllers\Admin\SecurityAccessController::class, 'destroy'])->name('security.access-control.destroy');
 
     // Telegram FAQs
@@ -237,11 +302,7 @@ Route::get('/shipping-rates', [\App\Http\Controllers\LogisticsController::class,
 Route::get('/warehouses', [\App\Http\Controllers\LogisticsController::class, 'warehouses'])->name('warehouses');
 Route::get('/track', [\App\Http\Controllers\LogisticsController::class, 'track'])->name('track');
 Route::get('/contact', [\App\Http\Controllers\LogisticsController::class, 'contact'])->name('contact');
-Route::get('/logistics/import', [\App\Http\Controllers\ProductImportController::class, 'index'])->name('logistics.import.index');
-Route::post('/logistics/import/preview', [\App\Http\Controllers\ProductImportController::class, 'preview'])->name('logistics.import.preview');
-Route::post('/logistics/import/confirm', [\App\Http\Controllers\ProductImportController::class, 'confirm'])->name('logistics.import.confirm');
-Route::get('/logistics/imports/{importJob}', [\App\Http\Controllers\ProductImportController::class, 'show'])->name('logistics.import.show');
-Route::post('/logistics/imports/{importJob}/retry', [\App\Http\Controllers\ProductImportController::class, 'retry'])->name('logistics.import.retry');
+
 
 Route::get('/migrate-logistics', function () {
     if (request('key') !== 'logistics2026') abort(403);
@@ -294,8 +355,17 @@ Route::inertia('/prohibited-items', 'ProhibitedItems')->name('prohibited-items')
 use App\Http\Controllers\TelegramAuthController;
 Route::post('/api/auth/telegram-widget', [TelegramAuthController::class, 'verifyWidget']);
 Route::post('/api/auth/telegram-miniapp', [TelegramAuthController::class, 'verifyMiniApp']);
-Route::post('/api/telegram/webhook', [TelegramAuthController::class, 'handleWebhook']);
+Route::post('/api/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle']);
+Route::get('/api/admin/system/logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+    if (file_exists($logFile)) {
+        return response()->file($logFile, ['Content-Type' => 'text/plain']);
+    }
+    return 'No log file found.';
+});
 Route::post('/api/auth/send-telegram-otp', [TelegramAuthController::class, 'sendOtp']);
 Route::post('/api/auth/verify-telegram-otp', [TelegramAuthController::class, 'verifyOtp']);
 
-
+// Public Receipt Links
+Route::get('/r/{receiptNumber}', [\App\Http\Controllers\ReceiptViewerController::class, 'show'])->name('public.receipt');
+Route::get('/r/{receiptNumber}/pdf', [\App\Http\Controllers\ReceiptViewerController::class, 'downloadPdf'])->name('public.receipt.pdf');

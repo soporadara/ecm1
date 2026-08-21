@@ -110,9 +110,9 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
         }
     };
 
-    const filteredNotes = notes.filter((n: any) => 
-        (n.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-         n.content?.toLowerCase().includes(searchQuery.toLowerCase()))
+    const filteredNotes = notes.filter((n: any) =>
+    (n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.content?.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const formatDate = (dateString: string) => {
@@ -125,14 +125,14 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
             <Head title="Team Notes" />
 
             <div className={`flex flex-col md:flex-row bg-white dark:bg-admin-bg shadow border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-4 z-50 shadow-2xl' : 'h-[calc(100vh-8rem)]'}`}>
-                
+
                 {/* Left Pane: Folders */}
                 {!isFullscreen && (
                     <div className={`${mobileActivePane === 'folders' ? 'flex' : 'hidden md:flex'} w-full md:w-[260px] max-h-full flex-shrink-0 border-r border-gray-200/60 dark:border-gray-800 bg-[#f6f6f6] dark:bg-[#1e1e1e] flex-col`}>
                         <div className="px-4 py-6">
                             <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3 px-2">Cloud Note</h2>
                             <div className="space-y-0.5">
-                                <Link 
+                                <Link
                                     href="/admin/notes"
                                     preserveState={true}
                                     onClick={() => setMobileActivePane('list')}
@@ -144,7 +144,7 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                                     </div>
                                     <span className="text-[12px] opacity-60 font-normal">{notes.length}</span>
                                 </Link>
-                                <Link 
+                                <Link
                                     href="/admin/notes?bin=1"
                                     preserveState={true}
                                     onClick={() => setMobileActivePane('list')}
@@ -161,7 +161,7 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                         <div className="px-4 flex-1 overflow-y-auto">
                             <div className="flex items-center justify-between mb-2 px-2">
                                 <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Folders</h2>
-                                <button 
+                                <button
                                     onClick={() => { setIsCreatingFolder(true); folderForm.reset(); setEditingFolderId(null); }}
                                     className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                                 >
@@ -171,14 +171,14 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
 
                             {isCreatingFolder && (
                                 <form onSubmit={handleFolderSubmit} className="mb-2 px-2">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         autoFocus
                                         placeholder="Folder name"
                                         className="w-full bg-white border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107]"
                                         value={folderForm.data.name}
                                         onChange={e => folderForm.setData('name', e.target.value)}
-                                        onBlur={() => { if(!folderForm.data.name) setIsCreatingFolder(false); }}
+                                        onBlur={() => { if (!folderForm.data.name) setIsCreatingFolder(false); }}
                                     />
                                 </form>
                             )}
@@ -188,8 +188,8 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                                     <div key={folder.id} className="group relative">
                                         {editingFolderId === folder.id ? (
                                             <form onSubmit={handleFolderSubmit} className="px-2">
-                                                <input 
-                                                    type="text" 
+                                                <input
+                                                    type="text"
                                                     autoFocus
                                                     className="w-full bg-white border border-gray-300 rounded text-sm px-2 py-1 focus:outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107]"
                                                     value={folderForm.data.name}
@@ -198,7 +198,7 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                                                 />
                                             </form>
                                         ) : (
-                                            <Link 
+                                            <Link
                                                 href={`/admin/notes?folder_id=${folder.id}`}
                                                 preserveState={true}
                                                 onClick={() => setMobileActivePane('list')}
@@ -216,13 +216,13 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
 
                                         {/* Hover Actions */}
                                         <div className={`absolute right-1 top-1/2 -translate-y-1/2 items-center gap-0.5 ${currentFolderId == folder.id ? 'flex text-white' : 'hidden group-hover:flex text-gray-500'}`}>
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.preventDefault(); setEditingFolderId(folder.id); folderForm.setData('name', folder.name); }}
                                                 className="p-1 hover:opacity-70 transition-opacity"
                                             >
                                                 <Edit2 className="w-3 h-3" />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.preventDefault(); deleteFolder(folder.id); }}
                                                 className="p-1 hover:opacity-70 transition-opacity"
                                             >
@@ -256,8 +256,8 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                         <div className="px-4 pb-3 border-b border-gray-200 dark:border-gray-800">
                             <div className="relative">
                                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Search team notes"
                                     className="w-full pl-10 pr-3 py-1.5 bg-[#f4f5f5] dark:bg-gray-900 border-none rounded-md text-[13px] focus:ring-1 focus:ring-gray-300 transition-all placeholder:text-gray-400"
                                     value={searchQuery}
@@ -271,8 +271,8 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                             ) : (
                                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
                                     {filteredNotes.map((note: any, idx: number) => (
-                                        <div 
-                                            key={note.id} 
+                                        <div
+                                            key={note.id}
                                             onClick={() => setSelectedNote(note)}
                                             className={`p-4 cursor-pointer transition-colors ${selectedNote?.id === note.id ? 'bg-[#FFC107] text-white' : 'bg-white hover:bg-[#f4f5f5] dark:bg-admin-surface dark:hover:bg-admin-surface-muted'}`}
                                         >
@@ -315,13 +315,16 @@ export default function NotesIndex({ folders, notes, currentFolderId, isBin }: a
                                         <button className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"><Table className="w-[18px] h-[18px]" /></button>
                                         <button className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"><Paperclip className="w-[18px] h-[18px]" /></button>
                                     </div>
+                                    <button onClick={() => setIsFullscreen(!isFullscreen)} className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors hidden md:block" title="Toggle Fullscreen">
+                                        {isFullscreen ? <Minimize2 className="w-[18px] h-[18px]" /> : <Maximize2 className="w-[18px] h-[18px]" />}
+                                    </button>
                                     {isBin ? (
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 ml-2 border-l border-gray-100 dark:border-gray-800 pl-4">
                                             <button onClick={() => restoreNote(selectedNote.id)} className="text-sm font-medium hover:text-green-600 transition-colors" title="Restore">Restore</button>
                                             <button onClick={() => deleteNote(selectedNote.id)} className="hover:text-red-600 transition-colors" title="Delete Forever"><Trash2 className="w-[18px] h-[18px]" /></button>
                                         </div>
                                     ) : (
-                                        <button onClick={() => trashNote(selectedNote.id)} className="hover:text-red-500 transition-colors" title="Move to bin">
+                                        <button onClick={() => trashNote(selectedNote.id)} className="hover:text-red-500 transition-colors ml-2 border-l border-gray-100 dark:border-gray-800 pl-4" title="Move to bin">
                                             <Trash2 className="w-[18px] h-[18px]" />
                                         </button>
                                     )}

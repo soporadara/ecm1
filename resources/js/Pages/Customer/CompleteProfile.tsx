@@ -61,7 +61,7 @@ export default function CompleteProfile({ auth, missingFields = {}, isManualOrde
         postal_code: user.postal_code || '',
         country_code: user.country_code || 'KH',
         address_notes: user.address_notes || '',
-        preferred_locale: user.preferred_locale || user.preferred_language || 'km',
+        preferred_locale: user.preferred_locale || user.preferred_language || 'en',
         preferred_currency: user.preferred_currency === 'VND' ? 'VND' : 'USD',
         telegram_username: user.telegram_username || '',
         whatsapp_number: user.whatsapp_number || '',

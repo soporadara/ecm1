@@ -53,7 +53,7 @@ function SortableLink({ link, index, removeLink, updateLink, previews, errors }:
                 </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
                 <div>
                     <label className="block text-xs font-bold text-admin-text-muted mb-1">Name</label>
                     <input
@@ -66,13 +66,29 @@ function SortableLink({ link, index, removeLink, updateLink, previews, errors }:
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-admin-text-muted mb-1">URL / Link</label>
+                    <label className="block text-xs font-bold text-admin-text-muted mb-1">Type</label>
+                    <select
+                        value={link.type || 'custom'}
+                        onChange={e => updateLink(index, 'type', e.target.value)}
+                        className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
+                    >
+                        <option value="custom">Custom URL</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="telegram">Telegram</option>
+                        <option value="messenger">Messenger</option>
+                        <option value="zalo">Zalo</option>
+                        <option value="whatsapp">WhatsApp</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-admin-text-muted mb-1">Value (Number/Email/URL)</label>
                     <input
                         type="text"
                         value={link.url}
                         onChange={e => updateLink(index, 'url', e.target.value)}
                         className="w-full bg-white border border-admin-border rounded-xl px-4 py-2.5 text-admin-text focus:ring-2 focus:ring-admin-primary/50"
-                        placeholder="e.g. https://wa.me/..."
+                        placeholder={link.type === 'email' ? 'e.g. admin@example.com' : link.type === 'phone' ? 'e.g. 84123456789' : 'e.g. https://...'}
                         required
                     />
                 </div>

@@ -22,14 +22,23 @@ $commands = [
         'description' => 'Start the bot and log in'
     ],
     [
-        'command' => 'faq',
-        'description' => 'View Frequently Asked Questions'
-    ],
-    [
-        'command' => 'help',
-        'description' => 'Get help'
+        'command' => 'language',
+        'description' => 'Change language (English, ខ្មែរ, Tiếng Việt)'
     ]
 ];
+
+$faqs = \App\Models\TelegramFaq::where('is_active', true)->orderBy('sort_order')->take(10)->get();
+
+$index = 1;
+foreach ($faqs as $faq) {
+    // Description max length is 256
+    $description = mb_substr($faq->question_en, 0, 256);
+    $commands[] = [
+        'command' => 'q' . $index,
+        'description' => $description
+    ];
+    $index++;
+}
 
 $response = \Illuminate\Support\Facades\Http::post($url, [
     'commands' => $commands

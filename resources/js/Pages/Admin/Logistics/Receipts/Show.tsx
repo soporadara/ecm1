@@ -7,12 +7,12 @@ export default function ReceiptShow({ receipt }: any) {
             <Head title={`Receipt - ${receipt.receipt_number}`} />
 
             <div className="max-w-2xl mx-auto mb-4 print:hidden flex justify-between items-center px-4">
-                <Link href={`/admin/orders/${receipt.order_id}`} className="text-gray-600 hover:text-black">
+                <Link href={`/admin/logistics/orders/${receipt.order_id}`} className="text-gray-600 hover:text-black">
                     &larr; Back to Order
                 </Link>
                 <button 
                     onClick={() => window.print()}
-                    className="bg-brand-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-brand-secondary shadow"
+                    className="bg-admin-primary text-white px-6 py-2 rounded-lg font-bold hover:opacity-90 shadow"
                 >
                     🖨️ Print Receipt
                 </button>
@@ -22,14 +22,15 @@ export default function ReceiptShow({ receipt }: any) {
                 {/* Receipt Header */}
                 <div className="flex justify-between items-start mb-12 border-b-2 border-gray-900 pb-8">
                     <div>
+                        <img src="/logo.png" alt="Logo" className="h-16 object-contain mb-4" />
+                        <h2 className="text-xl font-bold font-serif mb-1">MVM Logistics</h2>
+                        <p className="text-sm text-gray-500">Phnom Penh, Cambodia</p>
+                        <p className="text-sm text-gray-500">info@mvmlogistics.asia</p>
+                    </div>
+                    <div className="text-right">
                         <h1 className="text-4xl font-black tracking-tighter uppercase mb-2">RECEIPT</h1>
                         <p className="text-sm text-gray-500 font-mono">#{receipt.receipt_number}</p>
                         <p className="text-sm text-gray-500 font-mono">Date: {new Date(receipt.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <div className="text-right">
-                        <h2 className="text-xl font-bold font-serif mb-1">Rafel Logistics</h2>
-                        <p className="text-sm text-gray-500">Phnom Penh, Cambodia</p>
-                        <p className="text-sm text-gray-500">contact@rafel.com</p>
                     </div>
                 </div>
 
@@ -38,7 +39,7 @@ export default function ReceiptShow({ receipt }: any) {
                     <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2 border-b border-gray-200 pb-1">Billed To</h3>
                     <p className="font-bold text-lg">{receipt.user?.name}</p>
                     <p className="text-sm text-gray-600">Code: <span className="font-mono">{receipt.user?.customer_code}</span></p>
-                    <p className="text-sm text-gray-600">{receipt.user?.phone_e164}</p>
+                    <p className="text-sm text-gray-600">{receipt.user?.phone_e164 || receipt.user?.phone}</p>
                 </div>
 
                 {/* Order Line Items (from Snapshot) */}
@@ -51,39 +52,56 @@ export default function ReceiptShow({ receipt }: any) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {/* Use snapshot data if available, else fallback */}
-                        <tr>
-                            <td className="py-4">
-                                <p className="font-bold">{receipt.order?.title || 'Order Items'}</p>
-                                <p className="text-sm text-gray-500">{receipt.order?.variant}</p>
-                            </td>
-                            <td className="py-4 text-center">{receipt.order?.quantity || 1}</td>
-                            <td className="py-4 text-right font-medium">¥ {receipt.subtotal}</td>
-                        </tr>
+                        {receipt.snapshot_json?.items?.map((item: any, idx: number) => (
+                            <tr key={idx}>
+                                <td className="py-4">
+                                    <p className="font-bold">{item.name || item.product_name || 'Item'}</p>
+                                    <p className="text-sm text-gray-500">{item.description || item.type}</p>
+                                </td>
+                                <td className="py-4 text-center">{item.quantity || 1}</td>
+                                <td className="py-4 text-right font-medium">--</td>
+                            </tr>
+                        )) || (
+                            <tr>
+                                <td className="py-4">
+                                    <p className="font-bold">Order Items</p>
+                                </td>
+                                <td className="py-4 text-center">1</td>
+                                <td className="py-4 text-right font-medium">--</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
 
                 {/* Totals */}
                 <div className="flex justify-end mb-16">
                     <div className="w-64 space-y-3">
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Subtotal</span>
-                            <span>¥ {receipt.subtotal}</span>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Charges/Shipping</span>
-                            <span>¥ {receipt.charges}</span>
-                        </div>
-                        {parseFloat(receipt.discount) > 0 && (
-                            <div className="flex justify-between text-sm text-red-600">
-                                <span>Discount</span>
-                                <span>- ¥ {receipt.discount}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between text-xl font-black border-t-2 border-gray-900 pt-3">
-                            <span>TOTAL</span>
-                            <span>¥ {receipt.total}</span>
-                        </div>
+                        {(() => {
+                            const currencyCode = receipt.snapshot_json?.order?.currency_code || receipt.order?.currency_code || 'USD';
+                            const sym = currencyCode === 'VND' ? '₫' : currencyCode === 'KHR' ? '៛' : '$';
+                            return (
+                                <>
+                                    <div className="flex justify-between text-sm text-gray-600">
+                                        <span>Subtotal</span>
+                                        <span>{sym} {receipt.subtotal}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm text-gray-600">
+                                        <span>Charges/Shipping</span>
+                                        <span>{sym} {receipt.charges}</span>
+                                    </div>
+                                    {parseFloat(receipt.discount) > 0 && (
+                                        <div className="flex justify-between text-sm text-red-600">
+                                            <span>Discount</span>
+                                            <span>- {sym} {receipt.discount}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between text-xl font-black border-t-2 border-gray-900 pt-3">
+                                        <span>TOTAL</span>
+                                        <span>{sym} {receipt.total}</span>
+                                    </div>
+                                </>
+                            );
+                        })()}
                         <div className="flex justify-between text-sm font-bold pt-1">
                             <span>Status</span>
                             <span className={`uppercase ${receipt.payment_status === 'paid' ? 'text-green-600' : 'text-red-600'}`}>

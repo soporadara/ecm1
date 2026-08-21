@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { Mail, Phone, MessageCircle } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function SupportFAB() {
     const [isOpen, setIsOpen] = useState(false);
     const { general_settings }: any = usePage().props;
+    const { t } = useTranslation();
 
     let links: any[] = [];
     if (general_settings?.fab_links) {
@@ -48,19 +50,22 @@ export default function SupportFAB() {
                         
                         if (!linkUrl.startsWith('http') && !linkUrl.startsWith('mailto:') && !linkUrl.startsWith('tel:')) {
                             const nameLower = (link.name || '').toLowerCase();
+                            const type = link.type || '';
                             const cleanPhone = linkUrl.replace(/[\s\+]/g, '');
                             
-                            if (nameLower.includes('zalo')) {
+                            if (type === 'zalo' || nameLower.includes('zalo')) {
                                 let zaloPhone = cleanPhone;
                                 if (zaloPhone.startsWith('84')) zaloPhone = '0' + zaloPhone.substring(2);
                                 linkUrl = `https://zalo.me/${zaloPhone}`;
-                            } else if (nameLower.includes('telegram') || nameLower.includes('tg')) {
+                            } else if (type === 'telegram' || nameLower.includes('telegram') || nameLower.includes('tg')) {
                                 linkUrl = `https://t.me/+${cleanPhone}`;
-                            } else if (nameLower.includes('messenger') || nameLower.includes('fb') || nameLower.includes('facebook')) {
+                            } else if (type === 'messenger' || nameLower.includes('messenger') || nameLower.includes('fb') || nameLower.includes('facebook')) {
                                 linkUrl = `https://m.me/${linkUrl.replace(/\s+/g, '')}`;
-                            } else if (nameLower.includes('whatsapp') || nameLower.includes('wa')) {
+                            } else if (type === 'whatsapp' || nameLower.includes('whatsapp') || nameLower.includes('wa')) {
                                 linkUrl = `https://wa.me/${cleanPhone}`;
-                            } else if (/^\+?[0-9\s]+$/.test(linkUrl)) {
+                            } else if (type === 'email' || nameLower.includes('email')) {
+                                linkUrl = `mailto:${linkUrl}`;
+                            } else if (type === 'phone' || /^\+?[0-9\s]+$/.test(linkUrl)) {
                                 linkUrl = `tel:${linkUrl.replace(/\s+/g, '')}`;
                             } else {
                                 linkUrl = `https://${linkUrl}`;
@@ -69,11 +74,11 @@ export default function SupportFAB() {
 
                         // Determine fallback colors for legacy keys (if no icon provided)
                         let fallbackBg = 'bg-gray-600';
-                        if (link.id === 'phone' || link.name.toLowerCase().includes('whatsapp') || link.name.toLowerCase().includes('phone')) fallbackBg = 'bg-green-500';
-                        else if (link.id === 'messenger' || link.name.toLowerCase().includes('messenger')) fallbackBg = 'bg-[#00B2FF]';
-                        else if (link.id === 'telegram' || link.name.toLowerCase().includes('telegram')) fallbackBg = 'bg-[#0088cc]';
-                        else if (link.id === 'zalo' || link.name.toLowerCase().includes('zalo')) fallbackBg = 'bg-blue-600';
-                        else if (link.id === 'email' || link.name.toLowerCase().includes('email')) fallbackBg = 'bg-red-500';
+                        if (link.type === 'phone' || link.name.toLowerCase().includes('whatsapp') || link.name.toLowerCase().includes('phone')) fallbackBg = 'bg-green-500';
+                        else if (link.type === 'messenger' || link.name.toLowerCase().includes('messenger')) fallbackBg = 'bg-[#00B2FF]';
+                        else if (link.type === 'telegram' || link.name.toLowerCase().includes('telegram')) fallbackBg = 'bg-[#0088cc]';
+                        else if (link.type === 'zalo' || link.name.toLowerCase().includes('zalo')) fallbackBg = 'bg-blue-600';
+                        else if (link.type === 'email' || link.name.toLowerCase().includes('email')) fallbackBg = 'bg-red-500';
                         else if (link.name.toLowerCase().includes('tiktok')) fallbackBg = 'bg-black';
 
                         return (
@@ -82,7 +87,7 @@ export default function SupportFAB() {
                                 href={linkUrl} 
                                 onClick={(e) => {
                                     // @ts-ignore
-                                    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+                                    if (typeof window !== 'undefined' && window.Telegram?.WebApp && window.Telegram.WebApp.initData && linkUrl.startsWith('http')) {
                                         e.preventDefault();
                                         // @ts-ignore
                                         window.Telegram.WebApp.openLink(linkUrl);
@@ -96,21 +101,21 @@ export default function SupportFAB() {
                                 <span className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                     {link.name}
                                 </span>
-                                <div className={`w-10 h-10 ${link.icon_url ? 'bg-white' : fallbackBg} text-white rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity overflow-hidden`}>
+                                <div className={`w-12 h-12 ${link.icon_url ? 'bg-white' : fallbackBg} text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 hover:-translate-y-1 transition-all duration-300 overflow-hidden group-hover:brightness-110`}>
                                     {link.icon_url ? (
                                         <img src={link.icon_url} alt={link.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-5 h-5 flex items-center justify-center">
-                                            {link.id === 'phone' ? (
-                                                <Phone className="w-5 h-5" />
-                                            ) : link.id === 'email' ? (
-                                                <Mail className="w-5 h-5" />
-                                            ) : link.id === 'messenger' ? (
-                                                <MessengerIcon />
-                                            ) : link.id === 'telegram' ? (
-                                                <TelegramIcon />
-                                            ) : link.id === 'zalo' ? (
-                                                <ZaloIcon />
+                                        <div className="w-6 h-6 flex items-center justify-center group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-300">
+                                            {link.type === 'phone' || link.name.toLowerCase().includes('phone') ? (
+                                                <Phone className="w-6 h-6 group-hover:animate-pulse" />
+                                            ) : link.type === 'email' || link.name.toLowerCase().includes('email') ? (
+                                                <Mail className="w-6 h-6 group-hover:animate-pulse" />
+                                            ) : link.type === 'messenger' || link.name.toLowerCase().includes('messenger') ? (
+                                                <div className="w-6 h-6 group-hover:animate-bounce"><MessengerIcon /></div>
+                                            ) : link.type === 'telegram' || link.name.toLowerCase().includes('telegram') ? (
+                                                <div className="w-6 h-6 group-hover:animate-bounce"><TelegramIcon /></div>
+                                            ) : link.type === 'zalo' || link.name.toLowerCase().includes('zalo') ? (
+                                                <div className="w-6 h-6 group-hover:animate-pulse"><ZaloIcon /></div>
                                             ) : (
                                                 <MessageCircle className="w-5 h-5" />
                                             )}
@@ -122,16 +127,15 @@ export default function SupportFAB() {
                     })}
                 </div>
 
-                {/* Main Toggle Button */}
                 <div 
-                    className="relative flex items-center justify-center bg-orange-500 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:bg-orange-600 hover:shadow-orange-600/50 transition-all duration-300 transform hover:scale-105 cursor-pointer group"
+                    className="relative flex items-center justify-center bg-orange-500 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-2xl hover:bg-orange-600 hover:shadow-orange-600/50 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 cursor-pointer group"
                     onClick={() => setIsOpen(!isOpen)}
                     aria-label="Support contacts"
                 >
                     {/* Tooltip */}
                     {!isOpen && (
                         <div className="absolute right-full mr-4 bg-gray-900 dark:bg-gray-800 text-white text-sm font-bold py-2 px-3 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            Contact Us
+                            {t('nav.contact_us', { defaultValue: 'Contact Us' })}
                             {/* Little triangle arrow pointing right */}
                             <div className="absolute top-1/2 -mt-1 -right-1 border-t-4 border-t-transparent border-l-4 border-l-gray-900 dark:border-l-gray-800 border-b-4 border-b-transparent"></div>
                         </div>

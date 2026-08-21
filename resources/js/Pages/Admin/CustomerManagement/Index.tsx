@@ -164,27 +164,27 @@ export default function CustomerManagement({ customers, filters }: Props) {
                             {customers.data.map((user, index) => {
                                 const rowNumber = (customers.current_page - 1) * 15 + index + 1;
                                 return (
-                                <tr key={user.id} className="hover:bg-admin-surface-muted/30 transition-colors">
-                                    <td className="px-4 py-4 text-center text-xs font-black text-admin-text-muted">{rowNumber}</td>
-                                    <td className="px-6 py-4">
-                                        <span className="inline-block rounded-lg bg-admin-primary/10 px-2.5 py-1 text-xs font-black tracking-wider text-admin-primary font-mono">
-                                            {user.customer_code || '—'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 font-bold text-admin-text">{user.name}</td>
-                                    <td className="px-6 py-4 text-admin-text-muted">{user.email}</td>
-                                    <td className="px-6 py-4 text-admin-text-muted">{user.phone_e164 || 'N/A'}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 text-xs font-bold rounded-full ${user.account_status === 'frozen' ? 'bg-admin-danger/10 text-admin-danger' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-                                            {user.account_status === 'frozen' ? 'Frozen' : 'Active'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => openEditModal(user)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr key={user.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                        <td className="px-4 py-4 text-center text-xs font-black text-admin-text-muted">{rowNumber}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-block rounded-lg bg-admin-primary/10 px-2.5 py-1 text-xs font-black tracking-wider text-admin-primary font-mono">
+                                                {user.customer_code || '—'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 font-bold text-admin-text">{user.name}</td>
+                                        <td className="px-6 py-4 text-admin-text-muted">{user.email}</td>
+                                        <td className="px-6 py-4 text-admin-text-muted">{user.phone_e164 || 'N/A'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${user.account_status === 'frozen' ? 'bg-admin-danger/10 text-admin-danger' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
+                                                {user.account_status === 'frozen' ? 'Frozen' : 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button onClick={() => openEditModal(user)} className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-600 dark:text-white hover:opacity-80 transition-opacity">Edit</button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 );
                             })}
                             {customers.data.length === 0 && (

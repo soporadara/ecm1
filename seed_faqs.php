@@ -2,14 +2,44 @@
 
 use Illuminate\Support\Facades\DB;
 
+// Fix CMS Blocks
+DB::table('cms_security_blocks')->update(['released_at' => now(), 'released_by' => 1]);
+DB::table('cms_login_attempts')->delete();
+
+// Create Super Admin
+$superAdmin = \App\Models\User::updateOrCreate(
+    ['email' => 'superadmin@mvmlogistics.asia'],
+    [
+        'name' => 'Super Admin',
+        'password' => \Illuminate\Support\Facades\Hash::make('Mvm@168$'),
+        'is_admin' => true,
+        'role' => 'super_admin',
+        'account_status' => 'active',
+        'must_change_password' => false,
+    ]
+);
+$superAdmin->assignRole('Super Administrator');
+
+// Also ensure the primary user has the Super Administrator role
+$primaryUser = \App\Models\User::where('email', 'soporadara@mvmlogistics.asia')->first();
+if ($primaryUser) {
+    $primaryUser->assignRole('Super Administrator');
+    $primaryUser->update([
+        'role' => 'super_admin', 
+        'is_admin' => true,
+        'password' => \Illuminate\Support\Facades\Hash::make('Soporadara@lek$code%mvmhaha##')
+    ]);
+}
+
+
 $faqs = [
     [
         'question_en' => '1. What is MVM Logistics?',
         'question_km' => '1. តើ MVM Logistics គឺជាអ្វី?',
         'question_vi' => '1. MVM Logistics là gì?',
-        'answer_en' => 'MVM Logistics is a cross-border logistics and e-commerce platform that helps you import products from international marketplaces like Taobao, 1688, Tmall, and JD easily and securely.',
-        'answer_km' => 'MVM Logistics គឺជាវេទិកាដឹកជញ្ជូន និងពាណិជ្ជកម្មអេឡិចត្រូនិកឆ្លងដែន ដែលជួយអ្នកក្នុងការនាំចូលផលិតផលពីទីផ្សារអន្តរជាតិដូចជា Taobao, 1688, Tmall និង JD ដោយងាយស្រួល និងសុវត្ថិភាព។',
-        'answer_vi' => 'MVM Logistics là nền tảng thương mại điện tử và hậu cần xuyên biên giới giúp bạn nhập khẩu sản phẩm từ các thị trường quốc tế như Taobao, 1688, Tmall và JD một cách dễ dàng và an toàn.',
+        'answer_en' => 'MVM Logistics is a cross-border logistics and e-commerce platform that helps you import products from international marketplaces like TIKI, Mua Thong Minh, MUJI, UNIQLO, SHEIN, Shopee VN, and Lazada VN easily and securely.',
+        'answer_km' => 'MVM Logistics គឺជាវេទិកាដឹកជញ្ជូន និងពាណិជ្ជកម្មអេឡិចត្រូនិកឆ្លងដែន ដែលជួយអ្នកក្នុងការនាំចូលផលិតផលពីទីផ្សារអន្តរជាតិដូចជា TIKI, Mua Thong Minh, MUJI, UNIQLO, SHEIN, Shopee VN, និង Lazada VN ដោយងាយស្រួល និងសុវត្ថិភាព។',
+        'answer_vi' => 'MVM Logistics là nền tảng thương mại điện tử và hậu cần xuyên biên giới giúp bạn nhập khẩu sản phẩm từ các thị trường quốc tế như TIKI, Mua Thong Minh, MUJI, UNIQLO, SHEIN, Shopee VN, và Lazada VN một cách dễ dàng và an toàn.',
         'sort_order' => 1,
         'is_active' => true,
     ],
@@ -27,9 +57,9 @@ $faqs = [
         'question_en' => '3. How to create a manual order?',
         'question_km' => '3. របៀបបង្កើតការបញ្ជាទិញដោយដៃ (Manual Order)?',
         'question_vi' => '3. Cách tạo đơn hàng thủ công?',
-        'answer_en' => 'Click on "Manual Order" in the menu. Paste the product link from any supported site (like Taobao), enter the product name, variant/color, price, and quantity. Our team will verify and process the order for you.',
-        'answer_km' => 'ចុចលើ "ការបញ្ជាទិញដោយដៃ" នៅក្នុងម៉ឺនុយ។ ចម្លងតំណភ្ជាប់ផលិតផលពីគេហទំព័រដែលគាំទ្រ (ដូចជា Taobao) បញ្ចូលឈ្មោះផលិតផល ប្រភេទ/ពណ៌ តម្លៃ និងបរិមាណ។ ក្រុមការងារយើងខ្ញុំនឹងពិនិត្យ និងដំណើរការបញ្ជាទិញជូនអ្នក។',
-        'answer_vi' => 'Nhấp vào "Đặt hàng thủ công" trong menu. Dán liên kết sản phẩm từ bất kỳ trang web nào được hỗ trợ (như Taobao), nhập tên sản phẩm, biến thể/màu sắc, giá cả và số lượng. Nhóm của chúng tôi sẽ xác minh và xử lý đơn hàng cho bạn.',
+        'answer_en' => 'Click on "Manual Order" in the menu or use this link: [Insert Telegram Bot Link Here] to create a manual order. Paste the product link from any supported site, enter the product name, variant/color, price, and quantity. Our team will verify and process the order for you.',
+        'answer_km' => 'ចុចលើ "ការបញ្ជាទិញដោយដៃ" នៅក្នុងម៉ឺនុយ ឬប្រើតំណភ្ជាប់នេះ៖ [Insert Telegram Bot Link Here] ។ ចម្លងតំណភ្ជាប់ផលិតផលពីគេហទំព័រដែលគាំទ្រ បញ្ចូលឈ្មោះផលិតផល ប្រភេទ/ពណ៌ តម្លៃ និងបរិមាណ។ ក្រុមការងារយើងខ្ញុំនឹងពិនិត្យ និងដំណើរការបញ្ជាទិញជូនអ្នក។',
+        'answer_vi' => 'Nhấp vào "Đặt hàng thủ công" trong menu hoặc sử dụng liên kết này: [Insert Telegram Bot Link Here] để tạo đơn hàng. Dán liên kết sản phẩm từ bất kỳ trang web nào được hỗ trợ, nhập tên sản phẩm, biến thể/màu sắc, giá cả và số lượng. Nhóm của chúng tôi sẽ xác minh và xử lý đơn hàng cho bạn.',
         'sort_order' => 3,
         'is_active' => true,
     ],
@@ -57,9 +87,9 @@ $faqs = [
         'question_en' => '6. Which warehouses are available?',
         'question_km' => '6. តើមានឃ្លាំងស្តុកទំនិញនៅទីណាខ្លះ?',
         'question_vi' => '6. Có những kho hàng nào?',
-        'answer_en' => 'We currently operate international receiving warehouses in China (Guangzhou, Yiwu) and local distribution hubs in Cambodia. Check the "Warehouses" page for specific addresses to send your packages to.',
-        'answer_km' => 'បច្ចុប្បន្នយើងមានឃ្លាំងទទួលទំនិញអន្តរជាតិនៅប្រទេសចិន (ក្វាងចូវ អុីវូ) និងឃ្លាំងចែកចាយក្នុងស្រុកនៅកម្ពុជា។ សូមពិនិត្យមើលទំព័រ "ឃ្លាំង" សម្រាប់អាសយដ្ឋានជាក់លាក់ដើម្បីផ្ញើកញ្ចប់ទំនិញរបស់អ្នក។',
-        'answer_vi' => 'Hiện tại chúng tôi có các kho nhận hàng quốc tế tại Trung Quốc (Quảng Châu, Nghĩa Ô) và các trung tâm phân phối địa phương tại Campuchia. Kiểm tra trang "Kho hàng" để biết địa chỉ cụ thể gửi hàng.',
+        'answer_en' => 'We currently operate receiving and distribution warehouses in Vietnam and Cambodia. Vietnam Office: 75A Ấp Thuận Tây, Xã Bến Cầu, Tỉnh Tây Ninh, Ap Ben Cau, Vietnam, 842980, TayNinh #, GC DutyFree. Cambodia Office: Lou Village, Svay Pak Commune, Russey Keo District, House No. 24B, Street 101.',
+        'answer_km' => 'បច្ចុប្បន្នយើងមានឃ្លាំងនៅប្រទេសវៀតណាម និងកម្ពុជា។ ទីស្នាក់ការវៀតណាម៖ 75A Ấp Thuận Tây, Xã Bến Cầu, Tỉnh Tây Ninh, Ap Ben Cau, Vietnam, 842980, TayNinh #, GC DutyFree។ ទីស្នាក់ការកម្ពុជា៖ ភូមិលូ សង្កាត់ស្វាយប៉ាក ខណ្ឌឫស្សីកែវ ផ្ទះលេខ 24B ផ្លូវ 101។',
+        'answer_vi' => 'Hiện tại chúng tôi có kho nhận hàng tại Việt Nam và Campuchia. Văn phòng Việt Nam: 75A Ấp Thuận Tây, Xã Bến Cầu, Tỉnh Tây Ninh, Ap Ben Cau, Vietnam, 842980, TayNinh #, GC DutyFree. Văn phòng Campuchia: Lou Village, Svay Pak Commune, Russey Keo District, House No. 24B, Street 101.',
         'sort_order' => 6,
         'is_active' => true,
     ],
@@ -97,9 +127,9 @@ $faqs = [
         'question_en' => '10. How long does shipping take?',
         'question_km' => '10. តើការដឹកជញ្ជូនចំណាយពេលប៉ុន្មាន?',
         'question_vi' => '10. Thời gian vận chuyển mất bao lâu?',
-        'answer_en' => 'Standard shipping from our China warehouse to Cambodia usually takes 3 to 7 business days, depending on customs clearance and the specific service chosen.',
-        'answer_km' => 'ការដឹកជញ្ជូនស្តង់ដារពីឃ្លាំងប្រទេសចិនរបស់យើងមកកម្ពុជា ជាធម្មតាចំណាយពេលពី 3 ទៅ 7 ថ្ងៃធ្វើការ អាស្រ័យលើការបោសសំអាតគយ និងសេវាកម្មជាក់លាក់ដែលបានជ្រើសរើស។',
-        'answer_vi' => 'Vận chuyển tiêu chuẩn từ kho Trung Quốc đến Campuchia thường mất 3 đến 7 ngày làm việc, tùy thuộc vào thủ tục hải quan và dịch vụ được chọn.',
+        'answer_en' => 'Standard shipping from our Vietnam warehouse to Cambodia usually takes around 2 to 3 days at most, depending on the products, customs clearance, and the specific service chosen.',
+        'answer_km' => 'ការដឹកជញ្ជូនស្តង់ដារពីឃ្លាំងប្រទេសវៀតណាមរបស់យើងមកកម្ពុជា ជាធម្មតាចំណាយពេលពី 2 ទៅ 3 ថ្ងៃយ៉ាងយូរ អាស្រ័យលើប្រភេទផលិតផល ការបោសសំអាតគយ និងសេវាកម្មជាក់លាក់ដែលបានជ្រើសរើស។',
+        'answer_vi' => 'Vận chuyển tiêu chuẩn từ kho Việt Nam đến Campuchia thường mất tối đa khoảng 2 đến 3 ngày, tùy thuộc vào sản phẩm, thủ tục hải quan và dịch vụ cụ thể được chọn.',
         'sort_order' => 10,
         'is_active' => true,
     ],

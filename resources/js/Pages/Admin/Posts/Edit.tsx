@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
+import RichTextEditor from '../../../Components/Premium/RichTextEditor';
 
 export default function Edit({ post, categories = [] }: { post: any; categories?: any[] }) {
     const [isSmartImportOpen, setIsSmartImportOpen] = useState(false);
     const [smartImportText, setSmartImportText] = useState('');
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post: submitPost, processing, errors } = useForm({
+        _method: 'PUT',
         title: post.title || '',
         slug: post.slug || '',
         content: post.content || '',
@@ -16,9 +18,11 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
         image_files: [] as File[],
         seo_title: post.seo_title || '',
         seo_description: post.seo_description || '',
+        tags: post.tags || '',
         post_category_id: post.post_category_id || '',
         is_published: post.is_published,
         scheduled_at: post.scheduled_at ? String(post.scheduled_at).slice(0, 16) : '',
+        order_index: post.order_index ?? '',
     });
 
     const [isImporting, setIsImporting] = useState(false);
@@ -82,7 +86,7 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/admin/posts/${post.id}`, {
+        submitPost(`/admin/posts/${post.id}`, {
             onSuccess: () => toast.success('Post updated successfully!')
         });
     };
@@ -227,13 +231,11 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content (HTML allowed)</label>
-                        <textarea
-                            className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
-                            rows={10}
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                        <RichTextEditor 
                             value={data.content}
-                            onChange={e => setData('content', e.target.value)}
-                        ></textarea>
+                            onChange={(value) => setData('content', value)}
+                        />
                         {errors.content && <p className="text-red-500 text-xs mt-1">{errors.content}</p>}
                     </div>
 
@@ -262,6 +264,18 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                                 ></textarea>
                                 {errors.seo_description && <p className="text-red-500 text-xs mt-1">{errors.seo_description}</p>}
                             </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
+                                <input
+                                    type="text"
+                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
+                                    value={data.tags}
+                                    onChange={e => setData('tags', e.target.value)}
+                                    placeholder="E.g., Logistics, Freight, Transport (comma separated)"
+                                />
+                                {errors.tags && <p className="text-red-500 text-xs mt-1">{errors.tags}</p>}
+                            </div>
                         </div>
                     </div>
 
@@ -282,6 +296,16 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                                 type="datetime-local"
                                 value={data.scheduled_at}
                                 onChange={e => setData('scheduled_at', e.target.value)}
+                                className="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Display Order (Optional)</label>
+                            <input
+                                type="number"
+                                value={data.order_index}
+                                onChange={e => setData('order_index', e.target.value)}
+                                placeholder="Auto-assigned if left blank"
                                 className="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
                             />
                         </div>

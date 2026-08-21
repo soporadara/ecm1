@@ -96,16 +96,14 @@ class CmsSecurityService
 
     private function applyThresholdBlocks(array $identity): void
     {
-        $recent15 = DB::table('cms_login_attempts')
-            ->where('attempted_at', '>=', now()->subMinutes(15))
-            ->where(fn ($query) => $query
-                ->where('ip_address', $identity['ip_address'])
-                ->orWhere('email_hash', $identity['email_hash'])
-                ->orWhere('device_hash', $identity['device_hash'])
-            )
-            ->count();
+        $maxAttempts = (int) (\App\Models\Setting::where('group', 'general')->where('key', 'cms_max_failed_attempts')->value('value') ?? 10);
+        $lockoutMinutes = \App\Models\Setting::where('group', 'general')->where('key', 'cms_lockout_duration_minutes')->value('value');
+        if ($lockoutMinutes === null || $lockoutMinutes === '') {
+            $lockoutMinutes = 'forever';
+        }
 
-        $recent30 = DB::table('cms_login_attempts')
+        // We only check a sliding window of 30 minutes for the threshold
+        $recentAttempts = DB::table('cms_login_attempts')
             ->where('attempted_at', '>=', now()->subMinutes(30))
             ->where(fn ($query) => $query
                 ->where('ip_address', $identity['ip_address'])
@@ -114,13 +112,12 @@ class CmsSecurityService
             )
             ->count();
 
-        if ($recent30 >= 10) {
-            $this->createBlock($identity, 'ten_failed_attempts', now()->addDay());
-            return;
-        }
-
-        if ($recent15 >= 5) {
-            $this->createBlock($identity, 'five_failed_attempts', now()->addMinutes(15));
+        if ($recentAttempts >= $maxAttempts) {
+            $expiresAt = null;
+            if (strtolower(trim($lockoutMinutes)) !== 'forever') {
+                $expiresAt = now()->addMinutes((int) $lockoutMinutes);
+            }
+            $this->createBlock($identity, "exceeded_failed_attempts", $expiresAt);
         }
     }
 
@@ -152,7 +149,29 @@ class CmsSecurityService
         ]);
     }
 
-    private function emailHash(string $email): string
+    public function manualBlock(string $type, string $value, string $reason, ?\Carbon\CarbonInterface $expiresAt): void
+    {
+        $data = [
+            'reason' => $reason,
+            'starts_at' => now(),
+            'expires_at' => $expiresAt,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        if ($type === 'email') {
+            $data['email_hash'] = $this->emailHash($value);
+            $data['masked_email'] = $this->maskEmail($value);
+        } elseif ($type === 'ip') {
+            $data['ip_address'] = $value;
+        } elseif ($type === 'device') {
+            $data['device_hash'] = $value;
+        }
+
+        DB::table('cms_security_blocks')->insert($data);
+    }
+
+    public function emailHash(string $email): string
     {
         return hash_hmac('sha256', Str::lower(trim($email)), config('app.key'));
     }

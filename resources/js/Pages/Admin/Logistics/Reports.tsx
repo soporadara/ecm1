@@ -25,7 +25,7 @@ export default function Reports({ customers }: Props) {
         if (data.end_date) params.append('end_date', data.end_date);
         if (data.type === 'customer_activity' && data.customer_id) params.append('customer_id', data.customer_id);
 
-        window.location.href = `/admin/logistics/reports/generate?${params.toString()}`;
+        window.open(`/admin/logistics/reports/generate?${params.toString()}`, '_blank');
     };
 
     return (
@@ -42,11 +42,16 @@ export default function Reports({ customers }: Props) {
                     <form onSubmit={submit} className="space-y-6">
                         <div>
                             <label className="block text-sm font-bold text-admin-text mb-2">Report Type</label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-colors ${data.type === 'revenue' ? 'border-admin-primary bg-admin-primary/5 text-admin-primary' : 'border-admin-border hover:bg-admin-surface-muted text-admin-text-muted'}`}>
                                     <input type="radio" name="type" value="revenue" className="hidden" checked={data.type === 'revenue'} onChange={e => setData('type', e.target.value)} />
                                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                                     <span className="font-semibold text-sm">Business Revenue</span>
+                                </label>
+                                <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-colors ${data.type === 'products' ? 'border-admin-primary bg-admin-primary/5 text-admin-primary' : 'border-admin-border hover:bg-admin-surface-muted text-admin-text-muted'}`}>
+                                    <input type="radio" name="type" value="products" className="hidden" checked={data.type === 'products'} onChange={e => setData('type', e.target.value)} />
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                    <span className="font-semibold text-sm">Product Sales</span>
                                 </label>
                                 <label className={`cursor-pointer border rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-colors ${data.type === 'customer_activity' ? 'border-admin-primary bg-admin-primary/5 text-admin-primary' : 'border-admin-border hover:bg-admin-surface-muted text-admin-text-muted'}`}>
                                     <input type="radio" name="type" value="customer_activity" className="hidden" checked={data.type === 'customer_activity'} onChange={e => setData('type', e.target.value)} />
@@ -108,7 +113,7 @@ export default function Reports({ customers }: Props) {
                 </div>
                 
                 <div className="space-y-6">
-                    <div className="bg-admin-primary/10 text-admin-primary p-6 rounded-2xl border border-admin-primary/20">
+                    <div className="bg-admin-primary/10 text-admin-primary dark:text-white p-6 rounded-2xl border border-admin-primary/20">
                         <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             About Reports
@@ -119,7 +124,7 @@ export default function Reports({ customers }: Props) {
                         <ul className="text-sm space-y-2">
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-admin-primary-hover">&bull;</span>
-                                <span><strong>PDF:</strong> Best for printing, presenting to management, or sending to customers. It is fully formatted and styled.</span>
+                                <span><strong>PDF Document (Print):</strong> Opens a printable, fully-formatted HTML view. You can print it directly or save as PDF.</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="font-bold text-admin-primary-hover">&bull;</span>

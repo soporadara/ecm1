@@ -3,14 +3,17 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import { signOutFirebase } from '@/lib/firebase';
 import MobileProfileView from '../Components/Premium/MobileProfileView';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function Profile() {
+    const { t } = useTranslation();
     const { auth, telegram_bot_username } = usePage().props as any;
     const user = auth.user;
 
     // Personal Info Form
     const { data, setData, put, errors, processing, recentlySuccessful } = useForm({
         name: user.name,
+        email: user.email,
         contact_email: user.contact_email || '',
         phone_e164: user.phone_e164 || '',
         address_line_1: user.address_line_1 || '',
@@ -20,7 +23,7 @@ export default function Profile() {
         postal_code: user.postal_code || '',
         country_code: user.country_code || 'KH',
         address_notes: user.address_notes || '',
-        preferred_locale: user.preferred_locale || user.preferred_language || 'km',
+        preferred_locale: user.preferred_locale || user.preferred_language || 'en',
         preferred_currency: user.preferred_currency === 'VND' ? 'VND' : 'USD',
         telegram_username: user.telegram_username || '',
         whatsapp_number: user.whatsapp_number || '',
@@ -28,43 +31,6 @@ export default function Profile() {
 
     const [showSmsModal, setShowSmsModal] = useState(false);
     const [smsCode, setSmsCode] = useState('');
-
-    // Email PIN Verification Flow
-    const [isChangingEmail, setIsChangingEmail] = useState(false);
-    const [newEmail, setNewEmail] = useState('');
-    const [showEmailPinModal, setShowEmailPinModal] = useState(false);
-    const [emailPin, setEmailPin] = useState('');
-    const [isSendingPin, setIsSendingPin] = useState(false);
-    const [isVerifyingPin, setIsVerifyingPin] = useState(false);
-
-    const sendEmailPin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newEmail || newEmail === user.email) return;
-        
-        setIsSendingPin(true);
-        router.post('/profile/send-pin', { new_email: newEmail }, {
-            preserveScroll: true,
-            onSuccess: () => setShowEmailPinModal(true),
-            onFinish: () => setIsSendingPin(false)
-        });
-    };
-
-    const verifyEmailPin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (emailPin.length !== 6) return;
-
-        setIsVerifyingPin(true);
-        router.post('/profile/verify-pin', { pin: emailPin }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setShowEmailPinModal(false);
-                setIsChangingEmail(false);
-                setNewEmail('');
-                setEmailPin('');
-            },
-            onFinish: () => setIsVerifyingPin(false)
-        });
-    };
 
     const submitForm = () => {
         put('/profile', {
@@ -132,7 +98,7 @@ export default function Profile() {
 
     return (
         <MainLayout>
-            <Head title="My Profile" />
+            <Head title={t('profile.account_settings')} />
 
             {/* Mobile View */}
             <div className="block lg:hidden">
@@ -143,13 +109,13 @@ export default function Profile() {
             <div className="hidden lg:block max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 space-y-8">
                 
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Account Settings</h1>
+                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">{t('profile.account_settings')}</h1>
                     <button
                         type="button"
                         onClick={logout}
                         className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-full transition-colors"
                     >
-                        Sign Out
+                        {t('profile.sign_out')}
                     </button>
                 </div>
 
@@ -181,8 +147,8 @@ export default function Profile() {
 
                     <div className="flex-1 text-center md:text-left">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Customer ID: <span className="font-mono font-bold text-brand-primary">{user.customer_code || 'Pending'}</span></p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Login email: {user.email}</p>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">{t('profile.customer_id')}: <span className="font-mono font-bold text-brand-primary">{user.customer_code || 'Pending'}</span></p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('profile.login_email')}: {user.email}</p>
                         
                         {avatarForm.data.avatar && (
                             <button
@@ -190,7 +156,7 @@ export default function Profile() {
                                 disabled={avatarForm.processing}
                                 className="mt-4 px-6 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-semibold rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
                             >
-                                {avatarForm.processing ? 'Uploading...' : 'Save Picture'}
+                                {avatarForm.processing ? t('profile.uploading') : t('profile.save_picture')}
                             </button>
                         )}
                         {avatarForm.errors.avatar && <p className="text-sm text-red-500 mt-2">{avatarForm.errors.avatar}</p>}
@@ -200,11 +166,11 @@ export default function Profile() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Personal Information */}
                     <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-3xl p-8">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Personal Details</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('profile.personal_details')}</h3>
 
                         <form onSubmit={updateProfile} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.full_name')}</label>
                                 <input
                                     type="text"
                                     value={data.name}
@@ -215,49 +181,18 @@ export default function Profile() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Login Email</label>
-                                {!isChangingEmail ? (
-                                    <div className="flex gap-4 items-start">
-                                        <div className="flex-1">
-                                            <input
-                                                type="email"
-                                                value={user.email}
-                                                disabled
-                                                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                            />
-                                            {user.email_verified_at && <p className="mt-2 text-xs text-brand-primary flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Verified</p>}
-                                        </div>
-                                        <button type="button" onClick={() => setIsChangingEmail(true)} className="px-4 py-3 text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition">Change</button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="flex gap-4 items-start">
-                                            <div className="flex-1">
-                                                <input
-                                                    type="email"
-                                                    placeholder="Enter new email address"
-                                                    value={newEmail}
-                                                    onChange={e => setNewEmail(e.target.value)}
-                                                    className="w-full bg-white dark:bg-black border border-brand-primary rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary"
-                                                />
-                                            </div>
-                                            <button 
-                                                type="button" 
-                                                onClick={sendEmailPin} 
-                                                disabled={!newEmail || newEmail === user.email || isSendingPin}
-                                                className="px-4 py-3 text-sm font-bold bg-brand-primary text-white hover:bg-brand-secondary rounded-xl transition disabled:opacity-50"
-                                            >
-                                                {isSendingPin ? 'Sending...' : 'Send PIN'}
-                                            </button>
-                                            <button type="button" onClick={() => setIsChangingEmail(false)} className="px-4 py-3 text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition">Cancel</button>
-                                        </div>
-                                        <p className="text-xs text-gray-500">We will send a 6-digit verification code to this new email to confirm it belongs to you.</p>
-                                    </div>
-                                )}
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.login_email')}</label>
+                                <input
+                                    type="email"
+                                    value={data.email}
+                                    onChange={e => setData('email', e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
+                                />
+                                {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred contact email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.preferred_contact_email')}</label>
                                 <input
                                     type="email"
                                     value={data.contact_email}
@@ -268,7 +203,7 @@ export default function Profile() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.phone_number')}</label>
                                 <input
                                     type="text"
                                     value={data.phone_e164}
@@ -283,7 +218,7 @@ export default function Profile() {
 
                             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Language</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.language')}</label>
                                     <select value={data.preferred_locale} onChange={e => setData('preferred_locale', e.target.value)} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
                                         <option value="km">ភាសាខ្មែរ</option>
                                         <option value="en">English</option>
@@ -291,7 +226,7 @@ export default function Profile() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preferred currency</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('profile.preferred_currency')}</label>
                                     <select value={data.preferred_currency} onChange={e => setData('preferred_currency', e.target.value)} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
                                         <option value="USD">USD - United States Dollar</option>
                                         <option value="VND">VND - Vietnamese Dong</option>
@@ -315,23 +250,23 @@ export default function Profile() {
                     </div>
 
                     <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-3xl p-8">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Address & Contact Apps</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('profile.address.title', 'Address & Contact Apps')}</h3>
                         <form onSubmit={updateProfile} className="space-y-5">
-                            <input value={data.address_line_1} onChange={e => setData('address_line_1', e.target.value)} placeholder="Address line 1" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
-                            <input value={data.address_line_2} onChange={e => setData('address_line_2', e.target.value)} placeholder="Address line 2" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                            <input value={data.address_line_1} onChange={e => setData('address_line_1', e.target.value)} placeholder={t('profile.address.line1', 'Address line 1')} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                            <input value={data.address_line_2} onChange={e => setData('address_line_2', e.target.value)} placeholder={t('profile.address.line2', 'Address line 2')} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <input value={data.city} onChange={e => setData('city', e.target.value)} placeholder="City" className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
-                                <input value={data.province} onChange={e => setData('province', e.target.value)} placeholder="Province" className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
-                                <input value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} placeholder="Postal code" className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.city} onChange={e => setData('city', e.target.value)} placeholder={t('profile.address.city', 'City')} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.province} onChange={e => setData('province', e.target.value)} placeholder={t('profile.address.province', 'Province')} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.postal_code} onChange={e => setData('postal_code', e.target.value)} placeholder={t('profile.address.postal_code', 'Postal code')} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
                             </div>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <input value={data.country_code} onChange={e => setData('country_code', e.target.value.toUpperCase())} placeholder="KH" maxLength={2} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
-                                <input value={data.telegram_username} onChange={e => setData('telegram_username', e.target.value)} placeholder="@telegram" className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
-                                <input value={data.whatsapp_number} onChange={e => setData('whatsapp_number', e.target.value)} placeholder="WhatsApp number" className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.country_code} onChange={e => setData('country_code', e.target.value.toUpperCase())} placeholder={t('profile.address.country_code', 'KH')} maxLength={2} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.telegram_username} onChange={e => setData('telegram_username', e.target.value)} placeholder={t('profile.address.telegram', '@telegram')} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                                <input value={data.whatsapp_number} onChange={e => setData('whatsapp_number', e.target.value)} placeholder={t('profile.address.whatsapp', 'WhatsApp number')} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
                             </div>
-                            <textarea value={data.address_notes} onChange={e => setData('address_notes', e.target.value)} placeholder="Address notes" rows={3} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
+                            <textarea value={data.address_notes} onChange={e => setData('address_notes', e.target.value)} placeholder={t('profile.address.notes', 'Address notes')} rows={3} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900" />
                             <button type="submit" disabled={processing} className="w-full rounded-xl bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-200">
-                                {processing ? 'Saving...' : 'Save Address'}
+                                {processing ? t('profile.saving', 'Saving...') : t('profile.address.save', 'Save Address')}
                             </button>
                         </form>
                     </div>
@@ -439,49 +374,6 @@ export default function Profile() {
                                     {processing ? 'Verifying...' : 'Verify & Save'}
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-            {/* Email PIN Verification Modal */}
-            {showEmailPinModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl relative">
-                        <button 
-                            onClick={() => setShowEmailPinModal(false)}
-                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-
-                        <div className="text-center mb-8">
-                            <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Verify New Email</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mt-2">We sent a 6-digit code to <span className="font-bold text-gray-900 dark:text-white">{newEmail}</span>.</p>
-                        </div>
-
-                        <form onSubmit={verifyEmailPin}>
-                            <input
-                                type="text"
-                                maxLength={6}
-                                value={emailPin}
-                                onChange={e => setEmailPin(e.target.value.replace(/\D/g, ''))}
-                                placeholder="000000"
-                                className="w-full text-center text-3xl tracking-[0.5em] font-mono bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all mb-6"
-                                required
-                            />
-                            
-                            <button
-                                type="submit"
-                                disabled={emailPin.length !== 6 || isVerifyingPin}
-                                className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold py-4 rounded-xl transition disabled:opacity-50"
-                            >
-                                {isVerifyingPin ? 'Verifying...' : 'Verify & Save Email'}
-                            </button>
                         </form>
                     </div>
                 </div>

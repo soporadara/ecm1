@@ -32,11 +32,8 @@ class SettingController extends Controller
             'social_links' => 'nullable|array',
             'social_links.*.name' => 'nullable|string|max:255',
             'social_links.*.url' => 'nullable|string|max:1000',
+            'social_links.*.subtitle' => 'nullable|string|max:255',
             'social_links.*.icon' => 'nullable|string|max:1000',
-            'fab_email' => 'nullable|string|max:255',
-            'fab_phone' => 'nullable|string|max:255',
-            'fab_messenger' => 'nullable|string|max:255',
-            'fab_telegram' => 'nullable|string|max:255',
             'cambodia_map_embed_url' => 'nullable|string',
             'cambodia_map_open_url' => 'nullable|string|max:1000',
             'cambodia_map_address' => 'nullable|string|max:1000',
@@ -57,10 +54,6 @@ class SettingController extends Controller
             'about_title' => $validated['about_title'] ?? null,
             'about_text' => $validated['about_text'] ?? null,
             'social_links' => isset($validated['social_links']) ? json_encode($validated['social_links']) : null,
-            'fab_email' => $validated['fab_email'] ?? null,
-            'fab_phone' => $validated['fab_phone'] ?? null,
-            'fab_messenger' => $validated['fab_messenger'] ?? null,
-            'fab_telegram' => $validated['fab_telegram'] ?? null,
             'cambodia_map_embed_url' => $validated['cambodia_map_embed_url'] ?? null,
             'cambodia_map_open_url' => $validated['cambodia_map_open_url'] ?? null,
             'cambodia_map_address' => $validated['cambodia_map_address'] ?? null,
@@ -84,7 +77,7 @@ class SettingController extends Controller
         }
 
         foreach ($settingsToSave as $key => $value) {
-            if ($value !== null || $key === 'store_address' || $key === 'support_phone' || $key === 'social_links' || str_starts_with($key, 'about_') || str_starts_with($key, 'fab_') || str_contains($key, '_map_')) {
+            if ($value !== null || $key === 'store_address' || $key === 'support_phone' || $key === 'social_links' || str_starts_with($key, 'about_') || str_contains($key, '_map_')) {
                 Setting::updateOrCreate(
                     ['group' => 'general', 'key' => $key],
                     ['value' => $value ?? '']

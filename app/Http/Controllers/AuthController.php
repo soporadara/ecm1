@@ -59,7 +59,7 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['nullable', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::defaults(), 'confirmed'],
         ]);
 
         $email = $validated['email'] ?? null;
@@ -86,6 +86,8 @@ class AuthController extends Controller
             'role' => 'customer',
             'customer_code' => \App\Models\User::generateCustomerCode(),
         ]);
+
+        \App\Jobs\SendTelegramNewCustomerNotification::dispatchSync($user);
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
@@ -337,6 +339,7 @@ class AuthController extends Controller
                 'role' => 'customer',
                 'customer_code' => \App\Models\User::generateCustomerCode(),
             ]);
+            \App\Jobs\SendTelegramNewCustomerNotification::dispatchSync($user);
         }
 
         if ($user->is_admin || in_array($user->role, ['admin', 'super_admin', 'logistics', 'content', 'support'], true)) {

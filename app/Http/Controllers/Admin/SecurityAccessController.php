@@ -24,7 +24,54 @@ class SecurityAccessController extends Controller
                 ->latest('attempted_at')
                 ->limit(150)
                 ->get(),
+            'settings' => [
+                'cms_max_failed_attempts' => \App\Models\Setting::where('group', 'general')->where('key', 'cms_max_failed_attempts')->value('value') ?? 10,
+                'cms_lockout_duration_minutes' => \App\Models\Setting::where('group', 'general')->where('key', 'cms_lockout_duration_minutes')->value('value') ?? 'forever',
+            ]
         ]);
+    }
+
+    public function storeBlock(Request $request, CmsSecurityService $security)
+    {
+        $this->authorizeSuperAdmin($request);
+
+        $request->validate([
+            'type' => 'required|in:ip,email,device',
+            'value' => 'required|string|max:255',
+            'reason' => 'required|string|max:255',
+            'duration' => 'nullable|string', // "forever" or integer string
+        ]);
+
+        $expiresAt = null;
+        if (strtolower(trim($request->duration)) !== 'forever' && is_numeric($request->duration)) {
+            $expiresAt = now()->addMinutes((int) $request->duration);
+        }
+
+        $security->manualBlock($request->type, $request->value, $request->reason, $expiresAt);
+
+        return back()->with('success', 'Manual security block created.');
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $this->authorizeSuperAdmin($request);
+
+        $request->validate([
+            'cms_max_failed_attempts' => 'required|integer|min:1',
+            'cms_lockout_duration_minutes' => 'required|string',
+        ]);
+
+        \App\Models\Setting::updateOrCreate(
+            ['group' => 'general', 'key' => 'cms_max_failed_attempts'],
+            ['value' => $request->cms_max_failed_attempts]
+        );
+
+        \App\Models\Setting::updateOrCreate(
+            ['group' => 'general', 'key' => 'cms_lockout_duration_minutes'],
+            ['value' => $request->cms_lockout_duration_minutes]
+        );
+
+        return back()->with('success', 'Security settings updated.');
     }
 
     public function destroy(Request $request, int $block, CmsSecurityService $security)

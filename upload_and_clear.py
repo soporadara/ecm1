@@ -38,6 +38,8 @@ def main():
         f"--exclude 'storage/framework' "
         f"--exclude 'bootstrap/cache' "
         f"--exclude 'public/hot' "
+        f"--exclude 'database/*.sqlite' "
+        f"--exclude 'database/*.sqlite-journal' "
         f"./ {SSH_USER}@{SSH_HOST}:{REMOTE_PATH}"
     )
     print("NOTE: We are using sshpass to authenticate.")
@@ -64,6 +66,7 @@ def main():
         f"sed -i \"s/^# DB_PASSWORD/DB_PASSWORD/\" .env && "
         f"sed -i \"s|^APP_URL=.*|APP_URL=https://mvmlogistics.asia|\" .env && "
         f"sed -i \"s/DB_CONNECTION=sqlite/DB_CONNECTION=mysql/\" .env && "
+        f"sed -i \"s/DB_HOST=localhost/DB_HOST=127.0.0.1/\" .env && "
         f"sed -i \"s|^MAIL_MAILER=.*|MAIL_MAILER=log|\" .env && "
         f"sed -i \"s|^MAIL_FROM_ADDRESS=.*|MAIL_FROM_ADDRESS=support@mvmlogistics.asia|\" .env && "
         f"sed -i \"s|^FIREBASE_CREDENTIALS=.*|FIREBASE_CREDENTIALS=storage/app/firebase-credentials.json|\" .env && "
@@ -85,7 +88,8 @@ def main():
         f"php artisan migrate --force && "
         f"php artisan tinker seed_faqs.php && "
         f"php scripts/setup-telegram-webhook.php && "
-        f"php scripts/setup-telegram-commands.php && "
+        f"php artisan telegram:set-commands && "
+        f"php artisan orders:update-ids && "
         f"php artisan optimize'"
     )
     run_command(clear_cmd)

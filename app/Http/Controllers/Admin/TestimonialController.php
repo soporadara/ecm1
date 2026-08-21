@@ -31,6 +31,9 @@ class TestimonialController extends Controller
             'product_image_2' => 'nullable|image|max:2048'
         ]);
 
+        // Remove raw file entries before saving; replace with stored paths
+        unset($validated['image'], $validated['product_image_1'], $validated['product_image_2']);
+
         if ($request->hasFile('image')) {
             $validated['image_path'] = $request->file('image')->store('testimonials', 'public');
         }
@@ -41,10 +44,6 @@ class TestimonialController extends Controller
             $validated['product_image_2'] = $request->file('product_image_2')->store('testimonials/products', 'public');
         }
 
-        unset($validated['image'], $validated['product_image_1_file'], $validated['product_image_2_file']); // We'll just unset image, the product images overwrite if named differently but we use same name. Wait, if request has file product_image_1 it overwrites string. But better to unset the file from array if necessary. Actually $validated['product_image_1'] will be replaced by the path, so it's fine. Wait, $request->file() and unset.
-        unset($validated['image']);
-        // The files in $validated would be UploadedFile objects, but we replaced them with string paths above.
-        
         Testimonial::create($validated);
 
         return back()->with('success', 'Testimonial added successfully.');
@@ -99,7 +98,7 @@ class TestimonialController extends Controller
             $validated['product_image_2'] = null;
         }
 
-        unset($validated['image']);
+        unset($validated['image'], $validated['product_image_1'], $validated['product_image_2']);
         unset($validated['remove_image']);
         unset($validated['remove_product_image_1']);
         unset($validated['remove_product_image_2']);

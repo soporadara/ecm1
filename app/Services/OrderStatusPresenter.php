@@ -30,6 +30,10 @@ class OrderStatusPresenter
         return match ($internalStatus) {
             'draft' => ['code' => 'draft', 'label' => 'Draft', 'tone' => 'gray'],
             'delivered', 'completed' => ['code' => 'delivered', 'label' => 'Delivered', 'tone' => 'green'],
+            'paid' => ['code' => 'paid', 'label' => 'Paid', 'tone' => 'purple'],
+            'shipping' => ['code' => 'shipping', 'label' => 'Shipping', 'tone' => 'yellow'],
+            'canceled' => ['code' => 'canceled', 'label' => 'Canceled', 'tone' => 'red'],
+            'refund' => ['code' => 'refund', 'label' => 'Refund', 'tone' => 'orange'],
             default => ['code' => 'in_progress', 'label' => 'Progress', 'tone' => 'blue'],
         };
     }

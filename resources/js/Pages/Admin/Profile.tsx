@@ -183,12 +183,22 @@ export default function AdminProfile() {
     };
 
     const unlinkGoogleAccount = () => {
+        if (!confirm('Are you sure you want to disconnect your Google account?')) return;
         setGoogleLoading(true);
         router.post('/admin/profile/google-unlink', {}, {
             preserveScroll: true,
-            onSuccess: () => toast.success('Google account unlinked successfully!'),
-            onError: (err) => toast.error(err.google || 'Failed to unlink Google account'),
+            onSuccess: () => toast.success('Google account disconnected successfully!'),
+            onError: (err) => toast.error(err.google || 'Failed to disconnect Google account'),
             onFinish: () => setGoogleLoading(false)
+        });
+    };
+
+    const unlinkTelegramAccount = () => {
+        if (!confirm('Are you sure you want to unlink your Telegram bot? You will stop receiving order notifications.')) return;
+        router.post('/admin/profile/telegram-unlink', {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Telegram bot unlinked successfully!'),
+            onError: () => toast.error('Failed to unlink Telegram bot')
         });
     };
 
@@ -260,44 +270,14 @@ export default function AdminProfile() {
 
                             <div>
                                 <label className="block text-sm font-bold text-admin-text-muted mb-2">Login Email</label>
-                                {!isChangingEmail ? (
-                                    <div className="flex gap-4 items-start">
-                                        <div className="flex-1">
-                                            <input
-                                                type="email"
-                                                value={user.email}
-                                                disabled
-                                                className="w-full bg-admin-surface-muted/50 border border-admin-border/50 rounded-xl px-4 py-3 text-admin-text-muted font-bold cursor-not-allowed"
-                                            />
-                                            {user.email_verified_at && <p className="mt-2 text-xs font-bold text-admin-success flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Verified</p>}
-                                        </div>
-                                        <button type="button" onClick={() => setIsChangingEmail(true)} className="px-5 py-3 text-sm font-bold bg-admin-surface border border-admin-border hover:bg-admin-surface-muted text-admin-text shadow-sm rounded-xl transition">Change</button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="flex gap-4 items-start">
-                                            <div className="flex-1">
-                                                <input
-                                                    type="email"
-                                                    placeholder="Enter new email address"
-                                                    value={newEmail}
-                                                    onChange={e => setNewEmail(e.target.value)}
-                                                    className="w-full bg-admin-surface border border-admin-primary/50 rounded-xl px-4 py-3 text-admin-text font-medium focus:ring-2 focus:ring-admin-primary"
-                                                />
-                                            </div>
-                                            <button 
-                                                type="button" 
-                                                onClick={sendEmailPin} 
-                                                disabled={!newEmail || newEmail === user.email || isSendingPin}
-                                                className="px-4 py-3 text-sm font-bold bg-admin-primary text-white hover:bg-admin-primary-hover rounded-xl transition disabled:opacity-50"
-                                            >
-                                                {isSendingPin ? 'Sending...' : 'Send PIN'}
-                                            </button>
-                                            <button type="button" onClick={() => setIsChangingEmail(false)} className="px-4 py-3 text-sm font-bold bg-admin-surface-muted hover:bg-admin-border/50 text-admin-text rounded-xl transition">Cancel</button>
-                                        </div>
-                                        <p className="text-xs text-admin-text-muted">We will send a 6-digit verification code to this new email to confirm it belongs to you.</p>
-                                    </div>
-                                )}
+                                <input
+                                    type="email"
+                                    value={data.email}
+                                    onChange={e => setData('email', e.target.value)}
+                                    className="w-full bg-admin-surface-muted border-none rounded-xl px-4 py-3 text-admin-text font-medium focus:ring-2 focus:ring-admin-primary/50 transition-all"
+                                />
+                                {errors.email && <p className="text-sm text-admin-danger mt-1 font-medium">{errors.email}</p>}
+                                {user.email_verified_at && <p className="mt-2 text-xs font-bold text-admin-success flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg> Verified</p>}
                             </div>
 
                             <div>
@@ -386,12 +366,12 @@ export default function AdminProfile() {
                             </div>
                             <h3 className="text-xl font-bold text-admin-text">Google Authentication</h3>
                         </div>
-                        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 bg-admin-surface-muted/50 border rounded-2xl p-6 ${hasGoogleLinked ? 'border-green-200 bg-green-50/50' : 'border-admin-border/50'}`}>
+                        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border rounded-2xl p-6 ${hasGoogleLinked ? 'border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-900/20' : 'bg-admin-surface-muted/50 border-admin-border/50'}`}>
                             <div>
-                                <h4 className="font-bold text-admin-text text-lg">
+                                <h4 className="font-bold text-admin-text dark:text-white text-lg">
                                     {hasGoogleLinked ? 'Google Account Connected' : 'Link Google Account'}
                                 </h4>
-                                <p className="text-sm font-medium text-admin-text-muted mt-1">
+                                <p className="text-sm font-medium text-admin-text-muted dark:text-gray-300 mt-1">
                                     {hasGoogleLinked 
                                         ? 'Your Google account is connected. You can use it to sign into the CMS Dashboard.' 
                                         : 'Link your Google account to enable signing into the CMS Dashboard with Google.'}
@@ -435,6 +415,64 @@ export default function AdminProfile() {
                                             Connect Google
                                         </>
                                     )}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Telegram Integration */}
+                    <div className="bg-admin-surface rounded-3xl p-8 shadow-sm border border-admin-border/40 md:col-span-1 lg:col-span-2">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-[#0088cc]/10 text-[#0088cc] rounded-xl">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.539.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z" /></svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-admin-text">Telegram Bot Integration</h3>
+                        </div>
+                        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border rounded-2xl p-6 ${user.telegram_id ? 'border-green-200 bg-green-50/50 dark:border-green-900/50 dark:bg-green-900/20' : 'bg-admin-surface-muted/50 border-admin-border/50'}`}>
+                            <div>
+                                <h4 className="font-bold text-admin-text dark:text-white text-lg">
+                                    {user.telegram_id ? 'Telegram Connected' : 'Connect Telegram Bot'}
+                                </h4>
+                                <p className="text-sm font-medium text-admin-text-muted dark:text-gray-300 mt-1">
+                                    {user.telegram_id 
+                                        ? `Connected to Telegram as @${user.telegram_username || 'Unknown'}. You will receive order notifications.` 
+                                        : 'Connect your Telegram account to receive instant notifications for new orders and activities.'}
+                                </p>
+                            </div>
+                            
+                            {user.telegram_id ? (
+                                <div className="flex items-center gap-3">
+                                    <div className="px-6 py-3 bg-green-100 text-green-700 text-sm font-bold rounded-xl flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Connected
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={unlinkTelegramAccount}
+                                        className="whitespace-nowrap px-4 py-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl hover:bg-red-100 transition-all"
+                                    >
+                                        Unlink
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        router.post('/admin/profile/generate-telegram-link', {}, {
+                                            preserveScroll: true,
+                                            onSuccess: (page) => {
+                                                const link = (page.props as any).flash?.success;
+                                                if (link && link.includes('t.me')) {
+                                                    window.open(link, '_blank');
+                                                }
+                                            },
+                                            onError: () => toast.error('Failed to generate Telegram link')
+                                        });
+                                    }}
+                                    className="whitespace-nowrap px-6 py-3 bg-[#0088cc] hover:bg-[#0077b3] text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2"
+                                >
+                                    <svg className="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.539.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z" /></svg>
+                                    Connect Telegram
                                 </button>
                             )}
                         </div>

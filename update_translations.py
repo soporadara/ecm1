@@ -1,59 +1,114 @@
 import json
 import os
 
-locales = ['en', 'km', 'vi']
-base_path = '/Applications/XAMPP/xamppfiles/htdocs/eco1/resources/js/locales'
+files = [
+    'resources/js/locales/en.json',
+    'resources/js/locales/km.json'
+]
 
-for lang in locales:
-    file_path = os.path.join(base_path, f'{lang}.json')
+translations = {
+    'profile.address.title': 'Address & Contact Apps',
+    'profile.address.line1': 'Address line 1',
+    'profile.address.line2': 'Address line 2',
+    'profile.address.city': 'City',
+    'profile.address.province': 'Province',
+    'profile.address.postal_code': 'Postal code',
+    'profile.address.country_code': 'KH',
+    'profile.address.telegram': '@telegram',
+    'profile.address.whatsapp': 'WhatsApp number',
+    'profile.address.notes': 'Address notes',
+    'profile.address.save': 'Save Address',
+    
+    'dashboard.title': 'Dashboard',
+    'dashboard.head': 'My Dashboard',
+    'dashboard.heading': 'Customer Dashboard',
+    'dashboard.customer_id': 'Customer ID',
+    'dashboard.create_manual_order': 'Create Manual Order',
+    'dashboard.logout': 'Logout',
+    'dashboard.stats.total': 'Total Orders',
+    'dashboard.stats.pending': 'Pending Review',
+    'dashboard.stats.delivering': 'Out for Delivery',
+    'dashboard.stats.completed': 'Completed',
+    'dashboard.shortcuts.manual_order': 'Create Manual Order',
+    'dashboard.shortcuts.manual_desc': 'Submit products you would like our team to purchase.',
+    'dashboard.shortcuts.my_orders': 'My Orders',
+    'dashboard.shortcuts.orders_desc': 'View active, completed, delayed, and cancelled orders.',
+    'dashboard.shortcuts.receipts': 'Receipts',
+    'dashboard.shortcuts.receipts_desc': 'View and download your completed order receipts.',
+    'dashboard.shortcuts.support': 'Contact Support',
+    'dashboard.shortcuts.support_desc': 'Ask our logistics team for help.',
+    'dashboard.recent_orders': 'Recent Orders',
+    'dashboard.view_all': 'View All >',
+    'dashboard.order_number': 'Order Number',
+    'dashboard.date': 'Date',
+    'dashboard.items': 'Items',
+    'dashboard.items_count': 'items',
+    'dashboard.status': 'Status',
+    'dashboard.action': 'Action',
+    'dashboard.view_details': 'View Details',
+    'dashboard.no_orders': 'No orders found.',
+    'dashboard.create_first': 'Create your first order',
+
+    'contact.title': 'Contact Us',
+    'contact.description': 'Contact support for manual orders, tracking, receipts, and account help.',
+    'contact.support_center': 'Support Center',
+    'contact.support_text': 'Reach our support team through your preferred channel for manual orders, delivery, receipts, and account help.',
+    'contact.about_us': 'About Us',
+    'contact.vietnam_office': 'Vietnam Office',
+    'contact.open_map': 'Open Map',
+    
+    'manual_order.title': 'Create Manual Order',
+    'manual_order.customer_info': 'Customer Information',
+    'manual_order.delivery_address': 'Delivery Address',
+    'manual_order.requested_products': 'Requested Products',
+    'manual_order.additional_notes': 'Additional Notes',
+    'manual_order.request_summary': 'Request Summary',
+    'manual_order.product_urls': 'Product URLs',
+    'manual_order.add_url': '+ Add Another URL',
+    'manual_order.view': 'View',
+    'manual_order.remove': 'Remove',
+
+    'orders.title': 'My Orders',
+    'orders.search': 'Search orders...',
+    'orders.no_orders': 'No Orders Found',
+    'orders.no_orders_msg': "You don't have any orders matching this status.",
+    'orders.track': 'Track',
+    'orders.contact': 'Contact',
+    'orders.items': 'Items',
+    'orders.view_details': 'View Details',
+    'orders.tabs.all': 'All',
+    'orders.tabs.progress': 'Progress',
+    'orders.tabs.purchased': 'Purchased',
+    'orders.tabs.warehouse': 'Warehouse',
+    'orders.tabs.shipped': 'Shipped',
+    'orders.tabs.delivered': 'Delivered',
+    
+    'status.pending_review': 'Pending Review',
+    'status.quote_provided': 'Quote Provided',
+    'status.approved': 'Approved',
+    'status.purchased': 'Purchased',
+    'status.warehouse_received': 'Warehouse Received',
+    'status.shipped': 'Shipped',
+    'status.arrived_destination': 'Arrived',
+    'status.delivered': 'Delivered',
+    'status.cancelled': 'Cancelled',
+    'status.delayed': 'Delayed'
+}
+
+for file_path in files:
     if os.path.exists(file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        
-        if 'home' not in data:
-            data['home'] = {}
-        if 'about' not in data['home']:
-            data['home']['about'] = {}
             
-        if lang == 'en':
-            data['home']['about'] = {
-                'eyebrow': 'Official Application Purpose',
-                'title': 'About MVM Logistics',
-                'description': '<strong class="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> is a premier cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.',
-                'feature1': { 'title': 'Cross-Border Logistics', 'desc': 'Streamlined freight forwarding and customs clearing for imported goods.' },
-                'feature2': { 'title': 'Manual Product Sourcing', 'desc': 'Submit manual buy requests and let our team handle purchasing and payment confirmation.' },
-                'feature3': { 'title': 'Secure Account Access', 'desc': 'Sign in securely via Google Authentication or Phone PIN to track your personal orders.' }
-            }
-            if 'footer' not in data: data['footer'] = {}
-            data['footer']['prohibited_items'] = 'Prohibited Items'
-            data['footer']['privacy_policy'] = 'Privacy Policy'
-            data['footer']['terms_of_service'] = 'Terms of Service'
-        elif lang == 'km':
-            data['home']['about'] = {
-                'eyebrow': 'គោលបំណងនៃការប្រើប្រាស់ផ្លូវការ',
-                'title': 'អំពី MVM Logistics',
-                'description': '<strong class="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> គឺជាកម្មវិធីគ្រប់គ្រងការបញ្ជាទិញដោយដៃនិងភស្តុភារឆ្លងដែនឈានមុខគេ។ វេទិការបស់យើងផ្តល់សិទ្ធិអំណាចដល់អ្នកប្រើប្រាស់ក្នុងការស្នើសុំការទិញផលិតផលពីអ្នកផ្គត់ផ្គង់អន្តរជាតិ គណនាថ្លៃដឹកជញ្ជូន តាមដានស្ថានភាពដឹកជញ្ជូនក្នុងពេលជាក់ស្តែងពីការមកដល់ឃ្លាំងរហូតដល់គោលដៅ និងគ្រប់គ្រងវិក័យបត្រទូទាត់ប្រាក់ដោយសុវត្ថិភាព។',
-                'feature1': { 'title': 'ភស្តុភារឆ្លងដែន', 'desc': 'ជួយសម្រួលដល់ការបញ្ជូនទំនិញ និងការបញ្ចេញគយសម្រាប់ទំនិញនាំចូល។' },
-                'feature2': { 'title': 'ការស្វែងរកផលិតផលដោយដៃ', 'desc': 'ដាក់ស្នើសំណើទិញដោយដៃ ហើយអនុញ្ញាតឱ្យក្រុមការងាររបស់យើងរៀបចំការទិញ និងបញ្ជាក់ការទូទាត់។' },
-                'feature3': { 'title': 'ការចូលប្រើគណនីដោយសុវត្ថិភាព', 'desc': 'ចូលដោយសុវត្ថិភាពតាមរយៈ Google ឬ PIN ទូរស័ព្ទ ដើម្បីតាមដានការបញ្ជាទិញផ្ទាល់ខ្លួនរបស់អ្នក។' }
-            }
-            if 'footer' not in data: data['footer'] = {}
-            data['footer']['prohibited_items'] = 'ទំនិញហាមឃាត់'
-            data['footer']['privacy_policy'] = 'គោលការណ៍ឯកជនភាព'
-            data['footer']['terms_of_service'] = 'លក្ខខណ្ឌនៃសេវាកម្ម'
-        elif lang == 'vi':
-            data['home']['about'] = {
-                'eyebrow': 'Mục đích ứng dụng chính thức',
-                'title': 'Về MVM Logistics',
-                'description': '<strong class="text-gray-900 dark:text-white font-bold">MVM Logistics</strong> là ứng dụng quản lý đơn hàng thủ công và logistics xuyên biên giới hàng đầu. Nền tảng của chúng tôi hỗ trợ người dùng yêu cầu mua sản phẩm từ các nhà cung cấp quốc tế, tính toán chi phí vận chuyển, theo dõi trạng thái giao hàng theo thời gian thực từ khi đến kho đến điểm đích và quản lý biên lai thanh toán một cách an toàn.',
-                'feature1': { 'title': 'Logistics xuyên biên giới', 'desc': 'Tối ưu hóa việc giao nhận hàng hóa và thông quan cho hàng hóa nhập khẩu.' },
-                'feature2': { 'title': 'Tìm kiếm sản phẩm thủ công', 'desc': 'Gửi yêu cầu mua hàng thủ công và để đội ngũ của chúng tôi xử lý việc mua hàng cũng như xác nhận thanh toán.' },
-                'feature3': { 'title': 'Truy cập tài khoản an toàn', 'desc': 'Đăng nhập an toàn qua Google hoặc mã PIN điện thoại để theo dõi các đơn hàng cá nhân của bạn.' }
-            }
-            if 'footer' not in data: data['footer'] = {}
-            data['footer']['prohibited_items'] = 'Hàng hoá cấm'
-            data['footer']['privacy_policy'] = 'Chính sách bảo mật'
-            data['footer']['terms_of_service'] = 'Điều khoản dịch vụ'
-            
+        for k, v in translations.items():
+            if k not in data:
+                # If editing km.json, you could add km translated strings here
+                # But for now, we inject English as fallback so it works, 
+                # user can adjust Khmer strings directly if needed via their UI.
+                data[k] = v
+                
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+        print(f"Updated {file_path}")
+    else:
+        print(f"File not found: {file_path}")

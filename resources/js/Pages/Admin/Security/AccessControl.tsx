@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { confirmAction } from '@/Components/ConfirmModal';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
@@ -22,10 +22,39 @@ type Attempt = {
     attempted_at: string;
 };
 
-export default function AccessControl({ blocks = [], attempts = [] }: { blocks: Block[]; attempts: Attempt[] }) {
+type Settings = {
+    cms_max_failed_attempts: number;
+    cms_lockout_duration_minutes: string;
+};
+
+export default function AccessControl({ blocks = [], attempts = [], settings }: { blocks: Block[]; attempts: Attempt[]; settings: Settings }) {
+    const { data: settingsData, setData: setSettingsData, post: postSettings, processing: settingsProcessing } = useForm({
+        cms_max_failed_attempts: settings?.cms_max_failed_attempts || 10,
+        cms_lockout_duration_minutes: settings?.cms_lockout_duration_minutes || 'forever',
+    });
+
+    const { data: blockData, setData: setBlockData, post: postBlock, processing: blockProcessing, reset: resetBlock, errors: blockErrors } = useForm({
+        type: 'ip',
+        value: '',
+        reason: 'Manual Block',
+        duration: 'forever',
+    });
+
     const releaseBlock = async (block: Block) => {
         if (!(await confirmAction('Release this CMS security block?'))) return;
         router.delete(`/admin/security/access-control/${block.id}`);
+    };
+
+    const submitSettings = (e: React.FormEvent) => {
+        e.preventDefault();
+        postSettings('/admin/security/access-control/settings');
+    };
+
+    const submitBlock = (e: React.FormEvent) => {
+        e.preventDefault();
+        postBlock('/admin/security/access-control', {
+            onSuccess: () => resetBlock(),
+        });
     };
 
     return (
@@ -37,8 +66,101 @@ export default function AccessControl({ blocks = [], attempts = [] }: { blocks: 
                     <p className="text-sm font-black uppercase tracking-[0.22em] text-admin-primary">CMS Security</p>
                     <h1 className="mt-2 text-3xl font-black text-admin-text">Access Control</h1>
                     <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-admin-text-muted">
-                        Review temporary CMS login blocks and recent failed staff-login attempts. Customer Firebase login attempts are intentionally separate.
+                        Configure CMS login failure limits, review temporary blocks, and manually block suspicious IPs.
                     </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                    {/* Security Settings Form */}
+                    <section className="rounded-2xl border border-admin-border bg-admin-surface p-6 shadow-sm">
+                        <h2 className="mb-4 text-lg font-black text-admin-text">Rate Limiting Settings</h2>
+                        <form onSubmit={submitSettings} className="space-y-4">
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-admin-text">Max Failed Login Attempts (Last 30 mins)</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                    value={settingsData.cms_max_failed_attempts}
+                                    onChange={e => setSettingsData('cms_max_failed_attempts', parseInt(e.target.value) || 10)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-admin-text">Lockout Duration (minutes, or "forever")</label>
+                                <input
+                                    type="text"
+                                    className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                    value={settingsData.cms_lockout_duration_minutes}
+                                    onChange={e => setSettingsData('cms_lockout_duration_minutes', e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="pt-2 text-right">
+                                <button type="submit" disabled={settingsProcessing} className="rounded-xl bg-admin-primary px-5 py-2 font-black text-white hover:bg-admin-primary-hover disabled:opacity-50">
+                                    Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    {/* Manual Block Form */}
+                    <section className="rounded-2xl border border-admin-border bg-admin-surface p-6 shadow-sm">
+                        <h2 className="mb-4 text-lg font-black text-admin-text">Add Manual Block</h2>
+                        <form onSubmit={submitBlock} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block text-sm font-bold text-admin-text">Type</label>
+                                    <select
+                                        className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                        value={blockData.type}
+                                        onChange={e => setBlockData('type', e.target.value)}
+                                    >
+                                        <option value="ip">IP Address</option>
+                                        <option value="email">Email Address</option>
+                                        <option value="device">Device Hash</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-sm font-bold text-admin-text">Duration (minutes)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                        value={blockData.duration}
+                                        onChange={e => setBlockData('duration', e.target.value)}
+                                        placeholder="forever"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-admin-text">Value (IP/Email/Hash)</label>
+                                <input
+                                    type="text"
+                                    className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                    value={blockData.value}
+                                    onChange={e => setBlockData('value', e.target.value)}
+                                    required
+                                />
+                                {blockErrors.value && <p className="mt-1 text-sm text-red-500">{blockErrors.value}</p>}
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-admin-text">Reason</label>
+                                <input
+                                    type="text"
+                                    className="w-full rounded-xl border border-admin-border bg-admin-surface px-4 py-2 text-admin-text focus:border-admin-primary focus:ring-1 focus:ring-admin-primary"
+                                    value={blockData.reason}
+                                    onChange={e => setBlockData('reason', e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="pt-2 text-right">
+                                <button type="submit" disabled={blockProcessing} className="rounded-xl bg-red-600 px-5 py-2 font-black text-white hover:bg-red-700 disabled:opacity-50">
+                                    Block Access
+                                </button>
+                            </div>
+                        </form>
+                    </section>
                 </div>
 
                 <section className="overflow-hidden rounded-2xl border border-admin-border bg-admin-surface shadow-sm">
@@ -50,7 +172,7 @@ export default function AccessControl({ blocks = [], attempts = [] }: { blocks: 
                             <thead className="bg-admin-surface-muted text-left text-xs font-black uppercase tracking-wider text-admin-text-muted">
                                 <tr>
                                     <th className="px-5 py-3">Email</th>
-                                    <th className="px-5 py-3">IP</th>
+                                    <th className="px-5 py-3">IP / Hash</th>
                                     <th className="px-5 py-3">Reason</th>
                                     <th className="px-5 py-3">Expires</th>
                                     <th className="px-5 py-3 text-right">Action</th>
@@ -63,7 +185,7 @@ export default function AccessControl({ blocks = [], attempts = [] }: { blocks: 
                                 {blocks.map((block) => (
                                     <tr key={block.id}>
                                         <td className="px-5 py-4 font-bold text-admin-text">{block.masked_email || 'Any'}</td>
-                                        <td className="px-5 py-4 font-mono text-admin-text-muted">{block.ip_address || 'Any'}</td>
+                                        <td className="px-5 py-4 font-mono text-admin-text-muted">{block.ip_address || block.device_hash || 'Any'}</td>
                                         <td className="px-5 py-4 font-bold text-admin-text-muted">{block.reason}</td>
                                         <td className="px-5 py-4 text-admin-text-muted">{block.expires_at || 'Permanent'}</td>
                                         <td className="px-5 py-4 text-right">

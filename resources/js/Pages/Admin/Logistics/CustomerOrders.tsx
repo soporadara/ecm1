@@ -136,12 +136,27 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                             <option value="oldest">Oldest First</option>
                         </select>
                     </div>
-                    <a 
-                        href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}`}
-                        className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
-                    >
-                        Export CSV
-                    </a>
+                    <div className="flex gap-2 items-center mt-4 sm:mt-0">
+                        <a 
+                            href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}&format=csv`}
+                            className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
+                        >
+                            Export CSV
+                        </a>
+                        <a 
+                            href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}&format=pdf`}
+                            className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
+                        >
+                            Export PDF
+                        </a>
+                        <a 
+                            href={`/admin/logistics/customers/${customer.id}/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&sort=${sort}&format=pdf&preview=1`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
+                        >
+                            Preview
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -195,9 +210,9 @@ export default function CustomerOrders({ customer, orders, filters, statuses, pa
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex flex-col gap-2 items-end">
                                             <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
-                                                Edit Order
+                                                View Order
                                             </Link>
-                                            <Link href={`/admin/receipts/generate?order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
+                                            <Link href={`/admin/receipts/generate/${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Generate Receipt
                                             </Link>
                                         </div>

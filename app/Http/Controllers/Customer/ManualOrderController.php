@@ -69,7 +69,6 @@ class ManualOrderController extends Controller
             'save_address_to_profile' => ['boolean'],
             'message' => ['nullable', 'string', 'max:2000'],
             'currency_code' => ['required', 'in:USD,VND'],
-            'confirmation' => ['accepted'],
             'products' => ['required', 'array', 'min:1', 'max:' . $this->maxProducts],
             'products.*.name' => ['required', 'string', 'max:255'],
             'products.*.description' => ['nullable', 'string', 'max:2000'],
@@ -249,6 +248,8 @@ class ManualOrderController extends Controller
             "order",
             "/admin/logistics/orders/{$order->id}"
         ));
+
+        \App\Jobs\SendTelegramOrderNotification::dispatchSync($order);
 
         return redirect()->route('my-orders.show', $order)->with([
             'success' => 'Manual order submitted successfully.',

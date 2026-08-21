@@ -20,14 +20,14 @@ const languageCodeMap: Record<string, string> = {
 };
 
 const savedLang = localStorage.getItem('language');
-const initialLang = savedLang ? (languageCodeMap[savedLang] || savedLang) : 'km';
+const initialLang = savedLang ? (languageCodeMap[savedLang] || savedLang) : 'en';
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: resources[initialLang as keyof typeof resources] ? initialLang : 'km',
-    fallbackLng: 'km',
+    lng: resources[initialLang as keyof typeof resources] ? initialLang : 'en',
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false
     }

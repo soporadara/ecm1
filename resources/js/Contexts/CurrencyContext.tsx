@@ -28,8 +28,8 @@ const CurrencyContext = createContext<CurrencyContextType>({
     currentCurrency: 'USD',
     currencies: defaultCurrencies,
     setCurrentCurrency: () => {},
-    formatAmount: (amount) => `$${(Number(amount || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-    formatPrice: (amount) => `$${(Number(amount || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    formatAmount: (amount) => `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    formatPrice: (amount) => `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     isLoadingRates: false,
 });
 
@@ -64,7 +64,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode; defaultCurrency?:
             return `₫${Math.round(numericAmount).toLocaleString('en-US')}`;
         }
 
-        return `$${(Math.round(numericAmount) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `$${numericAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     return (

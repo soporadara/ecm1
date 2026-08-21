@@ -133,23 +133,38 @@ class User extends Authenticatable
      */
     public static function generateCustomerCode(): string
     {
-        $latest = self::where('customer_code', 'like', 'MVM-%')
+        // Fetch all existing numeric parts of MVM- codes and sort them
+        $existingCodes = self::where('customer_code', 'like', 'MVM-%')
             ->lockForUpdate()
-            ->orderByDesc('customer_code')
-            ->value('customer_code');
+            ->pluck('customer_code')
+            ->map(function ($code) {
+                if (preg_match('/MVM-(\d+)$/', $code, $matches)) {
+                    return (int) $matches[1];
+                }
+                return -1;
+            })
+            ->filter(fn($num) => $num >= 0)
+            ->sort()
+            ->values()
+            ->toArray();
 
-        if ($latest && preg_match('/MVM-(\d+)$/', $latest, $matches)) {
-            $next = (int) $matches[1] + 1;
-        } else {
-            $next = 0;
+        $next = 1; // Start from MVM-001 by default
+
+        // If we want to start from 0 if there are no users, we can, but starting from 1 is more standard for customers.
+        // Let's use 0 if it was the previous default, but usually 1 is better. We will stick to the previous base: 0.
+        // Wait, looking at the previous logic, if no users existed, $next was 0.
+        $next = 0;
+
+        foreach ($existingCodes as $codeNum) {
+            if ($codeNum == $next) {
+                $next++;
+            } elseif ($codeNum > $next) {
+                // We found a gap!
+                break;
+            }
         }
 
-        do {
-            $code = 'MVM-' . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
-            $next++;
-        } while (self::where('customer_code', $code)->exists());
-
-        return $code;
+        return 'MVM-' . str_pad((string) $next, 3, '0', STR_PAD_LEFT);
     }
 
     public function addresses(): \Illuminate\Database\Eloquent\Relations\HasMany

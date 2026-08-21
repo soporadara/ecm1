@@ -93,8 +93,21 @@ export default function MobileDashboard({ auth }: Props) {
                     >
                         {stats.map((stat, i) => (
                             <div key={i} className="bg-white dark:bg-gray-900 p-4 rounded-[20px] shadow-sm flex flex-col items-center text-center justify-center border border-gray-100 dark:border-gray-800">
-                                <div className={`w-10 h-10 rounded-full ${stat.bg} ${stat.color} flex items-center justify-center mb-2`}>
-                                    <stat.icon className="w-5 h-5" />
+                                <div className={`w-10 h-10 rounded-full ${stat.bg} ${stat.color} flex items-center justify-center mb-2 overflow-hidden`}>
+                                    <motion.div
+                                        animate={
+                                            i === 0 ? { rotate: 360 } : // Clock spins
+                                            i === 1 ? { y: [-2, 2, -2] } : // Package bounces slightly
+                                            { scale: [1, 1.1, 1] } // TrendingUp pulses
+                                        }
+                                        transition={{ 
+                                            repeat: Infinity, 
+                                            duration: i === 0 ? 4 : 2, 
+                                            ease: i === 0 ? "linear" : "easeInOut" 
+                                        }}
+                                    >
+                                        <stat.icon className="w-5 h-5" />
+                                    </motion.div>
                                 </div>
                                 <span className="text-lg font-black text-gray-950 dark:text-white leading-none">{stat.value}</span>
                                 <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mt-1">{stat.label}</span>
@@ -112,14 +125,18 @@ export default function MobileDashboard({ auth }: Props) {
                             <h2 className="text-lg font-black text-gray-950 dark:text-white">Quick Actions</h2>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            <button className="bg-brand-primary text-white p-4 rounded-[20px] shadow-lg shadow-brand-primary/20 flex flex-col items-start gap-3 relative overflow-hidden group">
+                            <button className="bg-brand-primary text-white p-4 rounded-[20px] shadow-lg shadow-brand-primary/20 flex flex-col items-start gap-3 relative overflow-hidden group hover:shadow-brand-primary/40 transition-shadow active:scale-95">
                                 <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform" />
-                                <Zap className="w-6 h-6" />
+                                <motion.div animate={{ rotate: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+                                    <Zap className="w-6 h-6" />
+                                </motion.div>
                                 <span className="font-bold text-left leading-tight">Create<br/>Order</span>
                             </button>
-                            <Link href="/receipts" prefetch={['hover']} className="bg-white dark:bg-gray-900 p-4 rounded-[20px] shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-start gap-3 text-gray-950 dark:text-white">
+                            <Link href="/receipts" prefetch={['hover']} className="bg-white dark:bg-gray-900 p-4 rounded-[20px] shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-start gap-3 text-gray-950 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors active:scale-95">
                                 <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                                    <FileText className="w-4 h-4" />
+                                    <motion.div animate={{ y: [-1.5, 1.5, -1.5] }} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}>
+                                        <FileText className="w-4 h-4" />
+                                    </motion.div>
                                 </div>
                                 <span className="font-bold text-left leading-tight">Upload<br/>Receipt</span>
                             </Link>
@@ -141,10 +158,16 @@ export default function MobileDashboard({ auth }: Props) {
                                 <Link 
                                     href={`/customer/orders/${order.id}`} 
                                     key={i}
-                                    className={`flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${i !== recentOrders.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
+                                    className={`flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group active:scale-[0.98] ${i !== recentOrders.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
                                 >
-                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                                        <PackageCheck className="w-6 h-6 text-gray-500" />
+                                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0 group-hover:bg-brand-primary/10 transition-colors">
+                                        <motion.div 
+                                            whileHover={{ scale: 1.1, rotate: 5 }} 
+                                            animate={order.status === 'Processing' ? { rotate: [0, 10, -10, 0] } : {}}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                        >
+                                            <PackageCheck className={`w-6 h-6 ${order.status === 'Processing' ? 'text-orange-500' : 'text-gray-500'}`} />
+                                        </motion.div>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-gray-950 dark:text-white truncate">{order.item}</p>

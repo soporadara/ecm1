@@ -6,7 +6,7 @@
         "dev": "vite",
         "test": "npm run typecheck",
         "typecheck": "tsc --noEmit",
-        "build": "vite build"
+        "build": "vite build && vite build --ssr"
     },
     "devDependencies": {
         "@inertiajs/react": "^2.0.0",

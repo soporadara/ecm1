@@ -8,6 +8,12 @@
 @source '../**/*.tsx';
 
 @theme {
+    --animate-marquee: marquee 60s linear infinite;
+    @keyframes marquee {
+        to {
+            transform: translateX(-50%);
+        }
+    }
     --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     
     --color-brand-primary: #0F3779;
@@ -33,6 +39,7 @@
     --color-admin-primary: var(--admin-primary);
     --color-admin-primary-hover: var(--admin-primary-hover);
     --color-admin-secondary: var(--admin-secondary);
+    --color-admin-danger: var(--admin-danger);
 }
 
 @layer base {
@@ -46,6 +53,7 @@
         --admin-primary: #00A183;
         --admin-primary-hover: #00886F;
         --admin-secondary: #FF8A4C;
+        --admin-danger: #EF4444;
     }
     .dark {
         --admin-bg: #0f172a;
@@ -57,6 +65,7 @@
         --admin-primary: #28B99B;
         --admin-primary-hover: #36C8A9;
         --admin-secondary: #F4A259;
+        --admin-danger: #EF4444;
     }
 }
 
@@ -77,7 +86,15 @@
     input,
     select,
     textarea {
-        @apply focus-visible:outline-none;
+        @apply focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-shadow duration-200;
+    }
+    
+    input,
+    textarea,
+    select {
+        caret-color: var(--color-brand-primary);
+        /* Ensure long text like emails can scroll smoothly on mobile */
+        @apply overflow-x-auto;
     }
 
     button,
@@ -113,6 +130,14 @@
 @layer utilities {
     .btn-motion {
         @apply transition duration-200 ease-out hover:-translate-y-px hover:shadow-md active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100;
+    }
+    
+    .ui-card {
+        @apply bg-white dark:bg-admin-surface border border-gray-100 dark:border-admin-border rounded-2xl shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden relative;
+    }
+    .ui-card::after {
+        content: '';
+        @apply absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5 dark:ring-white/5 pointer-events-none;
     }
 }
 
@@ -170,8 +195,29 @@ input[type="time"]:focus,
 select:focus,
 textarea:focus {
     border-color: var(--admin-primary) !important;
-    box-shadow: 0 0 0 3px rgba(0, 161, 131, 0.15) !important;
+    box-shadow: 0 0 0 4px rgba(0, 161, 131, 0.2) !important;
     outline: none !important;
+}
+
+input[type="text"]:hover:not(:focus),
+input[type="email"]:hover:not(:focus),
+input[type="password"]:hover:not(:focus),
+input[type="number"]:hover:not(:focus),
+input[type="url"]:hover:not(:focus),
+input[type="tel"]:hover:not(:focus),
+input[type="search"]:hover:not(:focus),
+select:hover:not(:focus),
+textarea:hover:not(:focus) {
+    border-color: #cbd5e1 !important;
+}
+.dark input[type="text"]:hover:not(:focus),
+.dark input[type="email"]:hover:not(:focus),
+.dark input[type="password"]:hover:not(:focus),
+.dark input[type="number"]:hover:not(:focus),
+.dark input[type="search"]:hover:not(:focus),
+.dark select:hover:not(:focus),
+.dark textarea:hover:not(:focus) {
+    border-color: #475569 !important;
 }
 
 /* File inputs should not inherit the same padding/radius */

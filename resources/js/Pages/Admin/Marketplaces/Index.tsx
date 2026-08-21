@@ -137,9 +137,9 @@ function DraggableRow({ site, index, startEdit, deleteSite, editingId, saveEdit,
                         <span className="font-mono text-sm font-black text-admin-text-muted">{index + 1}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: site.brand_color || '#ff4c3b' }}>
-                            {site.logo || site.icon_source_url ? <img src={site.logo || site.icon_source_url || ''} alt="" className="h-8 w-8 rounded-lg object-contain" /> : site.name.charAt(0)}
-                        </span>
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl overflow-hidden">
+                            {site.logo || site.icon_source_url ? <img src={site.logo || site.icon_source_url || ''} alt={site.name} className="h-full w-full object-contain" /> : <span className="flex h-full w-full items-center justify-center bg-admin-surface-muted text-admin-text-muted font-bold text-lg">{site.name.charAt(0)}</span>}
+                        </div>
                         <div className="min-w-0">
                             <p className="truncate text-sm font-black text-admin-text">{site.name}</p>
                             <p className="truncate font-mono text-xs font-semibold text-admin-text-muted">{site.slug}</p>
@@ -147,8 +147,8 @@ function DraggableRow({ site, index, startEdit, deleteSite, editingId, saveEdit,
                     </div>
                     <a href={site.website_url || '#'} target="_blank" rel="noreferrer" className="truncate text-sm font-semibold text-admin-primary hover:underline">{site.website_url || 'No URL'}</a>
                     <div className="flex justify-end gap-3">
-                        <button type="button" onClick={() => startEdit(site)} className="text-sm font-black text-admin-primary hover:text-admin-primary/80 transition-colors">Edit</button>
-                        <button type="button" onClick={() => deleteSite(site)} className="text-sm font-black text-red-600 hover:text-red-700 transition-colors">Delete</button>
+                        <button type="button" onClick={() => startEdit(site)} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition">Edit</button>
+                        <button type="button" onClick={() => deleteSite(site)} className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition">Delete</button>
                     </div>
                 </div>
             )}

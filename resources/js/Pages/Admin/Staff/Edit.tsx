@@ -122,7 +122,7 @@ export default function StaffEdit({ staff, roles }: any) {
                                                 <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
                                                     {role.name === 'Super Administrator' && 'Full control of CMS, staff, roles, security, and all content.'}
                                                     {role.name === 'Administrator' && 'Daily operations, content, orders, customers, settings, and reports.'}
-                                                    {role.name === 'Logistics' && 'Dashboard, Customers, Orders, Reports, Team Notes, Banners, Testimonials, Pop-up Ads.'}
+                                                    {role.name === 'Logistics' && 'Dashboard, Customers, Orders, Reports, Team Notes, Banners, Customer Reviews, Pop-up Ads.'}
                                                 </p>
                                             </div>
                                         </label>

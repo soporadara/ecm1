@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -66,7 +67,10 @@ class ManualOrderController extends Controller
             ->with(['items', 'attachments', 'receipts'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = '%' . $request->input('search') . '%';
-                $query->where('order_number', 'like', $search);
+                $query->where(function($q) use ($search) {
+                    $q->where('order_number', 'like', $search)
+                      ->orWhereHas('receipts', fn ($receiptQuery) => $receiptQuery->where('receipt_number', 'like', $search));
+                });
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
@@ -112,14 +116,19 @@ class ManualOrderController extends Controller
         $orders = Order::with(['user', 'items', 'receipts'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = '%' . $request->input('search') . '%';
-                $query->where('order_number', 'like', $search)
-                    ->orWhereHas('user', function($q) use ($search) {
-                        $q->where('name', 'like', $search)
-                          ->orWhere('customer_code', 'like', $search);
-                    });
+                $query->where(function($q) use ($search) {
+                    $q->where('order_number', 'like', $search)
+                        ->orWhereHas('user', function($qUser) use ($search) {
+                            $qUser->where('name', 'like', $search)
+                                  ->orWhere('customer_code', 'like', $search);
+                        })
+                        ->orWhereHas('receipts', fn ($receiptQuery) => $receiptQuery->where('receipt_number', 'like', $search));
+                });
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
+            ->when($request->filled('start_date'), fn($q) => $q->whereDate('created_at', '>=', $request->input('start_date')))
+            ->when($request->filled('end_date'), fn($q) => $q->whereDate('created_at', '<=', $request->input('end_date')))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -137,19 +146,41 @@ class ManualOrderController extends Controller
      */
     public function exportAllOrders(Request $request)
     {
-        $orders = Order::with(['user', 'items'])
+        $query = Order::with(['user', 'items'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = '%' . $request->input('search') . '%';
-                $query->where('order_number', 'like', $search)
-                    ->orWhereHas('user', function($q) use ($search) {
-                        $q->where('name', 'like', $search)
-                          ->orWhere('customer_code', 'like', $search);
-                    });
+                $query->where(function($q) use ($search) {
+                    $q->where('order_number', 'like', $search)
+                        ->orWhereHas('user', function($qUser) use ($search) {
+                            $qUser->where('name', 'like', $search)
+                                  ->orWhere('customer_code', 'like', $search);
+                        })
+                        ->orWhereHas('receipts', fn ($receiptQuery) => $receiptQuery->where('receipt_number', 'like', $search));
+                });
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
-            ->latest()
-            ->get();
+            ->when($request->filled('start_date'), fn($q) => $q->whereDate('created_at', '>=', $request->input('start_date')))
+            ->when($request->filled('end_date'), fn($q) => $q->whereDate('created_at', '<=', $request->input('end_date')))
+            ->latest();
+
+        if ($request->input('format') === 'pdf') {
+            $ordersCount = $query->count();
+            if ($ordersCount > 500) {
+                return back()->with('error', 'Too many orders selected for PDF export (' . $ordersCount . '). Please use CSV export instead.');
+            }
+            $orders = $query->get();
+            $pdf = Pdf::loadView('pdf.orders', [
+                'orders' => $orders,
+                'title' => 'All Orders Report',
+                'customer' => null,
+            ]);
+            
+            if ($request->input('preview') == '1') {
+                return $pdf->stream('all_orders_' . date('Y-m-d') . '.pdf');
+            }
+            return $pdf->download('all_orders_' . date('Y-m-d') . '.pdf');
+        }
 
         $headers = [
             "Content-type"        => "text/csv",
@@ -161,23 +192,23 @@ class ManualOrderController extends Controller
 
         $columns = ['Order Number', 'Customer', 'Total Amount', 'Estimated Total', 'Status', 'Payment Status', 'Created At'];
 
-        $callback = function() use($orders, $columns) {
+        $callback = function() use($query, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($orders as $order) {
-                $row['Order Number']  = $order->order_number;
-                $row['Customer']  = $order->user ? $order->user->name : 'Guest';
-                $row['Invoice Number']    = '';
-                $row['Receipt Number']    = '';
-                $row['Total Amount']  = $order->total_amount;
-                $row['Budget']  = $order->estimated_total;
-                $row['Status']  = $order->status;
-                $row['Payment Status']  = $order->payment_status;
-                $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
+            $query->chunk(500, function ($orders) use ($file) {
+                foreach ($orders as $order) {
+                    $row['Order Number']  = $order->order_number;
+                    $row['Customer']  = $order->user ? $order->user->name : 'Guest';
+                    $row['Total Amount']  = $order->total_amount;
+                    $row['Budget']  = $order->estimated_total;
+                    $row['Status']  = $order->status;
+                    $row['Payment Status']  = $order->payment_status;
+                    $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
 
-                fputcsv($file, array($row['Order Number'], $row['Customer'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
-            }
+                    fputcsv($file, array($row['Order Number'], $row['Customer'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
+                }
+            });
 
             fclose($file);
         };
@@ -190,11 +221,14 @@ class ManualOrderController extends Controller
      */
     public function exportCustomerOrders(Request $request, User $customer)
     {
-        $orders = Order::where('user_id', $customer->id)
+        $query = Order::where('user_id', $customer->id)
             ->with(['items'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = '%' . $request->input('search') . '%';
-                $query->where('order_number', 'like', $search);
+                $query->where(function($q) use ($search) {
+                    $q->where('order_number', 'like', $search)
+                      ->orWhereHas('receipts', fn ($receiptQuery) => $receiptQuery->where('receipt_number', 'like', $search));
+                });
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('payment_status'), fn($q) => $q->where('payment_status', $request->input('payment_status')))
@@ -206,12 +240,29 @@ class ManualOrderController extends Controller
                 }
             }, function ($query) {
                 $query->latest();
-            })
-            ->get();
+            });
+
+        if ($request->input('format') === 'pdf') {
+            $ordersCount = $query->count();
+            if ($ordersCount > 500) {
+                return back()->with('error', 'Too many orders selected for PDF export (' . $ordersCount . '). Please use CSV export instead.');
+            }
+            $orders = $query->get();
+            $pdf = Pdf::loadView('pdf.orders', [
+                'orders' => $orders,
+                'title' => 'Orders for ' . $customer->name,
+                'customer' => $customer,
+            ]);
+            
+            if ($request->input('preview') == '1') {
+                return $pdf->stream('customer_orders_' . $customer->id . '_' . date('Y-m-d') . '.pdf');
+            }
+            return $pdf->download('customer_orders_' . $customer->id . '_' . date('Y-m-d') . '.pdf');
+        }
 
         $headers = [
             "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=orders_{$customer->customer_code}_" . date('Y-m-d') . ".csv",
+            "Content-Disposition" => "attachment; filename=customer_orders_" . $customer->id . "_" . date('Y-m-d') . ".csv",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"
@@ -219,22 +270,22 @@ class ManualOrderController extends Controller
 
         $columns = ['Order Number', 'Total Amount', 'Estimated Total', 'Status', 'Payment Status', 'Created At'];
 
-        $callback = function() use($orders, $columns) {
+        $callback = function() use($query, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($orders as $order) {
-                $row['Order Number']  = $order->order_number;
-                $row['Invoice Number']    = '';
-                $row['Receipt Number']    = '';
-                $row['Total Amount']  = $order->total_amount;
-                $row['Budget']  = $order->estimated_total;
-                $row['Status']  = $order->status;
-                $row['Payment Status']  = $order->payment_status;
-                $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
+            $query->chunk(500, function ($orders) use ($file) {
+                foreach ($orders as $order) {
+                    $row['Order Number']  = $order->order_number;
+                    $row['Total Amount']  = $order->total_amount;
+                    $row['Budget']  = $order->estimated_total;
+                    $row['Status']  = $order->status;
+                    $row['Payment Status']  = $order->payment_status;
+                    $row['Created At']  = $order->created_at->format('Y-m-d H:i:s');
 
-                fputcsv($file, array($row['Order Number'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
-            }
+                    fputcsv($file, array($row['Order Number'], $row['Total Amount'], $row['Budget'], $row['Status'], $row['Payment Status'], $row['Created At']));
+                }
+            });
 
             fclose($file);
         };
@@ -242,4 +293,41 @@ class ManualOrderController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Export all images for a customer's orders as a ZIP file.
+     */
+    public function exportCustomerImages(User $customer)
+    {
+        $orders = Order::where('user_id', $customer->id)->with('images')->get();
+        
+        $zipFileName = 'customer_' . $customer->customer_code . '_images.zip';
+        $zipFilePath = storage_path('app/public/' . $zipFileName);
+
+        $zip = new \ZipArchive();
+        
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+            $hasFiles = false;
+            
+            foreach ($orders as $order) {
+                foreach ($order->images as $image) {
+                    $imagePath = storage_path('app/public/' . $image->path);
+                    if (file_exists($imagePath)) {
+                        $zip->addFile($imagePath, 'Order_' . $order->order_number . '/' . basename($imagePath));
+                        $hasFiles = true;
+                    }
+                }
+            }
+            
+            $zip->close();
+            
+            if ($hasFiles) {
+                return response()->download($zipFilePath)->deleteFileAfterSend(true);
+            } else {
+                @unlink($zipFilePath);
+                return back()->with('error', 'No images found for this customer.');
+            }
+        }
+        
+        return back()->with('error', 'Could not create ZIP file.');
+    }
 }

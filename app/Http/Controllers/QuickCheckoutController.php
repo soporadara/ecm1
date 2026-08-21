@@ -103,6 +103,8 @@ class QuickCheckoutController extends Controller
 
             DB::commit();
 
+            \App\Jobs\SendTelegramOrderNotification::dispatchSync($order);
+
             if ($request->payment_method === 'card') {
                 return redirect()->route('checkout.stripe', ['order_id' => $order->id]);
             }

@@ -1,11 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import type { FormEvent } from 'react';
+import React, { useState, type FormEvent } from 'react';
+import toast from 'react-hot-toast';
 import AdminLayout from '../../../../Layouts/AdminLayout';
 
 const money = (value: any, currency = 'USD') => {
     if (value === null || value === undefined || value === '') return 'Pending';
     if (currency === 'VND') return `₫${Math.round(Number(value || 0)).toLocaleString('en-US')}`;
-    return `$${(Math.round(Number(value || 0)) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 const label = (value: any) => {
     if (value === 'in_progress') return 'Progress';
@@ -13,17 +14,19 @@ const label = (value: any) => {
 };
 
 export default function OrderShow({ order, statuses, paymentStatuses = [], auditLogs }: any) {
+    const initVal = (val: any) => (!val || Number(val) === 0 ? '' : val);
+
     const { data, setData, put, processing, recentlySuccessful } = useForm({
         status: order.status,
         payment_status: order.payment_status || 'unpaid',
         internal_note: '',
         public_message: order.customer_visible_note || '',
         currency_code: order.currency_code || 'USD',
-        subtotal: order.subtotal_amount || order.subtotal || 0,
-        logistics_fee: order.logistics_fee_amount || order.logistics_fee || 0,
-        service_fee: order.service_fee_amount || order.service_fee || order.service_charge || 0,
-        delivery_fee: order.delivery_fee_amount || order.delivery_fee || order.delivery_charge || 0,
-        discount: order.discount_amount || order.discount || 0,
+        subtotal: initVal(order.subtotal_amount || order.subtotal),
+        logistics_fee: initVal(order.logistics_fee_amount || order.logistics_fee),
+        service_fee: initVal(order.service_fee_amount || order.service_fee || order.service_charge),
+        delivery_fee: initVal(order.delivery_fee_amount || order.delivery_fee || order.delivery_charge),
+        discount: initVal(order.discount_amount || order.discount),
         pricing_notes: order.pricing_notes || '',
     });
 
@@ -32,9 +35,47 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
         put(`/admin/logistics/orders/${order.id}`, { preserveScroll: true });
     };
 
-    const total = Number(data.subtotal || 0) + Number(data.logistics_fee || 0) + Number(data.service_fee || 0) + Number(data.delivery_fee || 0) - Number(data.discount || 0);
+    const allImages = order.items?.flatMap((item: any) => item.images || []) || [];
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+    const openLightbox = (image: any) => {
+        const index = allImages.findIndex((img: any) => img.id === image.id);
+        if (index !== -1) setLightboxIndex(index);
+    };
+
+    const handleExport = async (type: 'pdf' | 'csv') => {
+        try {
+            if (type === 'pdf') {
+                window.open(`/admin/receipts/generate/${order.id}`, '_blank');
+                return;
+            }
+
+            const toastId = toast.loading(`Exporting CSV...`);
+            const url = `/admin/logistics/orders/${order.id}/export?type=csv`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Export failed');
+            
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `order_${order.order_number}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            
+            toast.success(`Exported CSV successfully!`, { id: toastId });
+        } catch (error) {
+            toast.error(`Failed to export CSV`);
+        }
+    };
+
+    const hasAnyPricing = data.subtotal !== '' || data.logistics_fee !== '' || data.service_fee !== '' || data.delivery_fee !== '' || data.discount !== '';
+    const total = hasAnyPricing ? Number(data.subtotal || 0) + Number(data.logistics_fee || 0) + Number(data.service_fee || 0) + Number(data.delivery_fee || 0) - Number(data.discount || 0) : '';
 
     return (
+        <>
         <AdminLayout title={`Order ${order.order_number}`}>
             <Head title={`Order ${order.order_number}`} />
 
@@ -44,9 +85,19 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                     <h1 className="text-3xl font-bold text-admin-text">Order {order.order_number}</h1>
                     <p className="text-sm font-medium text-admin-text-muted">{label(order.status)} · {order.items?.length || 0} product request(s) · {new Date(order.created_at).toLocaleString()}</p>
                 </div>
-                <Link href={`/admin/receipts/generate/${order.id}`} className="rounded-xl bg-admin-primary px-5 py-3 text-sm font-black uppercase tracking-wider text-white hover:opacity-90">
-                    Generate Receipt
-                </Link>
+                <div className="flex gap-2">
+                    <div className="relative group">
+                        <button className="rounded-xl bg-admin-surface border border-admin-border px-5 py-3 text-sm font-black uppercase tracking-wider text-admin-text hover:bg-admin-surface-muted transition-colors flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Export
+                            <svg className="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-admin-surface border border-admin-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden">
+                            <button onClick={() => handleExport('pdf')} className="block w-full text-left px-4 py-3 text-sm font-bold text-admin-text hover:bg-admin-surface-muted transition-colors">Export as PDF</button>
+                            <button onClick={() => handleExport('csv')} className="block w-full text-left px-4 py-3 text-sm font-bold text-admin-text hover:bg-admin-surface-muted transition-colors">Export as CSV</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -128,27 +179,35 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                                                 <div className="flex flex-col gap-3">
                                                     {item.urls?.length > 0 && (
                                                         <div className="flex flex-col gap-1">
-                                                            {item.urls.map((url: any) => (
-                                                                <a key={url.id} href={url.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-admin-primary hover:underline break-all">
-                                                                    {url.domain || url.url}
-                                                                </a>
-                                                            ))}
+                                                            {item.urls.map((url: any) => {
+                                                                const ensureHttp = (u: string) => (!u.startsWith('http://') && !u.startsWith('https://') ? `https://${u}` : u);
+                                                                return (
+                                                                    <a key={url.id} href={ensureHttp(url.url)} target="_blank" rel="noreferrer" className="text-xs font-semibold text-admin-primary hover:underline break-all">
+                                                                        {url.domain || url.url}
+                                                                    </a>
+                                                                );
+                                                            })}
                                                         </div>
                                                     )}
                                                     {item.images?.length > 0 && (
                                                         <div className="flex flex-wrap gap-2">
                                                             {item.images.map((image: any) => (
-                                                                <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block w-12 h-12 overflow-hidden rounded-md border border-admin-border shrink-0 bg-admin-surface-muted hover:border-admin-primary transition-colors">
-                                                                    <img 
-                                                                        src={image.thumbnail_url || image.url} 
-                                                                        alt={image.original_filename || 'Reference'} 
-                                                                        className="h-full w-full object-cover" 
+                                                                <button
+                                                                    key={image.id}
+                                                                    type="button"
+                                                                    onClick={() => openLightbox(image)}
+                                                                    className="block w-12 h-12 shrink-0 overflow-hidden rounded bg-admin-surface-muted border border-admin-border hover:border-admin-primary transition-colors cursor-zoom-in"
+                                                                >
+                                                                    <img
+                                                                        src={image.thumbnail_url || image.url}
+                                                                        alt={image.original_filename || 'Reference'}
+                                                                        className="h-full w-full object-cover"
                                                                         onError={(e) => {
                                                                             e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
                                                                             e.currentTarget.className = 'h-full w-full object-cover p-2 opacity-50';
                                                                         }}
                                                                     />
-                                                                </a>
+                                                                </button>
                                                             ))}
                                                         </div>
                                                     )}
@@ -213,26 +272,26 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
 
                             <div className="grid grid-cols-2 gap-3">
                                 <label className="text-sm font-bold text-admin-text-muted">Subtotal
-                                    <input type="number" step="0.01" value={data.subtotal} onChange={event => setData('subtotal', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
+                                    <input type="number" step="any" placeholder="0.00" value={data.subtotal} onChange={event => setData('subtotal', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
                                 </label>
                                 <label className="text-sm font-bold text-admin-text-muted">Logistics Fee
-                                    <input type="number" step="0.01" value={data.logistics_fee} onChange={event => setData('logistics_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
+                                    <input type="number" step="any" placeholder="0.00" value={data.logistics_fee} onChange={event => setData('logistics_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
                                 </label>
                                 <label className="text-sm font-bold text-admin-text-muted">Service Fee
-                                    <input type="number" step="0.01" value={data.service_fee} onChange={event => setData('service_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
+                                    <input type="number" step="any" placeholder="0.00" value={data.service_fee} onChange={event => setData('service_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
                                 </label>
                                 <label className="text-sm font-bold text-admin-text-muted">Delivery Fee
-                                    <input type="number" step="0.01" value={data.delivery_fee} onChange={event => setData('delivery_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
+                                    <input type="number" step="any" placeholder="0.00" value={data.delivery_fee} onChange={event => setData('delivery_fee', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
                                 </label>
                                 <label className="text-sm font-bold text-admin-text-muted col-span-2">Discount
-                                    <input type="number" step="0.01" value={data.discount} onChange={event => setData('discount', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
+                                    <input type="number" step="any" placeholder="0.00" value={data.discount} onChange={event => setData('discount', event.target.value)} className="mt-1 w-full rounded-xl border border-admin-border bg-admin-surface px-3 py-2 text-admin-text" />
                                 </label>
                             </div>
 
                             <div className="rounded-xl bg-admin-surface-muted p-4 text-sm">
                                 <div className="flex justify-between font-black text-admin-text">
                                     <span>Calculated Total</span>
-                                    <span>{money(Math.max(total, 0), data.currency_code)}</span>
+                                    <span>{total === '' ? money('') : money(Math.max(Number(total), 0), data.currency_code)}</span>
                                 </div>
                                 <p className="mt-1 text-xs font-bold uppercase text-admin-text-muted">{label(order.pricing_status)}</p>
                             </div>
@@ -273,5 +332,39 @@ export default function OrderShow({ order, statuses, paymentStatuses = [], audit
                 </div>
             </div>
         </AdminLayout>
+        
+        {
+        lightboxIndex !== null && allImages[lightboxIndex] && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+                <button onClick={() => setLightboxIndex(null)} className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors z-[110]">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div className="absolute top-6 left-6 flex gap-4 z-[110]">
+                    <a href={allImages[lightboxIndex].url} download target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors backdrop-blur-md">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download
+                    </a>
+                </div>
+
+                {allImages.length > 1 && (
+                    <>
+                        <button onClick={() => setLightboxIndex(prev => (prev && prev > 0 ? prev - 1 : allImages.length - 1))} className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-[110] bg-black/40 hover:bg-black/60 p-3 rounded-full backdrop-blur-md">
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button onClick={() => setLightboxIndex(prev => (prev !== null && prev < allImages.length - 1 ? prev + 1 : 0))} className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-[110] bg-black/40 hover:bg-black/60 p-3 rounded-full backdrop-blur-md">
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </>
+                )}
+
+                <img
+                    src={allImages[lightboxIndex].url}
+                    alt="Preview"
+                    className="max-h-full max-w-full object-contain pointer-events-none shadow-2xl"
+                />
+            </div>
+        )
+    }
+        </>
     );
 }

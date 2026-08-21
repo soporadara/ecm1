@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -58,6 +60,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
             'contact_email' => ['nullable', 'string', 'email', 'max:255'],
             'phone_e164' => [
                 'nullable',
@@ -81,6 +84,7 @@ class ProfileController extends Controller
 
         $user->fill([
             'name' => $validated['name'],
+            'email' => $validated['email'],
             'contact_email' => $validated['contact_email'] ?? null,
             'phone_e164' => $validated['phone_e164'] ?? null,
             'address_line_1' => $validated['address_line_1'] ?? $user->address_line_1,
@@ -90,8 +94,8 @@ class ProfileController extends Controller
             'postal_code' => $validated['postal_code'] ?? $user->postal_code,
             'country_code' => isset($validated['country_code']) ? strtoupper($validated['country_code']) : $user->country_code,
             'address_notes' => $validated['address_notes'] ?? $user->address_notes,
-            'preferred_locale' => $validated['preferred_locale'] ?? $user->preferred_locale ?? 'km',
-            'preferred_language' => $validated['preferred_locale'] ?? $user->preferred_language ?? 'km',
+            'preferred_locale' => $validated['preferred_locale'] ?? $user->preferred_locale ?? 'en',
+            'preferred_language' => $validated['preferred_locale'] ?? $user->preferred_language ?? 'en',
             'preferred_currency' => $validated['preferred_currency'] ?? $user->preferred_currency ?? 'USD',
             'telegram_username' => $validated['telegram_username'] ?? $user->telegram_username,
             'whatsapp_number' => $validated['whatsapp_number'] ?? $user->whatsapp_number,
@@ -147,8 +151,8 @@ class ProfileController extends Controller
         $request->user()->update([
             ...$validated,
             'country_code' => isset($validated['country_code']) ? strtoupper($validated['country_code']) : null,
-            'preferred_locale' => $validated['preferred_locale'] ?? 'km',
-            'preferred_language' => $validated['preferred_locale'] ?? 'km',
+            'preferred_locale' => $validated['preferred_locale'] ?? 'en',
+            'preferred_language' => $validated['preferred_locale'] ?? 'en',
             'preferred_currency' => $validated['preferred_currency'] ?? 'USD',
         ]);
 
@@ -219,6 +223,23 @@ class ProfileController extends Controller
             abort(404);
         }
 
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password updated successfully.');
+    }
+
+    /**
+     * Update password for a regular customer (self-service).
+     */
+    public function updatePasswordCustomer(Request $request)
+    {
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::defaults(), 'confirmed'],
@@ -384,5 +405,48 @@ class ProfileController extends Controller
         ])->save();
 
         return back()->with('success', 'Your Google account has been unlinked.');
+    }
+
+    public function unlinkTelegram(Request $request)
+    {
+        $user = $request->user();
+
+        $user->update([
+            'telegram_id' => null,
+            'telegram_username' => null,
+        ]);
+
+        return back()->with('success', 'Your Telegram bot has been unlinked.');
+    }
+
+    /**
+     * Generate a one-time link token for Telegram integration
+     */
+    public function generateTelegramLink(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->is_admin) {
+            abort(403, 'Unauthorized.');
+        }
+
+        // Unlink if requested
+        if ($request->input('action') === 'unlink') {
+            $user->update([
+                'telegram_id' => null,
+                'telegram_username' => null,
+            ]);
+            return response()->json(['success' => true]);
+        }
+
+        $token = Str::random(32);
+        Cache::put("tg_admin_link_{$token}", $user->id, now()->addMinutes(15));
+
+        $botUsername = env('TELEGRAM_BOT_USERNAME', 'mvmlogisticskhbot');
+        $botUsername = ltrim($botUsername, '@');
+
+        $link = "https://t.me/{$botUsername}?start=link_{$token}";
+
+        return back()->with('success', $link);
     }
 }

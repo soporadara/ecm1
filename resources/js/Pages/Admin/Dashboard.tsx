@@ -76,7 +76,7 @@ function StatCard({
     };
 
     return (
-        <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-6 flex items-start gap-4 hover:-translate-y-0.5 hover:shadow-md hover:shadow-admin-border/50 shadow-sm shadow-admin-border/20 transition-all duration-200">
+        <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-4 sm:p-6 flex items-start gap-4 hover:-translate-y-0.5 hover:shadow-md hover:shadow-admin-border/50 shadow-sm shadow-admin-border/20 transition-all duration-200">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${colorMap[color] || colorMap.indigo}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={icon} />
@@ -121,12 +121,12 @@ export default function Dashboard({ stats, revenue_chart, recent_orders, date }:
             <Head title="Logistics Overview — Rafel CMS" />
 
             {/* Date Filter */}
-            <div className="flex items-end justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-admin-text tracking-tight">Logistics CRM Overview</h1>
                     <p className="text-sm text-admin-text-muted mt-1">Key metrics for manual orders and customers.</p>
                 </div>
-                <div className="flex items-center bg-admin-surface border border-admin-border/60 rounded-xl px-4 py-2 gap-4 shadow-sm shadow-admin-border/20">
+                <div className="flex items-center justify-between sm:justify-start bg-admin-surface border border-admin-border/60 rounded-xl px-4 py-2 gap-4 shadow-sm shadow-admin-border/20 w-full sm:w-auto">
                     <span className="text-sm font-bold text-admin-text-muted uppercase tracking-wider">Date</span>
                     <input
                         type="date"

@@ -2,70 +2,73 @@ import { Head } from '@inertiajs/react';
 import MainLayout from '../Layouts/MainLayout';
 import { AlertOctagon, ShieldAlert, Award, FileText, HelpCircle, Package, Flame, HeartCrack } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function ProhibitedItems() {
+    const { t } = useTranslation();
+
     const categories = [
         {
-            title: "Narcotics & Dangerous Drugs",
-            subtitle: "Controlled Substances",
+            title: t('prohibited_items.narcotics.title'),
+            subtitle: t('prohibited_items.narcotics.subtitle'),
             icon: HeartCrack,
             color: "from-rose-500 to-red-600",
             lightBg: "bg-rose-50/50 dark:bg-rose-950/10",
             textColor: "text-rose-600 dark:text-rose-400",
             items: [
-                "Illegal narcotics, stimulants, and synthetic drugs",
-                "Prescription medicines shipped without license or prescription documentation",
-                "Hemp, cannabis, or products containing active THC compounds",
-                "Drug packaging accessories and consumption paraphernalia"
+                t('prohibited_items.narcotics.item1'),
+                t('prohibited_items.narcotics.item2'),
+                t('prohibited_items.narcotics.item3'),
+                t('prohibited_items.narcotics.item4')
             ]
         },
         {
-            title: "Endangered Wildlife & Plants",
-            subtitle: "Environmental Safeguards",
+            title: t('prohibited_items.wildlife.title'),
+            subtitle: t('prohibited_items.wildlife.subtitle'),
             icon: ShieldAlert,
             color: "from-amber-500 to-orange-600",
             lightBg: "bg-amber-50/50 dark:bg-amber-950/10",
             textColor: "text-amber-600 dark:text-amber-400",
             items: [
-                "Live animals, endangered birds, insects, and rare reptiles",
-                "Animal derivatives: raw ivory, horns, tusks, skins, furs, or shells",
-                "Protected flora/plants covered under local laws or the CITES treaty",
-                "Specimens of wildlife preserved or prepared for collection"
+                t('prohibited_items.wildlife.item1'),
+                t('prohibited_items.wildlife.item2'),
+                t('prohibited_items.wildlife.item3'),
+                t('prohibited_items.wildlife.item4')
             ]
         },
         {
-            title: "Weapons & Explosive Munitions",
-            subtitle: "Security & Safety Regulations",
+            title: t('prohibited_items.weapons.title'),
+            subtitle: t('prohibited_items.weapons.subtitle'),
             icon: Flame,
             color: "from-orange-500 to-red-600",
             lightBg: "bg-orange-50/50 dark:bg-orange-950/10",
             textColor: "text-orange-600 dark:text-orange-400",
             items: [
-                "Firearms, ammunitions, primers, gun parts, or replica weapons",
-                "Explosives, fireworks, firecrackers, signal flares, and gunpowder",
-                "Tactical gear, daggers, switchblades, bows, arrows, and crossbows",
-                "Stun guns, pepper sprays, tasers, and other self-defense devices"
+                t('prohibited_items.weapons.item1'),
+                t('prohibited_items.weapons.item2'),
+                t('prohibited_items.weapons.item3'),
+                t('prohibited_items.weapons.item4')
             ]
         },
         {
-            title: "Adult Toys & Explicit Materials",
-            subtitle: "Cultural Decency Guidelines",
+            title: t('prohibited_items.adult.title'),
+            subtitle: t('prohibited_items.adult.subtitle'),
             icon: AlertOctagon,
             color: "from-pink-500 to-rose-600",
             lightBg: "bg-pink-50/50 dark:bg-pink-950/10",
             textColor: "text-pink-600 dark:text-pink-400",
             items: [
-                "Sex toys, adult novelties, and explicit devices",
-                "Pornographic books, magazines, movies, and explicit digital media",
-                "Uncensored adult items banned or restricted by local customs departments",
-                "Goods containing high-volume liquids or batteries violating decency laws"
+                t('prohibited_items.adult.item1'),
+                t('prohibited_items.adult.item2'),
+                t('prohibited_items.adult.item3'),
+                t('prohibited_items.adult.item4')
             ]
         }
     ];
 
     return (
-        <MainLayout title="Prohibited Items" description="Important shipping guidelines on prohibited and restricted cargo.">
-            <Head title="Prohibited Items - MVM Logistics" />
+        <MainLayout title={t('prohibited_items.page_title')} description={t('prohibited_items.page_desc')}>
+            <Head title={`${t('prohibited_items.page_title')} - MVM Logistics`} />
             
             <div className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 sm:py-28">
                 {/* Visual Background Gradients */}
@@ -91,7 +94,7 @@ export default function ProhibitedItems() {
                             transition={{ delay: 0.1, duration: 0.5 }}
                             className="text-4xl font-black tracking-tight text-gray-900 dark:text-white sm:text-5xl font-serif"
                         >
-                            Prohibited Items
+                            {t('prohibited_items.heading')}
                         </motion.h1>
                         <motion.p 
                             initial={{ y: 20, opacity: 0 }}
@@ -99,7 +102,7 @@ export default function ProhibitedItems() {
                             transition={{ delay: 0.2, duration: 0.5 }}
                             className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
                         >
-                            To ensure safety and legal compliance, the following items are strictly prohibited for transport. Please review this list before submitting your manual orders.
+                            {t('prohibited_items.subheading')}
                         </motion.p>
                     </div>
 
@@ -155,12 +158,12 @@ export default function ProhibitedItems() {
                             <Award className="w-6 h-6 text-brand-primary" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">Legal Compliance & Customs Penalties</h3>
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">{t('prohibited_items.legal.title')}</h3>
                             <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                                MVM Logistics operates strictly under the legal frameworks of cross-border customs regulations. Attempting to ship prohibited items may result in total package seizure by customs officers, immediate account suspension on our platform, and potential legal liabilities under international customs laws.
+                                {t('prohibited_items.legal.p1')}
                             </p>
                             <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 mt-4">
-                                If you are uncertain whether a particular product falls under these restricted categories, please reach out to our support team via Telegram or WhatsApp prior to initiating a manual order request.
+                                {t('prohibited_items.legal.p2')}
                             </p>
                         </div>
                     </motion.div>

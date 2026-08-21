@@ -48,6 +48,10 @@ export default function OrdersIndex({ orders, filters }: any) {
                     <button onClick={handleFilter} className="bg-brand-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-brand-secondary">
                         Filter
                     </button>
+                    <a href={`/admin/logistics/orders/export?search=${search}&status=${status}`} className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 flex items-center gap-2 ml-auto">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        Export Excel
+                    </a>
                 </div>
 
                 <div className="overflow-x-auto">

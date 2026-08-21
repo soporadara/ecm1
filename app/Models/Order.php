@@ -67,12 +67,29 @@ class Order extends Model
 
     public static function generateOrderNumber(): string
     {
+        $attempt = 0;
         do {
-            $year = date('Y');
-            $next = self::whereYear('created_at', $year)->count() + 1;
-            $code = 'ORD-' . $year . '-' . str_pad((string) $next, 6, '0', STR_PAD_LEFT);
+            $count = self::withTrashed()->count() + $attempt;
+            
+            $letterIndex = (int) floor($count / 999);
+            $letters = self::numToLetters($letterIndex);
+            
+            $number = ($count % 999) + 1;
+            
+            $code = 'ORD-' . $letters . str_pad((string) $number, 3, '0', STR_PAD_LEFT);
+            $attempt++;
         } while (self::where('order_number', $code)->exists());
 
         return $code;
+    }
+
+    private static function numToLetters(int $num): string
+    {
+        $letters = '';
+        while ($num >= 0) {
+            $letters = chr(65 + ($num % 26)) . $letters;
+            $num = (int) floor($num / 26) - 1;
+        }
+        return $letters;
     }
 }

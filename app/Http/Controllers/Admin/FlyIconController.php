@@ -25,6 +25,7 @@ class FlyIconController extends Controller
             'links' => 'nullable|array',
             'links.*.id' => 'required|string',
             'links.*.name' => 'required|string|max:255',
+            'links.*.type' => 'nullable|string|max:255',
             'links.*.url' => 'required|string|max:1000',
             'links.*.icon_file' => 'nullable|image|max:2048',
             'links.*.icon_url' => 'nullable|string|max:1000',
@@ -52,6 +53,7 @@ class FlyIconController extends Controller
                 $links[] = [
                     'id' => $id,
                     'name' => $linkData['name'],
+                    'type' => $linkData['type'] ?? 'custom',
                     'url' => $linkData['url'],
                     'icon_url' => $iconUrl,
                 ];
@@ -62,6 +64,8 @@ class FlyIconController extends Controller
             ['group' => 'general', 'key' => 'fab_links'],
             ['value' => json_encode($links)]
         );
+
+        \Illuminate\Support\Facades\Cache::forget('general_settings');
 
         return back()->with('success', 'Fly Icons updated successfully.');
     }

@@ -129,6 +129,7 @@ export default function Index({ faqs: initialFaqs }: { faqs: Faq[] }) {
             is_active: faq.is_active,
             sort_order: faq.sort_order,
         });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const openCreate = () => {
@@ -190,24 +191,24 @@ export default function Index({ faqs: initialFaqs }: { faqs: Faq[] }) {
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {/* English */}
                             <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/50">
-                                <h3 className="font-bold flex items-center gap-2">🇬🇧 English</h3>
+                                <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">🇬🇧 English</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Question</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Question</label>
                                     <input 
                                         type="text" 
                                         value={data.question_en}
                                         onChange={e => setData('question_en', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.question_en && <p className="mt-1 text-xs text-red-500">{errors.question_en}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Answer</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Answer</label>
                                     <textarea 
-                                        rows={4}
+                                        rows={8}
                                         value={data.answer_en}
                                         onChange={e => setData('answer_en', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.answer_en && <p className="mt-1 text-xs text-red-500">{errors.answer_en}</p>}
                                 </div>
@@ -215,24 +216,24 @@ export default function Index({ faqs: initialFaqs }: { faqs: Faq[] }) {
 
                             {/* Khmer */}
                             <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/50">
-                                <h3 className="font-bold flex items-center gap-2">🇰🇭 ខ្មែរ (Khmer)</h3>
+                                <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">🇰🇭 ខ្មែរ (Khmer)</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Question</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Question</label>
                                     <input 
                                         type="text" 
                                         value={data.question_km}
                                         onChange={e => setData('question_km', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.question_km && <p className="mt-1 text-xs text-red-500">{errors.question_km}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Answer</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Answer</label>
                                     <textarea 
-                                        rows={4}
+                                        rows={8}
                                         value={data.answer_km}
                                         onChange={e => setData('answer_km', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.answer_km && <p className="mt-1 text-xs text-red-500">{errors.answer_km}</p>}
                                 </div>
@@ -240,24 +241,24 @@ export default function Index({ faqs: initialFaqs }: { faqs: Faq[] }) {
 
                             {/* Vietnamese */}
                             <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/50">
-                                <h3 className="font-bold flex items-center gap-2">🇻🇳 Tiếng Việt</h3>
+                                <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">🇻🇳 Tiếng Việt</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Question</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Question</label>
                                     <input 
                                         type="text" 
                                         value={data.question_vi}
                                         onChange={e => setData('question_vi', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.question_vi && <p className="mt-1 text-xs text-red-500">{errors.question_vi}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Answer</label>
+                                    <label className="block text-sm font-semibold mb-1 text-slate-900 dark:text-white">Answer</label>
                                     <textarea 
-                                        rows={4}
+                                        rows={8}
                                         value={data.answer_vi}
                                         onChange={e => setData('answer_vi', e.target.value)}
-                                        className="w-full rounded-lg border-slate-200 text-sm dark:border-white/10 dark:bg-slate-900"
+                                        className="w-full rounded-lg border-slate-200 text-sm text-slate-900 dark:text-white dark:border-white/10 dark:bg-slate-900"
                                     />
                                     {errors.answer_vi && <p className="mt-1 text-xs text-red-500">{errors.answer_vi}</p>}
                                 </div>

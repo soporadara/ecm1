@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\SecureHeaders::class,
         ]);
         $middleware->redirectGuestsTo(function ($request) {
             return $request->is('admin') || $request->is('admin/*') || $request->is('cms') || $request->is('cms/*')

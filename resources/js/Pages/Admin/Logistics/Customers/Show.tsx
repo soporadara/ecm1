@@ -73,7 +73,19 @@ export default function CustomerShow({ customer, orders, auditLogs }: any) {
                 {/* 360 View - Orders & Activity */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-                        <h2 className="text-xl font-bold mb-4">Order History</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold">Order History</h2>
+                            <div className="flex gap-2">
+                                <a href={`/admin/logistics/customers/${customer.id}/images/export`} className="text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded font-medium shadow-sm transition-colors flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    All Images (ZIP)
+                                </a>
+                                <a href={`/admin/logistics/customers/${customer.id}/orders/export`} className="text-xs bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary px-3 py-1.5 rounded font-medium shadow-sm transition-colors flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    Export Excel
+                                </a>
+                            </div>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>

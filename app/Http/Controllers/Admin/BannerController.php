@@ -92,13 +92,13 @@ class BannerController extends Controller
 
         if ($request->hasFile('desktop_image')) {
             $path = $request->file('desktop_image')->store('banners', 'public');
-            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
+            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'file_name' => basename($path), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
             $validated['desktop_media_id'] = $media->id;
         }
 
         if ($request->hasFile('mobile_image')) {
             $path = $request->file('mobile_image')->store('banners', 'public');
-            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
+            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'file_name' => basename($path), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
             $validated['mobile_media_id'] = $media->id;
         }
 
@@ -161,13 +161,13 @@ class BannerController extends Controller
 
         if ($request->hasFile('desktop_image')) {
             $path = $request->file('desktop_image')->store('banners', 'public');
-            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
+            $media = Media::create(['name' => $request->file('desktop_image')->getClientOriginalName(), 'file_name' => basename($path), 'path' => $path, 'mime_type' => $request->file('desktop_image')->getMimeType(), 'size' => $request->file('desktop_image')->getSize()]);
             $validated['desktop_media_id'] = $media->id;
         }
 
         if ($request->hasFile('mobile_image')) {
             $path = $request->file('mobile_image')->store('banners', 'public');
-            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
+            $media = Media::create(['name' => $request->file('mobile_image')->getClientOriginalName(), 'file_name' => basename($path), 'path' => $path, 'mime_type' => $request->file('mobile_image')->getMimeType(), 'size' => $request->file('mobile_image')->getSize()]);
             $validated['mobile_media_id'] = $media->id;
         }
 

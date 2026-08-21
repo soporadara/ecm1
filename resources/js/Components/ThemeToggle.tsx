@@ -6,7 +6,7 @@ export default function ThemeToggle() {
     useEffect(() => {
         // Check local storage or system preference on load
         const storedTheme = localStorage.getItem('theme');
-        if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (storedTheme === 'dark') {
             setIsDark(true);
             document.documentElement.classList.add('dark');
         } else {

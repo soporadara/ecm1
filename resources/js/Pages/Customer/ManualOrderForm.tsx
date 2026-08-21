@@ -3,6 +3,8 @@ import MainLayout from '../../Layouts/MainLayout';
 import { useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CheckCircle2, FileText, Home, Image as ImageIcon, MapPin, Plus, UploadCloud, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type ProductForm = {
     name: string;
@@ -121,8 +123,8 @@ type UserAddress = {
 };
 
 export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
+    const { t } = useTranslation();
     const { flash }: any = usePage().props;
-    const [step, setStep] = useState<'edit' | 'review'>('edit');
     const formRef = useRef<HTMLFormElement>(null);
     const submittedOrder = flash?.submitted_order;
     const [showSuccessModal, setShowSuccessModal] = useState(Boolean(submittedOrder));
@@ -181,7 +183,6 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
         save_address_to_profile: false,
         message: '',
         currency_code: auth?.user?.preferred_currency === 'VND' ? 'VND' : 'USD',
-        confirmation: false,
         products: [blankProduct()],
     });
 
@@ -220,13 +221,8 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
 
     const addProduct = () => {
         if (data.products.length >= (limits?.max_products || 20)) return;
-        const newIndex = data.products.length;
         setExpandedProducts(prev => [...prev, true]);
         setData('products', [...data.products, blankProduct()]);
-        
-        setTimeout(() => {
-            document.getElementById(`product-card-${newIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 150);
     };
 
     const duplicateProduct = (index: number) => {
@@ -234,10 +230,6 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
         const clone = { ...data.products[index], images: [], pdfs: [], urls: [...data.products[index].urls] };
         setExpandedProducts(prev => [...prev.slice(0, index + 1), true, ...prev.slice(index + 1)]);
         setData('products', [...data.products.slice(0, index + 1), clone, ...data.products.slice(index + 1)]);
-        
-        setTimeout(() => {
-            document.getElementById(`product-card-${index + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 150);
     };
 
     const removeProduct = (index: number) => {
@@ -248,11 +240,6 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        if (step === 'edit') {
-            setStep('review');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
 
         const fullPhone = phoneNum ? `${phoneCode}${phoneNum}` : '';
         data.contact_phone = fullPhone; // Update directly for the post payload
@@ -261,10 +248,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
             forceFormData: true,
             preserveScroll: true,
             onError: (submitErrors) => {
-                if (!('confirmation' in submitErrors)) {
-                    setStep('edit');
-                    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                toast.error('Validation failed. Please check the highlighted fields.');
             },
         });
     };
@@ -306,7 +290,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                         <div className="mt-5 bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
                             <p className="text-sm text-gray-500">Order number</p>
                             <p className="font-mono font-bold text-lg text-gray-900 dark:text-white">{submittedOrder.order_number}</p>
-                            <p className="text-xs uppercase tracking-wide text-brand-primary mt-1">{String(submittedOrder.status).replace('_', ' ')}</p>
+                            <p className="text-xs uppercase tracking-wide text-brand-primary mt-1">{submittedOrder.customer_status_label || (submittedOrder.status === 'submitted' ? 'Progress' : String(submittedOrder.status).replace('_', ' '))}</p>
                             <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mt-1">{submittedOrder.currency_code || data.currency_code}</p>
                         </div>
                         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
@@ -325,7 +309,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                 <div className="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
                     <div>
                         <p className="text-xs font-black uppercase tracking-[0.25em] text-brand-primary">Logistics quotation</p>
-                        <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white font-serif mt-2">{quoteMessages?.page_title || 'Create Manual Order'}</h1>
+                        <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white font-serif mt-2">{quoteMessages?.page_title || t('manual_order.title', 'Create Manual Order')}</h1>
                         <p className="text-gray-500 mt-3 max-w-2xl">{quoteMessages?.intro}</p>
                     </div>
                     <Link href="/my-orders" className="inline-flex justify-center rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-3 font-bold hover:text-brand-primary">
@@ -334,11 +318,11 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
-                    <form ref={formRef} onSubmit={submit} className="space-y-6">
+                    <form id="manual-order-form" ref={formRef} onSubmit={submit} className="space-y-6">
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">1</span>
-                                <h2 className="text-xl font-black text-gray-900 dark:text-white">Customer Information</h2>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-white">{t('manual_order.customer_info', 'Customer Information')}</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
@@ -352,7 +336,9 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-1">Locked login email</label>
-                                    <input type="email" value={auth?.user?.email || ''} readOnly className="w-full rounded-xl border-gray-200 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 px-4 py-3" />
+                                    <div className="w-full rounded-xl border border-gray-200 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 px-4 py-3 break-all text-sm text-gray-900 dark:text-gray-300">
+                                        {auth?.user?.email || ''}
+                                    </div>
                                     <p className="text-xs text-gray-500 mt-1">Your login email is protected and cannot be changed from this page.</p>
                                 </div>
                                 <div>
@@ -367,7 +353,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                         <select 
                                             value={phoneCode} 
                                             onChange={e => setPhoneCode(e.target.value)}
-                                            className="w-[100px] sm:w-[120px] rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 px-3 py-3 text-sm font-semibold text-gray-950 focus:border-brand-primary focus:ring-0 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:focus:border-brand-primary"
+                                            className="min-w-[110px] shrink-0 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 px-2 sm:px-3 py-3 text-sm font-semibold text-gray-950 focus:border-brand-primary focus:ring-0 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:focus:border-brand-primary"
                                         >
                                             <option value="+855">🇰🇭 +855</option>
                                             <option value="+84">🇻🇳 +84</option>
@@ -391,7 +377,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
                             <div className="flex items-center gap-3 mb-5">
                                 <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">2</span>
-                                <h2 className="text-xl font-black text-gray-900 dark:text-white">Delivery Address</h2>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-white">{t('manual_order.delivery_address', 'Delivery Address')}</h2>
                             </div>
                             <p className="text-sm text-gray-500 mb-4">Select a delivery address for this order.</p>
 
@@ -475,7 +461,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                     }
                                                 }}
                                                 placeholder="House number, street, ward"
-                                                className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                                className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                             />
                                             {errors.address_line_1 && <p className="text-red-500 text-xs mt-1">{errors.address_line_1}</p>}
                                         </div>
@@ -486,7 +472,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                 if (savedAddresses.length === 0) setData('address_line_2', e.target.value);
                                                 else { setNewAddress(prev => ({ ...prev, address_line_2: e.target.value })); setData('address_line_2', e.target.value); }
                                             }}
-                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                         />
                                         <input
                                             placeholder="City"
@@ -495,7 +481,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                 if (savedAddresses.length === 0) setData('city', e.target.value);
                                                 else { setNewAddress(prev => ({ ...prev, city: e.target.value })); setData('city', e.target.value); }
                                             }}
-                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                         />
                                         <input
                                             placeholder="Province / State"
@@ -504,7 +490,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                 if (savedAddresses.length === 0) setData('province', e.target.value);
                                                 else { setNewAddress(prev => ({ ...prev, province: e.target.value })); setData('province', e.target.value); }
                                             }}
-                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                         />
                                         <input
                                             placeholder="Postal code (optional)"
@@ -513,7 +499,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                 if (savedAddresses.length === 0) setData('postal_code', e.target.value);
                                                 else { setNewAddress(prev => ({ ...prev, postal_code: e.target.value })); setData('postal_code', e.target.value); }
                                             }}
-                                            className="rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                         />
                                         <textarea
                                             placeholder="Delivery notes (optional)"
@@ -523,7 +509,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                                 else { setNewAddress(prev => ({ ...prev, address_notes: e.target.value })); setData('delivery_notes', e.target.value); }
                                             }}
                                             rows={2}
-                                            className="md:col-span-2 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3"
+                                            className="md:col-span-2 w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 focus:border-brand-primary focus:ring-brand-primary"
                                         />
                                     </div>
                                     <label className="mt-4 flex items-center gap-3 text-sm font-semibold text-gray-500 cursor-pointer">
@@ -563,7 +549,7 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <span className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">3</span>
-                                    <h2 className="text-xl font-black text-gray-900 dark:text-white">Requested Products</h2>
+                                    <h2 className="text-xl font-black text-gray-900 dark:text-white">{t('manual_order.requested_products', 'Requested Products')}</h2>
                                 </div>
                                 <button type="button" onClick={addProduct} className="rounded-xl bg-gray-900 text-white px-5 py-2.5 font-bold transition-all duration-300 hover:bg-green-500 hover:text-white hover:shadow-lg hover:-translate-y-0.5">Add Another Product</button>
                             </div>
@@ -617,29 +603,29 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                                         <div className="md:col-span-4">
                                             <label className="block text-sm font-bold mb-1">Quantity</label>
                                             <div className="inline-flex h-12 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm transition-all focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/20">
-                                                <button type="button" aria-label="Decrease quantity" disabled={product.quantity <= 1} onClick={() => updateProduct(index, { quantity: Math.max(1, product.quantity - 1) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors disabled:opacity-40">-</button>
-                                                <input type="number" min={1} max={limits?.max_quantity || 999} value={product.quantity} onChange={e => updateProduct(index, { quantity: Math.max(1, Number(e.target.value) || 1) })} className="w-20 text-center border-x border-gray-200 dark:border-gray-700 focus:border-brand-primary focus:ring-0" />
-                                                <button type="button" aria-label="Increase quantity" onClick={() => updateProduct(index, { quantity: Math.min(limits?.max_quantity || 999, product.quantity + 1) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">+</button>
+                                                <button type="button" aria-label="Decrease quantity" disabled={product.quantity <= 0.1} onClick={() => updateProduct(index, { quantity: product.quantity > 1 ? product.quantity - 1 : Math.max(0.1, Number((product.quantity - 0.1).toFixed(1))) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors disabled:opacity-40">-</button>
+                                                <input type="number" min={0.1} step={0.1} max={limits?.max_quantity || 999} value={product.quantity} onChange={e => updateProduct(index, { quantity: Math.max(0.1, Number(e.target.value) || 0.1) })} className="w-20 text-center border-x border-gray-200 dark:border-gray-700 focus:border-brand-primary focus:ring-0" />
+                                                <button type="button" aria-label="Increase quantity" onClick={() => updateProduct(index, { quantity: Math.min(limits?.max_quantity || 999, product.quantity >= 1 ? product.quantity + 1 : Number((product.quantity + 0.1).toFixed(1))) })} className="w-12 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">+</button>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 gap-4 rounded-2xl bg-gray-50 p-4 dark:bg-gray-800/70 md:col-span-8 md:grid-cols-3">
-                                            <input placeholder="Color" value={product.color} onChange={e => updateProduct(index, { color: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
-                                            <input placeholder="Type, model, or material" value={product.type} onChange={e => updateProduct(index, { type: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
-                                            <input placeholder="Size or dimensions" value={product.size} onChange={e => updateProduct(index, { size: e.target.value })} className="rounded-xl border-gray-200 bg-white dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                            <input placeholder="Color" value={product.color} onChange={e => updateProduct(index, { color: e.target.value })} className="w-full rounded-xl border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                            <input placeholder="Type, model, or material" value={product.type} onChange={e => updateProduct(index, { type: e.target.value })} className="w-full rounded-xl border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                            <input placeholder="Size or dimensions" value={product.size} onChange={e => updateProduct(index, { size: e.target.value })} className="w-full rounded-xl border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
                                         </div>
                                         <textarea placeholder="Product note" value={product.customer_note} onChange={e => updateProduct(index, { customer_note: e.target.value })} rows={2} className="md:col-span-12 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
                                     </div>
 
                                     <div className="space-y-3 border-t border-gray-100 px-6 py-6 dark:border-gray-800">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="font-bold">Product URLs ({product.urls.filter(Boolean).length})</h4>
-                                            <button type="button" onClick={() => updateProduct(index, { urls: [...product.urls, ''] })} className="text-sm font-bold text-brand-primary transition-colors hover:text-green-500">+ Add Another URL</button>
+                                            <h4 className="font-bold text-gray-900 dark:text-white">{t('manual_order.product_urls', 'Product URLs')} ({product.urls.filter(Boolean).length})</h4>
+                                            <button type="button" onClick={() => updateProduct(index, { urls: [...product.urls, ''] })} className="text-sm font-bold text-brand-primary transition-colors hover:text-green-500">{t('manual_order.add_url', '+ Add Another URL')}</button>
                                         </div>
                                         {product.urls.map((url, urlIndex) => (
                                             <div key={urlIndex} className="flex flex-col sm:flex-row gap-2">
-                                                <input value={url} placeholder="https://supplier.example/product" onChange={e => updateProduct(index, { urls: product.urls.map((u, i) => i === urlIndex ? e.target.value : u) })} className="flex-1 rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
-                                                {domainFromUrl(url) && <a href={url} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-xl border border-gray-200 bg-white font-bold text-center shadow-sm transition-all hover:border-brand-primary hover:text-brand-primary">View {domainFromUrl(url)}</a>}
-                                                <button type="button" onClick={() => updateProduct(index, { urls: product.urls.filter((_, i) => i !== urlIndex) })} className="px-5 py-3 rounded-xl border border-gray-200 bg-white shadow-sm text-red-600 font-bold transition-all hover:border-red-500 hover:bg-red-500 hover:text-white">Remove</button>
+                                                <input value={url} placeholder="https://supplier.example/product" onChange={e => updateProduct(index, { urls: product.urls.map((u, i) => i === urlIndex ? e.target.value : u) })} className="flex-1 rounded-xl border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 shadow-sm transition-all focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 hover:border-brand-primary/50" />
+                                                {domainFromUrl(url) && <a href={url} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold text-gray-900 dark:text-white text-center shadow-sm transition-all hover:border-brand-primary hover:text-brand-primary">{t('manual_order.view', 'View')} {domainFromUrl(url)}</a>}
+                                                <button type="button" onClick={() => updateProduct(index, { urls: product.urls.filter((_, i) => i !== urlIndex) })} className="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm text-red-600 dark:text-red-500 font-bold transition-all hover:border-red-500 hover:bg-red-500 hover:text-white dark:hover:text-white">{t('manual_order.remove', 'Remove')}</button>
                                             </div>
                                         ))}
                                     </div>
@@ -672,40 +658,31 @@ export default function ManualOrderForm({ auth, quoteMessages, limits }: any) {
                     </div>
 
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">Additional Notes</h2>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">{t('manual_order.additional_notes', 'Additional Notes')}</h2>
                             <textarea value={data.message} onChange={e => setData('message', e.target.value)} maxLength={2000} rows={4} placeholder="Tell us anything else we should know about the product, supplier, size, delivery, or special requirements." className="w-full rounded-xl border-gray-200 dark:border-gray-700 px-4 py-3" />
                             <p className="text-xs text-gray-500 mt-1">{data.message.length}/2000</p>
                         </div>
 
-                        {step === 'review' && (
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-brand-primary p-6">
-                                <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">Review and Submit</h2>
-                                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                    <p><strong>Name:</strong> {auth?.user?.name}</p>
-                                    <p><strong>Email:</strong> {data.contact_email}</p>
-                                    <p><strong>Phone:</strong> {data.contact_phone}</p>
-                                    <p><strong>Delivery address:</strong> {[data.address_line_1, data.address_line_2, data.city, data.province, data.postal_code].filter(Boolean).join(', ')}</p>
-                                    <p><strong>Products:</strong> {totals.productCount}</p>
-                                    <p><strong>Total quantity:</strong> {totals.totalQuantity}</p>
-                                    <p><strong>Currency:</strong> {data.currency_code}</p>
-                                    <p><strong>Logistics fee:</strong> {quoteMessages?.logistics_fee_notice}</p>
-                                </div>
-                                <p className="mt-4 text-sm text-gray-500">{quoteMessages?.pricing_disclaimer}</p>
-                                <label className="mt-5 flex items-center gap-4 text-sm font-bold"><input type="checkbox" checked={data.confirmation} onChange={e => setData('confirmation', e.target.checked)} /> I confirm that the information above is correct.</label>
-                                {errors.confirmation && <p className="text-red-500 text-xs mt-1">{errors.confirmation}</p>}
-                            </div>
-                        )}
-
-                        <div className="flex justify-end gap-3">
-                            {step === 'review' && <button type="button" onClick={() => setStep('edit')} className="px-6 py-3 rounded-xl border font-bold">Back to Edit</button>}
-                            <button type="submit" disabled={processing || (step === 'review' && !data.confirmation)} className="px-8 py-3 rounded-xl bg-brand-primary text-white font-black disabled:opacity-50">
-                                {processing ? 'Submitting...' : step === 'edit' ? 'Review Manual Order' : (quoteMessages?.submit_button_text || 'Submit Manual Order')}
+                        <div className="flex justify-end gap-3 mt-8 pb-24 lg:pb-0">
+                            <button type="submit" disabled={processing} className="px-8 py-3 rounded-xl bg-brand-primary text-white font-black disabled:opacity-50 transition-transform hover:scale-105">
+                                {processing ? 'Submitting...' : (quoteMessages?.submit_button_text || 'Submit Manual Order')}
                             </button>
                         </div>
                     </form>
 
+                    {/* Mobile Sticky Bottom Bar */}
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 flex items-center justify-between gap-4 pb-safe">
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total</span>
+                            <span className="text-lg font-black text-gray-900 dark:text-white">{totals.totalQuantity} items</span>
+                        </div>
+                        <button type="submit" form="manual-order-form" disabled={processing} className="flex-1 max-w-[200px] px-6 py-3.5 rounded-xl bg-brand-primary text-white font-black shadow-lg disabled:opacity-50 transition-transform active:scale-95 text-center">
+                            {processing ? 'Submitting...' : 'Submit Order'}
+                        </button>
+                    </div>
+
                     <aside className="lg:sticky lg:top-24 h-fit bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
-                        <h2 className="text-lg font-black text-gray-900 dark:text-white">Request Summary</h2>
+                        <h2 className="text-lg font-black text-gray-900 dark:text-white">{t('manual_order.request_summary', 'Request Summary')}</h2>
                         <dl className="mt-5 space-y-3 text-sm">
                             <div className="flex justify-between"><dt>Products</dt><dd className="font-bold">{totals.productCount}</dd></div>
                             <div className="flex justify-between"><dt>Total quantity</dt><dd className="font-bold">{totals.totalQuantity}</dd></div>

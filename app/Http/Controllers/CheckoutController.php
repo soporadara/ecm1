@@ -110,6 +110,8 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            \App\Jobs\SendTelegramOrderNotification::dispatchSync($order);
+
             return redirect()->route('shop.index')->with('success', 'Order placed successfully! We will contact you soon.');
 
         } catch (\Exception $e) {

@@ -1,2 +1,46 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /services
+Allow: /blog
+Allow: /track
+Allow: /shipping-rates
+Allow: /warehouses
+Allow: /how-it-works
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /my-orders/
+Disallow: /receipts/
+Disallow: /profile/
+Disallow: /account/
+Disallow: /manual-order/
+Disallow: /checkout/
+
+# AI Bots
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Omgilibot
+Allow: /
+
+User-agent: Omgili
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://mvmlogistics.asia/sitemap.xml

@@ -3,13 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <title inertia>MVM Logistics - Cross-Border Logistics</title>
+        <meta name="description" content="MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from China, Vietnam, etc to Cambodia or From Cambodia to Vietnam.">
+        <meta name="keywords" content="Logistics from Vietnam to Cambodia, China to Cambodia, Cross-Border Logistics, MVM Logistics, ក្រុមហ៊ុនដឹកជញ្ជូន, ដឹកជញ្ជូនពីចិនទៅខ្មែរ, Vận chuyển Việt Nam Campuchia, manual order management application">
+        <title inertia>MVM Logistics — Cross-Border Logistics - Vietnam-Cambodia</title>
         <script>
             (() => {
                 try {
                     const saved = localStorage.getItem('theme');
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    document.documentElement.classList.toggle('dark', saved === 'dark' || (!saved && prefersDark));
+                    document.documentElement.classList.toggle('dark', saved === 'dark');
                 } catch (error) {}
             })();
         </script>
@@ -44,7 +45,7 @@
         <!-- Google Bot Crawler Data (Bots don't execute JS, so we need raw HTML here) -->
         <div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
             <h1>MVM Logistics</h1>
-            <p>MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from international suppliers, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.</p>
+            <p>MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from China, Vietnam, etc to Cambodia or From Cambodia to Vietnam, calculate shipping costs, track real-time delivery statuses from warehouse arrival to destination, and manage payment receipts securely.</p>
             <a href="https://mvmlogistics.asia/privacy-policy">Privacy Policy</a>
             <a href="https://mvmlogistics.asia/terms-of-service">Terms of Service</a>
         </div>

@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             StoreSeeder::class,
             FeatureFlagSeeder::class,
             MarketplaceSeeder::class,
+            BlogSeeder::class,
         ]);
     }
 }

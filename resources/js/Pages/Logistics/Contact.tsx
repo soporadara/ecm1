@@ -13,15 +13,67 @@ export default function Contact() {
     const telegram = general_settings?.telegram_url || 'https://t.me/support';
     const whatsapp = general_settings?.whatsapp_url || 'https://wa.me/85512345678';
 
-    const contactCards = [
-        { label: 'Messenger', value: 'MVMLogistics', href: 'https://m.me/MVMLogistics', icon: MessengerIcon, iconUrl: null },
-        { label: 'Zalo', value: '0317669555', href: 'https://zalo.me/0317669555', icon: ZaloIcon, iconUrl: null },
-        { label: 'Telegram', value: '0317669555', href: 'https://t.me/+855317669555', icon: TelegramIcon, iconUrl: null },
-        { label: 'Phone', value: '0317669555', href: 'tel:0317669555', icon: Phone, iconUrl: null },
-        { label: 'Email', value: 'info@mvmlogistics.asia', href: 'mailto:info@mvmlogistics.asia', icon: Mail, iconUrl: null },
-        { label: 'Office', value: address, href: '#', icon: MapPin, iconUrl: null },
-        { label: 'Business Hours', value: 'Monday to Saturday, 8:30 AM - 6:00 PM', href: '#', icon: Clock, iconUrl: null },
-    ];
+    let contactCards = [];
+    if (general_settings?.social_links) {
+        try {
+            let links = typeof general_settings.social_links === 'string' 
+                ? JSON.parse(general_settings.social_links) 
+                : general_settings.social_links;
+                
+            contactCards = links.filter((l: any) => l.name && l.url).map((link: any) => {
+                let value = link.subtitle;
+                if (!value) {
+                    value = link.url;
+                    try {
+                        if (link.url.startsWith('mailto:')) {
+                            value = link.url.replace('mailto:', '');
+                        } else if (link.url.startsWith('tel:')) {
+                            value = link.url.replace('tel:', '');
+                        } else {
+                            const urlObj = new URL(link.url);
+                            if (urlObj.hostname.includes('facebook.com') || urlObj.hostname.includes('m.me')) {
+                                value = urlObj.pathname.replace(/^\/+/, '');
+                            } else if (urlObj.hostname.includes('zalo.me')) {
+                                value = urlObj.pathname.replace(/^\/+/, '');
+                            } else if (urlObj.hostname.includes('t.me')) {
+                                value = urlObj.pathname.replace(/^\/+/, '');
+                                if (!value.startsWith('+')) value = '@' + value;
+                            } else {
+                                value = urlObj.hostname;
+                            }
+                        }
+                    } catch(e) {}
+                }
+                
+                return {
+                    label: link.name,
+                    value: value,
+                    href: link.url,
+                    icon: ExternalLink,
+                    iconUrl: link.icon
+                };
+            });
+        } catch(e) {}
+    }
+
+    if (contactCards.length === 0) {
+        contactCards = [
+            { label: 'Facebook', value: 'MVMLogistics', href: 'https://www.facebook.com/MVMLogistics', icon: FacebookIcon, iconUrl: null },
+            { label: 'Messenger', value: 'MVMLogistics', href: 'https://m.me/MVMLogistics', icon: MessengerIcon, iconUrl: null },
+            { label: 'Zalo', value: '0813308055', href: 'https://zalo.me/0813308055', icon: ZaloIcon, iconUrl: null },
+            { label: 'Telegram', value: '@mvmlogistic', href: 'https://t.me/mvmlogistic', icon: TelegramIcon, iconUrl: null }
+        ];
+    }
+
+    // Always append Email, Phone, Office, Business Hours
+    contactCards.push(
+        { label: 'Phone (KH)', value: phone, href: `tel:${phone.replace(/\s+/g, '')}`, icon: Phone, iconUrl: null },
+        { label: 'Phone (VN)', value: '(+84) 0813308055', href: 'tel:+840813308055', icon: Phone, iconUrl: null },
+        { label: 'Email', value: email, href: `mailto:${email}`, icon: Mail, iconUrl: null },
+        { label: 'Office (KH)', value: general_settings?.cambodia_map_address || address, href: '#', icon: MapPin, iconUrl: null },
+        { label: 'Office (VN)', value: general_settings?.vietnam_map_address || 'Ho Chi Minh City, Vietnam', href: '#', icon: MapPin, iconUrl: null },
+        { label: 'Business Hours', value: 'Monday to Saturday, 8:30 AM - 6:00 PM', href: '#', icon: Clock, iconUrl: null }
+    );
 
     const currentLang = i18n.language;
 
@@ -43,16 +95,16 @@ export default function Contact() {
     };
 
     return (
-        <MainLayout title="Contact Us" description="Contact support for manual orders, tracking, receipts, and account help.">
-            <Head title="Contact Us" />
+        <MainLayout title={t('contact.title', 'Contact Us')} description={t('contact.description', 'Contact support for manual orders, tracking, receipts, and account help.')}>
+            <Head title={t('contact.title', 'Contact Us')} />
 
             <section className="bg-gray-50 py-16 dark:bg-gray-950">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-3xl text-center">
-                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">Support Center</p>
-                        <h1 className="mt-4 text-4xl font-black text-gray-900 dark:text-white font-serif lg:text-6xl">Contact Us</h1>
+                        <p className="text-xs font-black uppercase tracking-[0.28em] text-brand-primary">{t('contact.support_center', 'Support Center')}</p>
+                        <h1 className="mt-4 text-4xl font-black text-gray-900 dark:text-white font-serif lg:text-6xl">{t('contact.title', 'Contact Us')}</h1>
                         <p className="mt-5 text-lg leading-8 text-gray-600 dark:text-gray-300">
-                            Reach our support team through your preferred channel for manual orders, delivery, receipts, and account help.
+                            {t('contact.support_text', 'Reach our support team through your preferred channel for manual orders, delivery, receipts, and account help.')}
                         </p>
                     </div>
 
@@ -72,11 +124,11 @@ export default function Contact() {
                                 className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-brand-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/30 dark:border-gray-800 dark:bg-gray-900"
                             >
                                 <div className="flex items-start gap-4">
-                                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
+                                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary transition-all duration-300 group-hover:bg-brand-primary group-hover:text-white group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-md">
                                         {card.iconUrl ? (
                                             <img src={card.iconUrl} alt={card.label} className="h-5 w-5 object-contain" />
                                         ) : (
-                                            <card.icon className="h-5 w-5" aria-hidden="true" />
+                                            <card.icon className="h-5 w-5 group-hover:animate-pulse" aria-hidden="true" />
                                         )}
                                     </span>
                                     <div className="min-w-0">
@@ -90,7 +142,7 @@ export default function Contact() {
 
                     <div className="mt-12">
                         <section className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                            <p className="text-xs font-black uppercase tracking-[0.25em] text-brand-primary">About Us</p>
+                            <p className="text-xs font-black uppercase tracking-[0.25em] text-brand-primary">{t('contact.about_us', 'About Us')}</p>
                             <h2 className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{aboutTitle}</h2>
                             <p className="mt-4 whitespace-pre-line text-base font-semibold leading-8 text-gray-600 dark:text-gray-300">{aboutText}</p>
                         </section>
@@ -105,7 +157,7 @@ export default function Contact() {
                                 </h3>
                                 {general_settings?.cambodia_map_open_url && (
                                     <a href={general_settings.cambodia_map_open_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-brand-primary/10 hover:text-brand-primary transition-colors dark:bg-gray-800 dark:text-gray-300">
-                                        Open Map <ExternalLink className="w-3.5 h-3.5" />
+                                        {t('contact.open_map', 'Open Map')} <ExternalLink className="w-3.5 h-3.5" />
                                     </a>
                                 )}
                             </div>
@@ -128,11 +180,11 @@ export default function Contact() {
                             <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <h3 className="text-xl font-black text-gray-950 dark:text-white flex items-center gap-2">
                                     <MapPin className="w-5 h-5 text-brand-primary" />
-                                    Vietnam Office
+                                    {t('contact.vietnam_office', 'Vietnam Office')}
                                 </h3>
                                 {general_settings?.vietnam_map_open_url && (
                                     <a href={general_settings.vietnam_map_open_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-xs font-bold text-gray-700 hover:bg-brand-primary/10 hover:text-brand-primary transition-colors dark:bg-gray-800 dark:text-gray-300">
-                                        Open Map <ExternalLink className="w-3.5 h-3.5" />
+                                        {t('contact.open_map', 'Open Map')} <ExternalLink className="w-3.5 h-3.5" />
                                     </a>
                                 )}
                             </div>
@@ -155,6 +207,14 @@ export default function Contact() {
                 </div>
             </section>
         </MainLayout>
+    );
+}
+
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+        </svg>
     );
 }
 

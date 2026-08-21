@@ -15,10 +15,6 @@ interface SettingsProps {
         about_title?: string;
         about_text?: string;
         social_links?: string;
-        fab_email?: string;
-        fab_phone?: string;
-        fab_messenger?: string;
-        fab_telegram?: string;
         cambodia_map_open_url?: string;
         cambodia_map_address?: string;
         vietnam_map_open_url?: string;
@@ -43,10 +39,6 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                 { name: (settings as any).social_3_name || 'Instagram', url: (settings as any).social_3_url || '', icon: (settings as any).social_3_icon || 'Instagram' },
                 { name: (settings as any).social_4_name || 'TikTok', url: (settings as any).social_4_url || '', icon: (settings as any).social_4_icon || 'Music' }
             ].filter(s => s.name || s.url),
-        fab_email: settings.fab_email || '',
-        fab_phone: settings.fab_phone || '',
-        fab_messenger: settings.fab_messenger || '',
-        fab_telegram: settings.fab_telegram || '',
         cambodia_map_open_url: settings.cambodia_map_open_url || '',
         cambodia_map_address: settings.cambodia_map_address || '',
         vietnam_map_open_url: settings.vietnam_map_open_url || '',
@@ -196,10 +188,10 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
                                         <p className="mb-4 text-sm font-black text-admin-text uppercase tracking-wider">Social Link {index + 1}</p>
-                                        <div className="grid gap-3 sm:grid-cols-3">
+                                        <div className="grid gap-3 sm:grid-cols-2">
                                             <input
                                                 type="text"
-                                                placeholder="Name"
+                                                placeholder="Name (e.g. Telegram)"
                                                 value={link.name}
                                                 onChange={e => {
                                                     const newLinks = [...data.social_links];
@@ -210,14 +202,25 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                             />
                                             <input
                                                 type="url"
-                                                placeholder="https://..."
+                                                placeholder="Link URL (e.g. https://t.me/...)"
                                                 value={link.url}
                                                 onChange={e => {
                                                     const newLinks = [...data.social_links];
                                                     newLinks[index].url = e.target.value;
                                                     setData('social_links', newLinks);
                                                 }}
-                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:col-span-2 sm:text-sm"
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Subtitle (e.g. +855 12 345 678)"
+                                                value={link.subtitle || ''}
+                                                onChange={e => {
+                                                    const newLinks = [...data.social_links];
+                                                    newLinks[index].subtitle = e.target.value;
+                                                    setData('social_links', newLinks);
+                                                }}
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             />
                                             <input
                                                 type="text"
@@ -228,7 +231,7 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                                                     newLinks[index].icon = e.target.value;
                                                     setData('social_links', newLinks);
                                                 }}
-                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:col-span-3 sm:text-sm"
+                                                className="rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             />
                                         </div>
                                     </div>
@@ -389,53 +392,7 @@ export default function GeneralSettings({ settings }: SettingsProps) {
                             </div>
                         </div>
 
-                        {/* Floating Action Buttons (FAB) */}
-                        <div className="pt-6 border-t border-admin-border/50">
-                            <h3 className="text-lg font-bold text-admin-text mb-4">Floating Contact Widget Links</h3>
-                            <p className="text-sm text-admin-text-muted mb-4 -mt-2">Leave a field empty to hide that specific icon from the floating button on the website.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-admin-text-muted mb-2">Email Address</label>
-                                    <input
-                                        type="email"
-                                        value={data.fab_email}
-                                        onChange={e => setData('fab_email', e.target.value)}
-                                        placeholder="support@example.com"
-                                        className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text font-semibold shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm transition-shadow"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-admin-text-muted mb-2">Phone Number</label>
-                                    <input
-                                        type="text"
-                                        value={data.fab_phone}
-                                        onChange={e => setData('fab_phone', e.target.value)}
-                                        placeholder="+1234567890"
-                                        className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text font-semibold shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm transition-shadow"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-admin-text-muted mb-2">Messenger Link</label>
-                                    <input
-                                        type="url"
-                                        value={data.fab_messenger}
-                                        onChange={e => setData('fab_messenger', e.target.value)}
-                                        placeholder="https://m.me/yourpage"
-                                        className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text font-semibold shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm transition-shadow"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-admin-text-muted mb-2">Telegram Link</label>
-                                    <input
-                                        type="url"
-                                        value={data.fab_telegram}
-                                        onChange={e => setData('fab_telegram', e.target.value)}
-                                        placeholder="https://t.me/your_username"
-                                        className="w-full h-11 rounded-xl border-admin-border bg-admin-surface text-admin-text font-semibold shadow-sm focus:border-admin-primary focus:ring-2 focus:ring-admin-primary/20 sm:text-sm transition-shadow"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div className="pt-6 border-t border-admin-border/50 flex items-center justify-end">
                             <button

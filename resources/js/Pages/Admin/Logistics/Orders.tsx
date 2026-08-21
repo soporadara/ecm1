@@ -40,13 +40,17 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
     const [search, setSearch] = React.useState(filters.search || '');
     const [status, setStatus] = React.useState(filters.status || '');
     const [paymentStatus, setPaymentStatus] = React.useState(filters.payment_status || '');
+    const [startDate, setStartDate] = React.useState(filters.start_date || '');
+    const [endDate, setEndDate] = React.useState(filters.end_date || '');
 
-    const handleFilter = (e?: React.FormEvent, overrides?: { search?: string, status?: string, paymentStatus?: string }) => {
+    const handleFilter = (e?: React.FormEvent, overrides?: { search?: string, status?: string, paymentStatus?: string, startDate?: string, endDate?: string }) => {
         if (e) e.preventDefault();
         router.get('/admin/logistics/orders', { 
             search: overrides?.search ?? search, 
             status: overrides?.status ?? status, 
-            payment_status: overrides?.paymentStatus ?? paymentStatus 
+            payment_status: overrides?.paymentStatus ?? paymentStatus,
+            start_date: overrides?.startDate ?? startDate,
+            end_date: overrides?.endDate ?? endDate
         }, { preserveState: true, preserveScroll: true });
     };
 
@@ -111,12 +115,50 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                             {paymentStatuses.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                         </select>
                     </div>
-                    <a 
-                        href={`/admin/logistics/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}`}
-                        className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center justify-center"
-                    >
-                        Export CSV
-                    </a>
+                    <div className="w-36">
+                        <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">Start Date</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={e => { setStartDate(e.target.value); handleFilter(undefined, { startDate: e.target.value }); }}
+                            className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
+                        />
+                    </div>
+                    <div className="w-36">
+                        <label className="block text-xs font-bold text-admin-text-muted uppercase tracking-wider mb-2">End Date</label>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={e => { setEndDate(e.target.value); handleFilter(undefined, { endDate: e.target.value }); }}
+                            className="w-full px-4 py-2 border border-admin-border rounded-lg bg-admin-surface text-admin-text text-sm focus:ring-2 focus:ring-admin-primary"
+                        />
+                    </div>
+                    <div className="flex gap-2 items-center relative group">
+                        <button 
+                            type="button"
+                            className="px-4 py-2 bg-admin-surface-muted text-admin-text text-sm font-semibold rounded-lg border border-admin-border hover:bg-admin-border/50 transition-colors inline-flex items-center gap-2 justify-center"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            EXPORT
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        
+                        <div className="absolute top-full right-0 mt-1 w-48 bg-admin-surface rounded-xl border border-admin-border shadow-lg py-2 hidden group-hover:block z-50">
+                            <a 
+                                href={`/admin/logistics/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&start_date=${startDate}&end_date=${endDate}&format=pdf&preview=1`}
+                                target="_blank" rel="noopener noreferrer"
+                                className="block px-4 py-2 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors"
+                            >
+                                Export as PDF
+                            </a>
+                            <a 
+                                href={`/admin/logistics/orders/export?search=${search}&status=${status}&payment_status=${paymentStatus}&start_date=${startDate}&end_date=${endDate}&format=csv`}
+                                className="block px-4 py-2 text-sm font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors"
+                            >
+                                Export as CSV
+                            </a>
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -137,12 +179,17 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                         </thead>
                         <tbody className="divide-y divide-admin-border/50">
                             {orders.data.map((order, index) => (
-                                <tr key={order.id} className="hover:bg-admin-surface-muted/30 transition-colors">
+                                <tr key={order.id} className={`hover:bg-admin-surface-muted/30 transition-colors ${order.status === 'submitted' ? 'border-l-4 border-l-blue-500 bg-blue-500/5' : ''}`}>
                                     <td className="px-6 py-4 text-admin-text-muted font-medium">
                                         {(orders.current_page - 1) * orders.per_page + index + 1}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-admin-primary">{order.order_number}</div>
+                                        <div className="font-bold text-admin-primary flex items-center gap-2 whitespace-nowrap">
+                                            {order.order_number}
+                                            {order.status === 'submitted' && (
+                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white uppercase tracking-wider">New</span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <Link href={`/admin/logistics/customers/${order.user_id}/orders`} className="font-bold text-admin-text hover:text-admin-primary hover:underline transition-colors block">{order.user?.name || 'Guest'}</Link>
@@ -178,9 +225,9 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex flex-col gap-2 items-end">
                                             <Link href={`/admin/logistics/orders/${order.id}`} className="px-3 py-1.5 bg-admin-primary/10 text-admin-primary hover:bg-admin-primary hover:text-white rounded text-xs font-semibold transition-colors">
-                                                Edit Order
+                                                View Order
                                             </Link>
-                                            <Link href={`/admin/receipts/generate?order_id=${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
+                                            <Link href={`/admin/receipts/generate/${order.id}`} className="px-3 py-1.5 bg-admin-secondary/10 text-admin-secondary hover:bg-admin-secondary hover:text-white rounded text-xs font-semibold transition-colors">
                                                 Generate Receipt
                                             </Link>
                                         </div>

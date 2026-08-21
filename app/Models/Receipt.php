@@ -43,8 +43,7 @@ class Receipt extends Model
     public static function generateReceiptNumber(): string
     {
         do {
-            $year = date('Y');
-            $code = 'RCP-' . $year . '-' . str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+            $code = 'R' . date('ym') . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
         } while (self::where('receipt_number', $code)->exists());
 
         return $code;

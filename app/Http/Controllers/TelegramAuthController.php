@@ -90,6 +90,7 @@ class TelegramAuthController extends Controller
                     'customer_code' => User::generateCustomerCode(),
                     'account_status' => 'active',
                 ]);
+                \App\Jobs\SendTelegramNewCustomerNotification::dispatchSync($user);
             } else {
                 $user->update([
                     'telegram_id' => $telegramId,
@@ -170,6 +171,30 @@ class TelegramAuthController extends Controller
         $lastName = $tgUser['last_name'] ?? '';
         $photoUrl = $tgUser['photo_url'] ?? null;
 
+        $currentUser = Auth::guard('web')->user();
+
+        if ($currentUser) {
+            // If the user is already logged in but missing telegram_id, link it!
+            if (!$currentUser->telegram_id) {
+                // Remove this telegram_id from any other phantom accounts it might have been linked to
+                $existing = User::where('telegram_id', $telegramId)->first();
+                if ($existing && $existing->id !== $currentUser->id) {
+                    $existing->update(['telegram_id' => null, 'telegram_username' => null]);
+                }
+                
+                $currentUser->update([
+                    'telegram_id' => $telegramId,
+                    'telegram_username' => $username,
+                    'avatar' => $photoUrl ?: $currentUser->avatar,
+                ]);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Linked successfully',
+                'user' => $currentUser
+            ]);
+        }
+
         // Same user resolution logic as verifyWidget
         $user = User::where('telegram_id', $telegramId)->first();
 
@@ -195,6 +220,7 @@ class TelegramAuthController extends Controller
                     'customer_code' => User::generateCustomerCode(),
                     'account_status' => 'active',
                 ]);
+                \App\Jobs\SendTelegramNewCustomerNotification::dispatchSync($user);
             } else {
                 $user->update([
                     'telegram_id' => $telegramId,
@@ -279,7 +305,7 @@ class TelegramAuthController extends Controller
                         
                         $name = $fromUsername ?? trim(($message['from']['first_name'] ?? '') . ' ' . ($message['from']['last_name'] ?? '')) ?: 'Telegram User';
                         
-                        User::create([
+                        $user = User::create([
                             'name' => $name,
                             'phone_e164' => $normalizedPhone,
                             'telegram_id' => $fromId,
@@ -287,6 +313,7 @@ class TelegramAuthController extends Controller
                             'account_status' => 'active',
                             'password' => bcrypt(Str::random(24)),
                         ]);
+                        \App\Jobs\SendTelegramNewCustomerNotification::dispatchSync($user);
                         $this->sendMessage($chatId, "🎉 *Registration Complete!*\n\nWe've created a new MVM Logistics account for your phone number.\nReturn to the website and enter your phone number to receive your OTP and log in.", ['remove_keyboard' => true]);
                     }
                 } else {

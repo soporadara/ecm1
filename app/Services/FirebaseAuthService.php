@@ -197,8 +197,8 @@ class FirebaseAuthService
             'authentication_provider' => $this->combinedProvider($user->authentication_provider, $provider),
             'firebase_provider' => $provider,
             'last_login_at' => now(),
-            'preferred_locale' => $user->preferred_locale ?: 'km',
-            'preferred_language' => $user->preferred_language ?: ($user->preferred_locale ?: 'km'),
+            'preferred_locale' => $user->preferred_locale ?: 'en',
+            'preferred_language' => $user->preferred_language ?: ($user->preferred_locale ?: 'en'),
             'preferred_currency' => in_array($user->preferred_currency, ['USD', 'VND'], true) ? $user->preferred_currency : 'USD',
             'role' => $user->role ?: 'customer',
             'is_admin' => false,
@@ -274,9 +274,9 @@ class FirebaseAuthService
 
     private function preferredLocale(Request $request): string
     {
-        $locale = $request->header('X-App-Locale') ?: $request->input('locale') ?: 'km';
+        $locale = $request->header('X-App-Locale') ?: $request->input('locale') ?: 'en';
 
-        return in_array($locale, ['km', 'en', 'vi'], true) ? $locale : 'km';
+        return in_array($locale, ['km', 'en', 'vi'], true) ? $locale : 'en';
     }
 
     private function audit(string $action, ?User $user, Request $request, array $newValues = []): void

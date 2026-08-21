@@ -42,7 +42,11 @@ class PostController extends Controller
             try {
                 $response = \Illuminate\Support\Facades\Http::get($exportUrl);
                 if ($response->successful()) {
-                    return response()->json(['text' => $response->body()]);
+                    $body = $response->body();
+                    if (str_contains(strtolower($body), '<html') || str_contains(strtolower($body), '<!doctype html>')) {
+                        return response()->json(['error' => 'The Google Doc is private or requires login. Please set it to "Anyone with the link can view".'], 422);
+                    }
+                    return response()->json(['text' => $body]);
                 }
             } catch (\Exception $e) {
                 // ignore and fall through to error
@@ -75,14 +79,48 @@ class PostController extends Controller
             'post_category_id' => 'nullable|exists:post_categories,id',
             'is_published' => 'boolean',
             'scheduled_at' => 'nullable|date',
+            'order_index' => 'nullable|integer',
+            'tags' => 'nullable|string|max:1000',
         ]);
 
         if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['title']);
+            $slug = Str::slug($validated['title']);
+            if (empty($slug)) {
+                $slug = 'post-' . uniqid();
+            }
+        } else {
+            $slug = Str::slug($validated['slug']);
+            if (empty($slug)) {
+                $slug = 'post-' . uniqid();
+            }
+        }
+
+        $originalSlug = $slug;
+        $counter = 1;
+        while (\App\Models\Post::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+        $validated['slug'] = $slug;
+
+        if (!isset($validated['order_index']) || $validated['order_index'] === '') {
+            $validated['order_index'] = \App\Models\Post::max('order_index') + 1;
         }
 
         $validated['user_id'] = auth('admin')->id();
         $validated['images'] = $this->collectImages($request, $validated['image_urls'] ?? null, $validated['image'] ?? null);
+        $validated['image'] = !empty($validated['images']) ? $validated['images'][0] : null;
+
+        if (empty($validated['image']) && !empty($validated['content'])) {
+            if (preg_match('/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i', $validated['content'], $matches)) {
+                $validated['image'] = $matches[1];
+                $validated['images'] = array_values(array_unique(array_merge([$validated['image']], $validated['images'])));
+            } elseif (preg_match('/!\[.*?\]\((.*?)\)/', $validated['content'], $matches)) {
+                $validated['image'] = $matches[1];
+                $validated['images'] = array_values(array_unique(array_merge([$validated['image']], $validated['images'])));
+            }
+        }
+
         $validated['published_at'] = $validated['is_published']
             ? ($validated['scheduled_at'] ?? now())
             : null;
@@ -118,13 +156,47 @@ class PostController extends Controller
             'post_category_id' => 'nullable|exists:post_categories,id',
             'is_published' => 'boolean',
             'scheduled_at' => 'nullable|date',
+            'order_index' => 'nullable|integer',
+            'tags' => 'nullable|string|max:1000',
         ]);
 
         if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['title']);
+            $slug = Str::slug($validated['title']);
+            if (empty($slug)) {
+                $slug = 'post-' . uniqid();
+            }
+        } else {
+            $slug = Str::slug($validated['slug']);
+            if (empty($slug)) {
+                $slug = 'post-' . uniqid();
+            }
+        }
+
+        $originalSlug = $slug;
+        $counter = 1;
+        while (\App\Models\Post::where('slug', $slug)->where('id', '!=', $post->id)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+        $validated['slug'] = $slug;
+
+        if (!isset($validated['order_index']) || $validated['order_index'] === '') {
+            $validated['order_index'] = clone $post->order_index;
         }
 
         $validated['images'] = $this->collectImages($request, $validated['image_urls'] ?? null, $validated['image'] ?? null, $post->images ?? []);
+        $validated['image'] = !empty($validated['images']) ? $validated['images'][0] : null;
+
+        if (empty($validated['image']) && !empty($validated['content'])) {
+            if (preg_match('/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i', $validated['content'], $matches)) {
+                $validated['image'] = $matches[1];
+                $validated['images'] = array_values(array_unique(array_merge([$validated['image']], $validated['images'])));
+            } elseif (preg_match('/!\[.*?\]\((.*?)\)/', $validated['content'], $matches)) {
+                $validated['image'] = $matches[1];
+                $validated['images'] = array_values(array_unique(array_merge([$validated['image']], $validated['images'])));
+            }
+        }
+
         $validated['published_at'] = $validated['is_published']
             ? ($validated['scheduled_at'] ?? $post->published_at ?? now())
             : null;

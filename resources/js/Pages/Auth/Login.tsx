@@ -42,13 +42,13 @@ export default function Login() {
     const [signinForm, setSigninForm] = useState({ email: '', password: '', remember: true });
     const [signupMethod, setSignupMethod] = useState<'email' | 'phone'>('email');
     const [countryCode, setCountryCode] = useState('+855');
+    const [customCountryCode, setCustomCountryCode] = useState('+');
     const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '', password: '', passwordConfirmation: '', acceptTerms: false });
     const { telegram_bot_username } = pageProps;
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark' || (!savedTheme && prefersDark));
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     }, []);
 
     useEffect(() => {
@@ -177,9 +177,21 @@ export default function Login() {
         });
     };
 
+    const [forcePhone, setForcePhone] = useState(false);
+
     const submitSignUp = (event: FormEvent) => {
         event.preventDefault();
         setError(null);
+
+        if (signupMethod === 'phone' && !forcePhone) {
+            if (signupForm.phone.length > 0 && signupForm.phone.length < 7) {
+                const confirmed = window.confirm("Are you sure this phone number is correct? It seems very short.");
+                if (!confirmed) {
+                    return;
+                }
+                setForcePhone(true);
+            }
+        }
 
         if (signupForm.password !== signupForm.passwordConfirmation) {
             setError(t('login.error_password_mismatch'));
@@ -196,7 +208,7 @@ export default function Login() {
         router.post('/register', {
             name: signupForm.name,
             email: signupMethod === 'email' ? signupForm.email : '',
-            phone: signupMethod === 'phone' ? (countryCode === 'other' ? signupForm.phone : `${countryCode} ${signupForm.phone}`) : '',
+            phone: signupMethod === 'phone' ? (countryCode === 'other' ? `${customCountryCode} ${signupForm.phone}` : `${countryCode} ${signupForm.phone}`) : '',
             password: signupForm.password,
             password_confirmation: signupForm.passwordConfirmation,
         }, {
@@ -484,17 +496,37 @@ export default function Login() {
                                         <label className="block sm:col-span-2">
                                             <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number</span>
                                             <div className="flex gap-2">
-                                                <select
-                                                    value={countryCode}
-                                                    onChange={(e) => setCountryCode(e.target.value)}
-                                                    className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                >
-                                                    <option value="+855">🇰🇭 +855</option>
-                                                    <option value="+84">🇻🇳 +84</option>
-                                                    <option value="+856">🇱🇦 +856</option>
-                                                    <option value="+62">🇮🇩 +62</option>
-                                                    <option value="other">Other</option>
-                                                </select>
+                                                {countryCode === 'other' ? (
+                                                    <div className="relative h-[52px] w-[120px] shrink-0">
+                                                        <input 
+                                                            type="text" 
+                                                            value={customCountryCode}
+                                                            onChange={(e) => setCustomCountryCode(e.target.value)}
+                                                            className="h-full w-full rounded-xl border border-slate-200 bg-white pl-3 pr-8 text-sm font-bold text-slate-950 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                            placeholder="+Code"
+                                                            required
+                                                        />
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => setCountryCode('+855')} 
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                                        >
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <select
+                                                        value={countryCode}
+                                                        onChange={(e) => setCountryCode(e.target.value)}
+                                                        className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-[#a3747d] focus:ring-2 focus:ring-[#a3747d]/20 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                    >
+                                                        <option value="+855">🇰🇭 +855</option>
+                                                        <option value="+84">🇻🇳 +84</option>
+                                                        <option value="+856">🇱🇦 +856</option>
+                                                        <option value="+62">🇮🇩 +62</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
+                                                )}
                                                 <input
                                                     type="tel"
                                                     value={signupForm.phone}
@@ -550,9 +582,9 @@ export default function Login() {
                                     />
                                     <span>
                                         {t('login.terms_prefix')}{' '}
-                                        <Link href="/pages/terms" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">{t('login.terms')}</Link>
+                                        <Link href="/terms-of-service" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">{t('login.terms')}</Link>
                                         {' '}{t('login.and')}{' '}
-                                        <Link href="/pages/privacy" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">{t('login.privacy')}</Link>.
+                                        <Link href="/privacy-policy" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">{t('login.privacy')}</Link>.
                                     </span>
                                 </label>
 

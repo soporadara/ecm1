@@ -19,8 +19,8 @@ const languageCodeMap: Record<string, string> = {
 };
 
 const savedLang = localStorage.getItem('language');
-let currentLanguage = savedLang ? (languageCodeMap[savedLang] || savedLang) : 'km';
-if (!translations[currentLanguage]) currentLanguage = 'km';
+let currentLanguage = savedLang ? (languageCodeMap[savedLang] || savedLang) : 'en';
+if (!translations[currentLanguage]) currentLanguage = 'en';
 const listeners = new Set<() => void>();
 
 export function useTranslation() {
@@ -34,7 +34,7 @@ export function useTranslation() {
         };
     }, []);
 
-    const t = useCallback((key: string) => {
+    const t = useCallback((key: string, defaultValue?: string) => {
         if (!key) return '';
         
         // Check for direct string matches in 'db' namespace first
@@ -48,18 +48,18 @@ export function useTranslation() {
             if (value && value[k] !== undefined) {
                 value = value[k];
             } else {
-                value = translations.km;
+                value = translations.en;
                 for (const fallbackKey of keys) {
                     if (value && value[fallbackKey] !== undefined) {
                         value = value[fallbackKey];
                     } else {
-                        return key;
+                        return defaultValue || key;
                     }
                 }
-                return value || key;
+                return value || defaultValue || key;
             }
         }
-        return value || key;
+        return value || defaultValue || key;
     }, [lang]);
 
     const changeLanguage = (newLang: string) => {

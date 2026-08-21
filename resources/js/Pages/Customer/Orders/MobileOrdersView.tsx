@@ -10,15 +10,23 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
     const { formatAmount } = useCurrency();
     const [activeTab, setActiveTab] = useState('All');
     
-    const tabs = ['All', 'Pending', 'Processing', 'Completed', 'Cancelled'];
+    const tabs = [
+        { key: 'All', label: t('orders.tabs.all', 'All') },
+        { key: 'Progress', label: t('orders.tabs.progress', 'Progress') },
+        { key: 'Purchased', label: t('orders.tabs.purchased', 'Purchased') },
+        { key: 'Warehouse', label: t('orders.tabs.warehouse', 'Warehouse') },
+        { key: 'Shipped', label: t('orders.tabs.shipped', 'Shipped') },
+        { key: 'Delivered', label: t('orders.tabs.delivered', 'Delivered') }
+    ];
 
     const filteredOrders = activeTab === 'All' 
         ? orders.data 
         : orders.data.filter((order: any) => {
-            if (activeTab === 'Pending') return order.customer_status_tone === 'amber';
-            if (activeTab === 'Processing') return order.customer_status_tone === 'blue';
-            if (activeTab === 'Completed') return order.customer_status_tone === 'green';
-            if (activeTab === 'Cancelled') return order.customer_status_tone === 'red';
+            if (activeTab === 'Progress') return ['pending_review', 'quote_provided', 'approved'].includes(order.status);
+            if (activeTab === 'Purchased') return order.status === 'purchased';
+            if (activeTab === 'Warehouse') return order.status === 'warehouse_received';
+            if (activeTab === 'Shipped') return ['shipped', 'arrived_destination'].includes(order.status);
+            if (activeTab === 'Delivered') return order.status === 'delivered';
             return true;
         });
 
@@ -30,7 +38,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                     <Link href="/" prefetch={['hover']} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-brand-primary transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <h1 className="text-2xl font-black text-gray-950 dark:text-white">My Orders</h1>
+                    <h1 className="text-2xl font-black text-gray-950 dark:text-white">{t('orders.title', 'My Orders')}</h1>
                 </div>
 
                 <div className="flex gap-3">
@@ -40,7 +48,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                         </div>
                         <input 
                             type="text" 
-                            placeholder="Search orders..." 
+                            placeholder={t('orders.search', 'Search orders...')} 
                             className="w-full pl-11 pr-4 py-3.5 bg-gray-100 dark:bg-gray-800 border-none rounded-2xl text-[15px] text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-brand-primary/50 transition-shadow"
                         />
                     </div>
@@ -53,15 +61,15 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                 <div className="flex overflow-x-auto gap-2 mt-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {tabs.map((tab) => (
                         <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
                             className={`relative px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
-                                activeTab === tab 
+                                activeTab === tab.key 
                                     ? 'text-white bg-gray-900 dark:bg-white dark:text-gray-900 shadow-md' 
                                     : 'text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200'
                             }`}
                         >
-                            {tab}
+                            {tab.label}
                         </button>
                     ))}
                 </div>
@@ -80,8 +88,8 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                             <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <PackageCheck className="w-10 h-10 text-gray-400" />
                             </div>
-                            <h3 className="text-xl font-black text-gray-950 dark:text-white mb-2">No Orders Found</h3>
-                            <p className="text-gray-500 dark:text-gray-400">You don't have any orders matching this status.</p>
+                            <h3 className="text-xl font-black text-gray-950 dark:text-white mb-2">{t('orders.no_orders', 'No Orders Found')}</h3>
+                            <p className="text-gray-500 dark:text-gray-400">{t('orders.no_orders_msg', 'You don\'t have any orders matching this status.')}</p>
                         </motion.div>
                     ) : (
                         filteredOrders.map((order: any) => (
@@ -96,10 +104,10 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                                 {/* Swipe Action Backgrounds */}
                                 <div className="absolute inset-0 flex">
                                     <div className="flex-1 bg-green-500 flex items-center pl-6 text-white font-bold">
-                                        <PackageCheck className="w-6 h-6 mr-2" /> Track
+                                        <PackageCheck className="w-6 h-6 mr-2" /> {t('orders.track', 'Track')}
                                     </div>
                                     <div className="flex-1 bg-brand-primary flex items-center justify-end pr-6 text-white font-bold">
-                                        Contact <ArrowLeft className="w-6 h-6 ml-2" />
+                                        {t('orders.contact', 'Contact')} <ArrowLeft className="w-6 h-6 ml-2" />
                                     </div>
                                 </div>
 
@@ -113,7 +121,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
                                             <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider mb-2 ${statusToneClass[order.customer_status_tone] || statusToneClass.blue}`}>
-                                                {order.customer_status_label || 'In Progress'}
+                                                {t(`status.${order.customer_status_label}`, order.customer_status_label || 'In Progress')}
                                             </span>
                                             <h3 className="text-lg font-black text-gray-950 dark:text-white leading-none">
                                                 {order.order_number || `#${String(order.id).padStart(5, '0')}`}
@@ -124,7 +132,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                                                 {formatAmount(order.final_total_amount || order.estimated_total_amount || order.subtotal_amount, order.currency_code || 'USD')}
                                             </p>
                                             <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-1">
-                                                {order.payment_status_label || 'Unpaid'}
+                                                {t(`status.${order.payment_status_label}`, order.payment_status_label || 'Unpaid')}
                                             </p>
                                         </div>
                                     </div>
@@ -132,7 +140,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                                     <div className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400 py-4 border-y border-gray-50 dark:border-gray-800">
                                         <div className="flex items-center gap-2">
                                             <PackageCheck className="w-4 h-4 text-gray-400" />
-                                            {order.items_count || 0} Items
+                                            {order.items_count || 0} {t('orders.items', 'Items')}
                                         </div>
                                         <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
                                         <div className="flex items-center gap-2 text-xs">
@@ -146,7 +154,7 @@ export default function MobileOrdersView({ orders, statusToneClass }: any) {
                                             href={`/my-orders/${order.id}`}
                                             className="flex-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-gray-950 dark:text-white font-bold py-3.5 rounded-[16px] text-center transition-colors"
                                         >
-                                            View Details
+                                            {t('orders.view_details', 'View Details')}
                                         </Link>
                                     </div>
                                 </motion.div>

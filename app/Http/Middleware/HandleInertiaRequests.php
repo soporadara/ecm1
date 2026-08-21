@@ -57,8 +57,8 @@ class HandleInertiaRequests extends Middleware
         $activeUser = $isAdminRoute ? auth('admin')->user() : auth('web')->user();
 
         $adminNotifications = [];
-        if ($isAdminRoute && $activeUser && \Illuminate\Support\Facades\Schema::hasTable('manual_orders')) {
-            $adminNotifications = \App\Models\ManualOrder::with('user')
+        if ($isAdminRoute && $activeUser && \Illuminate\Support\Facades\Schema::hasTable('orders')) {
+            $adminNotifications = \App\Models\Order::with('user')
                 ->orderBy('created_at', 'desc')
                 ->take(10)
                 ->get()
@@ -125,7 +125,7 @@ class HandleInertiaRequests extends Middleware
             'admin_counts' => $request->is('admin/*') || $request->is('admin') ? \Illuminate\Support\Facades\Cache::remember('admin_counts', 60, function () {
                 return [
                     'customers' => \App\Models\User::where('role', 'customer')->count(),
-                    'orders' => \Illuminate\Support\Facades\Schema::hasTable('manual_orders') ? \DB::table('manual_orders')->count() : 0,
+                    'orders' => \Illuminate\Support\Facades\Schema::hasTable('orders') ? \DB::table('orders')->count() : 0,
                     'posts' => \Illuminate\Support\Facades\Schema::hasTable('posts') ? \DB::table('posts')->count() : 0,
                     'pages' => \Illuminate\Support\Facades\Schema::hasTable('pages') ? \DB::table('pages')->count() : 0,
                     'categories' => \Illuminate\Support\Facades\Schema::hasTable('post_categories') ? \DB::table('post_categories')->count() : 0,

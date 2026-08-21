@@ -1,7 +1,9 @@
 import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import {
+    BookOpen,
     Check,
     ChevronDown,
     ClipboardList,
@@ -121,7 +123,7 @@ export default function MainLayout({ children, title, description }: Props) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [language, setLanguage] = useState<LanguageCode>('km');
+    const [language, setLanguage] = useState<LanguageCode>('en');
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
     const [isAuthChoiceOpen, setIsAuthChoiceOpen] = useState(false);
     const [authMode, setAuthMode] = useState<AuthMode>('signin');
@@ -135,6 +137,7 @@ export default function MainLayout({ children, title, description }: Props) {
     const [signinForm, setSigninForm] = useState({ email: '', password: '', remember: true });
     const [signupMethod, setSignupMethod] = useState<'email' | 'phone'>('email');
     const [countryCode, setCountryCode] = useState('+855');
+    const [customCountryCode, setCustomCountryCode] = useState('+');
     const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '', password: '', passwordConfirmation: '', acceptTerms: false });
     const accountRef = useRef<HTMLDivElement>(null);
     const accountButtonRef = useRef<HTMLButtonElement>(null);
@@ -207,13 +210,12 @@ export default function MainLayout({ children, title, description }: Props) {
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const nextIsDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+        const nextIsDark = savedTheme === 'dark';
         setIsDarkMode(nextIsDark);
         document.documentElement.classList.toggle('dark', nextIsDark);
 
         const savedLanguage = localStorage.getItem('language');
-        const preferredLanguage = languageStorageToCode[savedLanguage || ''] || languageStorageToCode[auth?.user?.preferred_locale] || 'km';
+        const preferredLanguage = languageStorageToCode[savedLanguage || ''] || languageStorageToCode[auth?.user?.preferred_locale] || 'en';
         setLanguage(preferredLanguage);
         if (i18n.language !== preferredLanguage) i18n.changeLanguage(preferredLanguage);
     }, []);
@@ -249,7 +251,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
     useEffect(() => {
         const tg = (window as any).Telegram?.WebApp;
-        if (tg && tg.initData && !customerUser) {
+        if (tg && tg.initData && (!customerUser || !customerUser.telegram_id)) {
             setIsMiniApp(true);
             tg.ready();
             tg.expand();
@@ -462,7 +464,7 @@ export default function MainLayout({ children, title, description }: Props) {
         router.post('/register', {
             name: signupForm.name,
             email: signupMethod === 'email' ? signupForm.email : '',
-            phone: signupMethod === 'phone' ? (countryCode === 'other' ? signupForm.phone : `${countryCode} ${signupForm.phone}`) : '',
+            phone: signupMethod === 'phone' ? (countryCode === 'other' ? `${customCountryCode} ${signupForm.phone}` : `${countryCode} ${signupForm.phone}`) : '',
             password: signupForm.password,
             password_confirmation: signupForm.passwordConfirmation,
         }, {
@@ -484,19 +486,19 @@ export default function MainLayout({ children, title, description }: Props) {
 
     const navLinkClass = (href: string) => {
         const isActive = isActiveNavItem(href);
-        const base = 'inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black uppercase tracking-wider transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-95 overflow-hidden relative';
+        const base = 'inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black uppercase tracking-wider transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 active:scale-95 overflow-hidden relative border border-transparent';
         
-        const glassEffect = 'bg-white/20 dark:bg-white/10 backdrop-blur-md border border-white/30 dark:border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]';
+        const glassEffect = 'bg-white/20 dark:bg-white/10 backdrop-blur-md border-white/30 dark:border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)]';
         
         let stateClass = '';
         if (isActive) {
             stateClass = isTransparent 
                 ? `text-white ${glassEffect} scale-105`
-                : `text-brand-primary bg-brand-primary/10 border border-brand-primary/20 shadow-sm`;
+                : `text-[#1c55c0] dark:text-[#3b82f6] bg-[#1c55c0]/15 dark:bg-[#3b82f6]/20 !border-[#1c55c0]/30 dark:!border-[#3b82f6]/30 shadow-sm`;
         } else {
             stateClass = isTransparent
                 ? `hover:text-white hover:${glassEffect} hover:scale-105`
-                : `hover:text-brand-primary hover:bg-black/5 hover:shadow-sm`;
+                : `hover:text-[#1c55c0] dark:hover:text-[#3b82f6] bg-gradient-to-r from-[#1c55c0]/15 to-[#1c55c0]/15 dark:from-[#3b82f6]/15 dark:to-[#3b82f6]/15 bg-[length:0%_100%] bg-no-repeat bg-center transition-[background-size,border-color,color] duration-300 ease-out hover:bg-[length:100%_100%] hover:!border-[#1c55c0]/30 dark:hover:!border-[#3b82f6]/30`;
         }
         
         return [base, navToneClass, stateClass].join(' ');
@@ -594,7 +596,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         </div>
 
                         <Link href="/my-orders" prefetch={['mount', 'hover']} className={`!hidden lg:!inline-flex ${iconButtonClass}`} aria-label={translatedLabel('nav.my_orders', 'My Orders')}>
-                            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                            <PackageCheck className="h-5 w-5" aria-hidden="true" />
                         </Link>
 
                         <button type="button" onClick={toggleDarkMode} className={`!hidden lg:!inline-flex ${iconButtonClass}`} aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -708,7 +710,7 @@ export default function MainLayout({ children, title, description }: Props) {
                         onClick={() => setIsAuthChoiceOpen(false)}
                         aria-label="Close login options"
                     />
-                    <section className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden bg-white shadow-[0_-4px_60px_rgba(15,23,42,0.24)] ring-1 ring-white/40 dark:bg-[#0f172a] dark:ring-white/10 sm:max-w-6xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+                    <section className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-y-auto overflow-x-hidden bg-white shadow-[0_-4px_60px_rgba(15,23,42,0.24)] ring-1 ring-white/40 dark:bg-[#0f172a] dark:ring-white/10 sm:max-w-6xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
                         {/* Compact close button — top-right, small and clean */}
                         <button
                             ref={authCloseButtonRef}
@@ -841,7 +843,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                             className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
                                         >
                                             {authLoading === 'telegram-widget' ? <Loader2 className="h-5 w-5 animate-spin" /> : <TelegramIcon />}
-                                            {authLoading === 'telegram-widget' ? t('login.loading') : 'Continue with Telegram'}
+                                            {authLoading === 'telegram-widget' ? t('login.loading') : t('login.continue_telegram', { defaultValue: 'Continue with Telegram' })}
                                         </button>
                                     )}
 
@@ -854,7 +856,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                     <form onSubmit={submitModalSignIn} className="space-y-3">
                                         {/* Email or Phone field */}
                                         <label className="block">
-                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Email address or phone number</span>
+                                            <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">{t('login.email_or_phone', { defaultValue: 'Email address or phone number' })}</span>
                                             <span className="relative block">
                                                 <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                                 <input
@@ -862,7 +864,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                                     value={signinForm.email}
                                                     onChange={(event) => setSigninForm({ ...signinForm, email: event.target.value })}
                                                     className="auth-input-left-icon h-[52px] w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-bold text-slate-950 placeholder:text-slate-400 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                    placeholder="Email address or phone number"
+                                                    placeholder={t('login.email_or_phone', { defaultValue: 'Email address or phone number' })}
                                                     autoComplete="username"
                                                     required
                                                 />
@@ -959,7 +961,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                             className="inline-flex min-h-[48px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/40 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white dark:text-slate-950"
                                         >
                                             {authLoading === 'telegram-widget' ? <Loader2 className="h-5 w-5 animate-spin" /> : <TelegramIcon />}
-                                            {authLoading === 'telegram-widget' ? t('login.loading') : 'Sign up with Telegram'}
+                                            {authLoading === 'telegram-widget' ? t('login.loading') : t('login.signup_telegram', { defaultValue: 'Sign up with Telegram' })}
                                         </button>
                                     )}
                                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -978,7 +980,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                             }`}
                                         >
-                                            Sign up with Email
+                                            {t('login.signup_email', { defaultValue: 'Sign up with Email' })}
                                         </button>
                                         <button
                                             type="button"
@@ -989,7 +991,7 @@ export default function MainLayout({ children, title, description }: Props) {
                                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                             }`}
                                         >
-                                            Sign up with Phone
+                                            {t('login.signup_phone', { defaultValue: 'Sign up with Phone' })}
                                         </button>
                                     </div>
 
@@ -1024,17 +1026,37 @@ export default function MainLayout({ children, title, description }: Props) {
                                             <label className="block sm:col-span-2">
                                                 <span className="mb-1 block text-xs font-bold text-slate-600 dark:text-slate-300">Phone Number</span>
                                                 <div className="flex gap-2">
-                                                    <select
-                                                        value={countryCode}
-                                                        onChange={(e) => setCountryCode(e.target.value)}
-                                                        className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
-                                                    >
-                                                        <option value="+855">🇰🇭 +855</option>
-                                                        <option value="+84">🇻🇳 +84</option>
-                                                        <option value="+856">🇱🇦 +856</option>
-                                                        <option value="+62">🇮🇩 +62</option>
-                                                        <option value="other">Other</option>
-                                                    </select>
+                                                    {countryCode === 'other' ? (
+                                                        <div className="relative h-[52px] w-[120px] shrink-0">
+                                                            <input 
+                                                                type="text" 
+                                                                value={customCountryCode}
+                                                                onChange={(e) => setCustomCountryCode(e.target.value)}
+                                                                className="h-full w-full rounded-xl border border-slate-200 bg-white pl-3 pr-8 text-sm font-bold text-slate-950 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                                placeholder="+Code"
+                                                                required
+                                                            />
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => setCountryCode('+855')} 
+                                                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                                            >
+                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <select
+                                                            value={countryCode}
+                                                            onChange={(e) => setCountryCode(e.target.value)}
+                                                            className="h-[52px] w-[120px] shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 shadow-sm transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/15 dark:border-white/10 dark:bg-slate-800 dark:text-white"
+                                                        >
+                                                            <option value="+855">🇰🇭 +855</option>
+                                                            <option value="+84">🇻🇳 +84</option>
+                                                            <option value="+856">🇱🇦 +856</option>
+                                                            <option value="+62">🇮🇩 +62</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    )}
                                                     <input
                                                         type="tel"
                                                         value={signupForm.phone}
@@ -1107,9 +1129,9 @@ export default function MainLayout({ children, title, description }: Props) {
                                         />
                                         <span>
                                             {t('login.terms_prefix')}{' '}
-                                            <Link href="/pages/terms" className="font-black text-brand-primary hover:underline">{t('login.terms')}</Link>
+                                            <Link href="/terms-of-service" className="font-black text-brand-primary hover:underline">{t('login.terms')}</Link>
                                             {' '}{t('login.and')}{' '}
-                                            <Link href="/pages/privacy" className="font-black text-brand-primary hover:underline">{t('login.privacy')}</Link>.
+                                            <Link href="/privacy-policy" className="font-black text-brand-primary hover:underline">{t('login.privacy')}</Link>.
                                         </span>
                                     </label>
 
@@ -1146,11 +1168,18 @@ export default function MainLayout({ children, title, description }: Props) {
             )}
 
             <main id="main-content" className={`flex min-h-[100dvh] flex-1 flex-col ${isHome ? '' : 'lg:pt-[var(--public-header-offset)]'}`}>
-                {children}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="flex flex-col flex-1"
+                >
+                    {children}
+                </motion.div>
             </main>
 
-            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 py-14 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-14 dark:border-gray-800 dark:bg-gray-950">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <footer className="relative z-10 border-t border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-950">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
                     <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                         <div>
                             <Link href="/" className="inline-flex items-center gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 dark:bg-white dark:p-1.5 dark:shadow-[0_0_0_2px_rgba(255,255,255,0.1)]">
@@ -1184,8 +1213,9 @@ export default function MainLayout({ children, title, description }: Props) {
                             <ul className="mt-5 space-y-3 text-sm font-bold text-gray-600 dark:text-gray-400">
                                 <li><Link href="/my-orders" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PackageCheck className="h-4 w-4" />{translatedLabel('nav.my_orders', 'My Orders')}</Link></li>
                                 <li><Link href="/receipts" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><FileText className="h-4 w-4" />{translatedLabel('nav.receipts', 'Receipts')}</Link></li>
-                                <li><Link href="/prohibited-items" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><AlertTriangle className="h-4 w-4" />{translatedLabel('nav.prohibited_items', 'Prohibited Items')}</Link></li>
+                                <li><Link href="/blog" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><BookOpen className="h-4 w-4" />{translatedLabel('nav.blog', 'Blog')}</Link></li>
                                 <li><Link href="/contact" prefetch={['mount', 'hover']} className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><PhoneCall className="h-4 w-4" />{translatedLabel('nav.contact_support', 'Contact Support')}</Link></li>
+                                <li><Link href="/#faq" className="inline-flex min-h-8 items-center gap-2 rounded-lg transition hover:text-brand-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"><HelpCircle className="h-4 w-4" />{translatedLabel('faq.title', 'FAQ')}</Link></li>
                             </ul>
                         </div>
 
@@ -1196,13 +1226,48 @@ export default function MainLayout({ children, title, description }: Props) {
                             </p>
                         </div>
                     </div>
+                </div>
 
-                    <div className="mt-12 border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                        <div>&copy; 2026 MVM Logistics. All Rights Reserved.</div>
-                        <div className="flex gap-4 mt-4 md:mt-0 font-medium">
-                            <Link href="/privacy-policy" className="hover:text-brand-primary transition">{translatedLabel('footer.privacy_policy', 'Privacy Policy')}</Link>
-                            <Link href="/terms-of-service" className="hover:text-brand-primary transition">{translatedLabel('footer.terms_of_service', 'Terms of Service')}</Link>
-                            <Link href="/prohibited-items" className="hover:text-brand-primary transition">{translatedLabel('footer.prohibited_items', 'Prohibited Items')}</Link>
+                {/* Bottom Blue Wavy Section */}
+                <div className="relative w-full mt-4 text-[#1c55c0] dark:text-gray-900 leading-none">
+                    <svg className="block w-full h-[60px] md:h-[120px] dark:opacity-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <path fill="currentColor" fillOpacity="0.3" d="M0,160L48,170.7C96,181,192,203,288,181.3C384,160,480,96,576,90.7C672,85,768,139,864,170.7C960,203,1056,213,1152,192C1248,171,1344,117,1392,90.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        <path fill="currentColor" fillOpacity="0.6" d="M0,224L48,208C96,192,192,160,288,165.3C384,171,480,213,576,213.3C672,213,768,171,864,154.7C960,139,1056,149,1152,160C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        <path fill="currentColor" fillOpacity="1" d="M0,96L48,122.7C96,149,192,203,288,197.3C384,192,480,128,576,106.7C672,85,768,107,864,144C960,181,1056,235,1152,245.3C1248,256,1344,224,1392,208L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                    </svg>
+                    
+                    <div className="w-full bg-[#1c55c0] dark:bg-gray-900 pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-8 pt-4 text-white">
+                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between text-sm gap-6 md:gap-0">
+                            {/* Social Icons (Left) */}
+                            <div className="flex gap-4 font-medium opacity-90 order-2 md:order-1 items-center md:w-1/3 justify-center md:justify-start">
+                                <a href="https://www.facebook.com/MVMLogistics" target="_blank" rel="noreferrer" className="hover:opacity-75 transition-opacity" title="Facebook">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+                                </a>
+                                <a href="https://m.me/MVMLogistics" target="_blank" rel="noreferrer" className="hover:opacity-75 transition-opacity" title="Messenger">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.145 2 11.26c0 2.923 1.5 5.518 3.82 7.185V22l3.493-1.921c.85.234 1.748.36 2.687.36 5.523 0 10-4.145 10-9.26C22 6.145 17.523 2 12 2zm1.066 12.63l-2.73-2.905-5.32 2.905 5.862-6.223 2.805 2.906 5.244-2.906-5.861 6.223z"/></svg>
+                                </a>
+                                <a href="https://zalo.me/0317669555" target="_blank" rel="noreferrer" className="hover:opacity-75 transition-opacity" title="Zalo">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M21.84 10.99c0-5.1-4.78-9.22-10.66-9.22S.52 5.89.52 10.99c0 3.73 2.54 7.02 6.27 8.35v3.4c0 .32.33.54.62.39l4.13-2.06c.32.04.64.07.97.07 5.88 0 10.66-4.12 10.66-9.22z" /></svg>
+                                </a>
+                                <a href="https://t.me/+855317669555" target="_blank" rel="noreferrer" className="hover:opacity-75 transition-opacity" title="Telegram">
+                                    <TelegramIcon className="w-5 h-5" />
+                                </a>
+                                <a href="tel:0317669555" className="hover:opacity-75 transition-opacity" title="Phone">
+                                    <PhoneCall className="w-5 h-5" />
+                                </a>
+                            </div>
+                            
+                            {/* Copyright (Center) */}
+                            <div className="opacity-90 order-1 md:order-2 text-center flex-1 font-semibold tracking-wide">
+                                &copy; {new Date().getFullYear()} MVM Logistics. All Rights Reserved.
+                            </div>
+                            
+                            {/* Policy Links (Right) */}
+                            <div className="flex gap-4 font-medium opacity-90 order-3 md:w-1/3 justify-center md:justify-end">
+                                <Link href="/privacy-policy" className="hover:text-white/70 transition">Privacy Policy</Link>
+                                <Link href="/terms-of-service" className="hover:text-white/70 transition">Terms of Service</Link>
+                                <Link href="/prohibited-items" className="hover:text-white/70 transition">Prohibited Items</Link>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -121,13 +121,35 @@ class ProductController extends Controller
             'brand_id' => 'nullable|exists:brands,id',
             'collection_id' => 'nullable|exists:collections,id',
             'is_active' => 'boolean',
+            'variants' => 'nullable|array',
+            'variants.*.id' => 'nullable|integer',
+            'variants.*.size' => 'nullable|string',
+            'variants.*.color' => 'nullable|string',
+            'variants.*.price' => 'nullable|numeric',
+            'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.sku' => 'nullable|string',
             'gallery' => 'nullable|array',
             'gallery.*.url' => 'required|url',
             'gallery.*.is_hover' => 'boolean'
         ]);
 
-        $productData = collect($validated)->except(['gallery'])->toArray();
+        $productData = collect($validated)->except(['gallery', 'variants'])->toArray();
         $product->update($productData);
+
+        if (isset($validated['variants'])) {
+            $existingVariantIds = collect($validated['variants'])->pluck('id')->filter()->all();
+            $product->variants()->whereNotIn('id', $existingVariantIds)->delete();
+
+            foreach ($validated['variants'] as $variantData) {
+                if (!empty($variantData['id'])) {
+                    $product->variants()->where('id', $variantData['id'])->update(collect($variantData)->except(['id'])->toArray());
+                } else {
+                    $product->variants()->create($variantData);
+                }
+            }
+        } else {
+            $product->variants()->delete();
+        }
 
         if (isset($validated['gallery'])) {
             $product->images()->delete(); // clear old gallery

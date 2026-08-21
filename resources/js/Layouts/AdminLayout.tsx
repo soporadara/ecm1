@@ -30,14 +30,14 @@ const PortalTooltip = ({ text, rect }: { text: string; rect: DOMRect }) => {
     if (typeof document === 'undefined') return null;
     return createPortal(
         <div
-            className="fixed z-[100] px-3 py-1.5 bg-admin-text text-white text-xs font-semibold rounded-lg shadow-xl pointer-events-none whitespace-nowrap"
+            className="fixed z-[100] px-3 py-1.5 bg-gray-800 dark:bg-white text-white dark:text-gray-900 text-xs font-semibold rounded-lg shadow-xl pointer-events-none whitespace-nowrap"
             style={{
                 top: rect.top + rect.height / 2,
                 left: rect.right + 12,
                 transform: 'translateY(-50%)'
             }}
         >
-            <div className="absolute top-1/2 -translate-y-1/2 -left-1 border-4 border-transparent border-r-admin-text" />
+            <div className="absolute top-1/2 -translate-y-1/2 -left-1 border-4 border-transparent border-r-gray-800 dark:border-r-white" />
             {text}
         </div>,
         document.body
@@ -259,23 +259,30 @@ export default function AdminLayout({ children, title, actions }: Props) {
             href: '/admin',
             icon: <Icon d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />,
         }] : []),
-        ...(hasPermission('orders.view') ? [{
-            label: 'Customers',
-            href: '/admin/logistics/customers',
-            icon: <Icon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />,
-            badge: admin_counts?.customers,
-        },
-        {
-            label: 'Orders',
-            href: '/admin/logistics/orders',
-            icon: <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />,
-            badge: admin_counts?.orders,
-        },
-        {
-            label: 'Reports',
-            href: '/admin/logistics/reports',
-            icon: <Icon d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
-        }] : []),
+        ...(hasPermission('orders.view') ? [
+            {
+                label: 'Customers',
+                href: '/admin/logistics/customers',
+                icon: <Icon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />,
+                badge: admin_counts?.customers,
+            },
+            {
+                label: 'Orders',
+                href: '/admin/logistics/orders',
+                icon: <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />,
+                badge: admin_counts?.orders,
+            },
+            ...(auth?.user?.role !== 'logistics' ? [{
+                label: 'Quote Requests',
+                href: '/admin/quote-requests',
+                icon: <Icon d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />,
+            }] : []),
+            {
+                label: 'Reports',
+                href: '/admin/logistics/reports',
+                icon: <Icon d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+            }
+        ] : []),
         ...(hasPermission('team_notes.view') ? [{
             label: 'Team Notes',
             href: '/admin/notes',
@@ -284,7 +291,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
     ];
 
     const blogNavItems: NavItem[] = [
-        ...(hasPermission('posts.view') ? [{
+        ...(hasPermission('posts.view') && auth?.user?.role !== 'logistics' ? [{
             label: 'Blog Posts',
             href: '/admin/posts',
             icon: <Icon d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />,
@@ -299,23 +306,23 @@ export default function AdminLayout({ children, title, actions }: Props) {
     ];
 
     const contentNavItems: NavItem[] = [
-        ...(hasPermission('pages.view') ? [{
+        ...(hasPermission('pages.view') && auth?.user?.role !== 'logistics' ? [{
             label: 'Pages',
             href: '/admin/pages',
             icon: <Icon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
             badge: admin_counts?.pages,
         }] : []),
-        ...(hasPermission('banners.view') ? [{
+        ...(hasPermission('banners.view') && auth?.user?.role !== 'logistics' ? [{
             label: 'Banners',
             href: '/admin/banners',
             icon: <Icon d="M4 5h16M4 19h16M4 5v14m16-14v14M8 9h8m-8 4h5" />,
         }] : []),
         ...(hasPermission('testimonials.view') ? [{
-            label: 'Testimonials',
+            label: 'Customer Reviews',
             href: '/admin/testimonials',
             icon: <Icon d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />,
         }] : []),
-        ...(auth?.user?.role === 'admin' || auth?.user?.role === 'super_admin' || auth?.user?.role === 'superadmin' ? [{
+        ...(auth?.user?.role === 'admin' || auth?.user?.role === 'super_admin' || auth?.user?.role === 'superadmin' || auth?.user?.role === 'logistics' ? [{
             label: 'Telegram FAQs',
             href: '/admin/telegram-faqs',
             icon: <Icon d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />,
@@ -347,7 +354,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
             href: '/admin/customers-management',
             icon: <Icon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />,
         }] : []),
-        ...(hasPermission('staff.view') ? [
+        ...(hasPermission('staff.view') && auth?.user?.role !== 'logistics' ? [
             {
                 label: 'Staff & Users',
                 href: '/admin/staff',
@@ -355,7 +362,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 badge: admin_counts?.staff,
             }
         ] : []),
-        ...(hasPermission('audit_logs.view') ? [{
+        ...(hasPermission('audit_logs.view') && auth?.user?.role !== 'logistics' ? [{
             label: 'Audit Logs',
             href: '/admin/audit-logs',
             icon: <Icon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
@@ -364,6 +371,58 @@ export default function AdminLayout({ children, title, actions }: Props) {
             label: 'Access Control',
             href: '/admin/security/access-control',
             icon: <Icon d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm6 0h-1V9a5 5 0 00-10 0v2H6a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2z" />,
+        }] : []),
+    ];
+
+    const logisticsNavItems: NavItem[] = [
+        ...(hasPermission('dashboard.view') ? [{
+            label: 'Dashboard',
+            href: '/admin',
+            icon: <Icon d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />,
+        }] : []),
+        ...(hasPermission('orders.view') ? [
+            {
+                label: 'Orders',
+                href: '/admin/logistics/orders',
+                icon: <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />,
+                badge: admin_counts?.orders,
+            },
+            {
+                label: 'Customers',
+                href: '/admin/logistics/customers',
+                icon: <Icon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />,
+                badge: admin_counts?.customers,
+            },
+            {
+                label: 'Reports',
+                href: '/admin/logistics/reports',
+                icon: <Icon d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+            }
+        ] : []),
+        ...(hasPermission('team_notes.view') ? [{
+            label: 'Team Notes',
+            href: '/admin/notes',
+            icon: <Icon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+        }] : []),
+        ...(hasPermission('testimonials.view') ? [{
+            label: 'Customer Reviews',
+            href: '/admin/testimonials',
+            icon: <Icon d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />,
+        }] : []),
+        ...(auth?.user?.role === 'logistics' ? [{
+            label: 'Telegram FAQs',
+            href: '/admin/telegram-faqs',
+            icon: <Icon d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />,
+        }] : []),
+        ...(hasPermission('available_sites.view') ? [{
+            label: 'Available Sites',
+            href: '/admin/available-sites',
+            icon: <Icon d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488A9 9 0 113.512 8.512" />,
+        }] : []),
+        ...(hasPermission('popups.view') ? [{
+            label: 'Pop-up Ads',
+            href: '/admin/popups',
+            icon: <Icon d="M7 8h10M7 12h4m1 8l-4-4H5a3 3 0 01-3-3V6a3 3 0 013-3h14a3 3 0 013 3v7a3 3 0 01-3 3h-3l-4 4z" />,
         }] : []),
     ];
 
@@ -441,16 +500,22 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto py-4 px-2 space-y-4"
             >
-                <NavGroup label="Store" items={storeNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
-                <NavGroup label="Content" items={contentNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
-                <NavGroup label="Blog" items={blogNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
-                <NavGroup label="Marketing" items={marketingNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
-                <NavGroup label="Appearance" items={appearanceNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
-                <NavGroup label="System" items={systemNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                {auth?.user?.role === 'logistics' ? (
+                    <NavGroup label="Logistics Dashboard" items={logisticsNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                ) : (
+                    <>
+                        <NavGroup label="Store" items={storeNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                        <NavGroup label="Content" items={contentNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                        <NavGroup label="Blog" items={blogNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                        <NavGroup label="Marketing" items={marketingNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                        <NavGroup label="Appearance" items={appearanceNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                        <NavGroup label="System" items={systemNavItems} currentPath={currentPath} collapsed={sidebarCollapsed} />
+                    </>
+                )}
             </nav>
 
             {/* User Footer (Dropdown Menu) */}
-            <div className={`mt-auto mb-6 mx-4 relative`} ref={profileMenuRef}>
+            <div className={`mt-auto mb-[calc(1.5rem+env(safe-area-inset-bottom))] mx-4 relative`} ref={profileMenuRef}>
                 <button 
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
                     className={`w-full p-3 rounded-2xl border border-admin-border/50 bg-admin-surface-muted/50 hover:bg-admin-surface transition-colors flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3 text-left'}`}
@@ -596,7 +661,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
 
                             {/* Notification Dropdown */}
                             {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden max-h-[80vh] flex flex-col">
+                                <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden max-h-[80vh] flex flex-col">
                                     <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                                         <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
                                         {notifPermission !== 'granted' && (
@@ -669,21 +734,37 @@ export default function AdminLayout({ children, title, actions }: Props) {
                         </div>
 
                         {/* Profile Pill */}
-                        <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-admin-border/50">
+                        <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-admin-border/50 relative group cursor-pointer pb-1">
                             <div className="text-right hidden md:block">
                                 <p className="text-[13px] font-bold text-admin-text leading-none mb-1">{auth?.user?.name}</p>
                                 <p className="text-[11px] font-bold text-admin-text-muted capitalize leading-none">{auth?.user?.role?.replace('_', ' ')}</p>
                             </div>
-                            <Link href="/admin/profile" prefetch={['mount', 'hover']} className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden cursor-pointer shadow-sm hover:opacity-80 transition-opacity">
+                            <div className="w-10 h-10 rounded-full bg-admin-primary/10 flex items-center justify-center text-admin-primary font-bold text-sm border border-admin-primary/20 overflow-hidden shadow-sm transition-all group-hover:ring-2 ring-admin-primary/50">
                                 {auth?.user?.avatar ? (
                                     <img src={auth.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     auth?.user?.name?.charAt(0)?.toUpperCase()
                                 )}
-                            </Link>
-                            <Link href="/admin/profile" prefetch={['mount', 'hover']} className="w-4 h-4 text-admin-text-muted ml-1 hover:text-admin-text transition-colors">
+                            </div>
+                            <div className="w-4 h-4 text-admin-text-muted ml-1 group-hover:text-admin-text transition-colors">
                                 <Icon d="M19 9l-7 7-7-7" />
-                            </Link>
+                            </div>
+
+                            {/* Dropdown Menu */}
+                            <div className="absolute top-[100%] right-0 mt-1 w-56 bg-white dark:bg-gray-900 rounded-2xl border border-admin-border shadow-xl py-2 hidden group-hover:block z-[100] before:absolute before:top-[-16px] before:right-0 before:w-full before:h-4">
+                                <div className="px-4 py-3 border-b border-admin-border/50 mb-2">
+                                    <p className="text-sm font-bold text-admin-text truncate">{auth?.user?.name}</p>
+                                    <p className="text-[11px] text-admin-text-muted truncate mt-0.5">{auth?.user?.email}</p>
+                                </div>
+                                <Link href="/admin/profile" prefetch={['mount', 'hover']} className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-admin-text hover:bg-admin-surface-muted transition-colors">
+                                    <Icon d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" className="w-4 h-4 opacity-70" />
+                                    My Profile
+                                </Link>
+                                <Link href="/cms/logout" method="post" as="button" className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-admin-danger hover:bg-admin-danger/10 transition-colors mt-1 border-t border-admin-border/50 pt-3">
+                                    <Icon d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" className="w-4 h-4 opacity-70" />
+                                    Sign Out
+                                </Link>
+                            </div>
                         </div>
                         
                         {/* Primary Page Action Slot */}

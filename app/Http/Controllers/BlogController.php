@@ -27,6 +27,7 @@ class BlogController extends Controller
             ->when($request->filled('from'), fn ($q) => $q->whereDate('published_at', '>=', $request->input('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('published_at', '<=', $request->input('to')))
             ->latest('published_at')
+            ->orderBy('order_index', 'desc')
             ->paginate(12)
             ->withQueryString();
 
@@ -58,6 +59,7 @@ class BlogController extends Controller
             })
             ->where('id', '!=', $post->id)
             ->latest('published_at')
+            ->orderBy('order_index', 'desc')
             ->take(3)
             ->get();
 

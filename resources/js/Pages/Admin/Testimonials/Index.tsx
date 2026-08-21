@@ -88,9 +88,9 @@ export default function Index({ testimonials: initialTestimonials }: any) {
                 axios.post('/admin/testimonials/reorder', {
                     items: updatedItems.map(i => ({ id: i.id, sort_order: i.sort_order }))
                 }).then(() => {
-                    toast.success('Testimonials reordered');
+                    toast.success('Customer Reviews reordered');
                 }).catch(() => {
-                    toast.error('Failed to reorder testimonials');
+                    toast.error('Failed to reorder customer reviews');
                     setItems(prev);
                 });
 
@@ -111,6 +111,7 @@ export default function Index({ testimonials: initialTestimonials }: any) {
         remove_product_image_1: false,
         product_image_2: null as File | null,
         remove_product_image_2: false,
+        _method: 'post',
     });
 
     const openModal = (testimonial: any = null) => {
@@ -130,10 +131,12 @@ export default function Index({ testimonials: initialTestimonials }: any) {
                 remove_product_image_1: false,
                 product_image_2: null,
                 remove_product_image_2: false,
+                _method: 'put',
             });
         } else {
             setEditingId(null);
             reset();
+            setData('_method', 'post');
         }
         setIsModalOpen(true);
     };
@@ -141,25 +144,16 @@ export default function Index({ testimonials: initialTestimonials }: any) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (editingId) {
-            // Inertia doesn't support PUT with files, so we use POST with _method
-            router.post(`/admin/testimonials/${editingId}`, {
-                _method: 'put',
-                ...data,
-            }, {
-                preserveScroll: true,
-                onSuccess: () => setIsModalOpen(false),
-            });
-        } else {
-            post('/admin/testimonials', {
-                preserveScroll: true,
-                onSuccess: () => setIsModalOpen(false),
-            });
-        }
+        const url = editingId ? `/admin/testimonials/${editingId}` : '/admin/testimonials';
+        
+        post(url, {
+            preserveScroll: true,
+            onSuccess: () => setIsModalOpen(false),
+        });
     };
 
     const handleDelete = async (id: number) => {
-        if (await confirmAction('Are you sure you want to delete this testimonial?')) {
+        if (await confirmAction('Are you sure you want to delete this review?')) {
             router.delete(`/admin/testimonials/${id}`);
         }
     };
@@ -190,12 +184,12 @@ export default function Index({ testimonials: initialTestimonials }: any) {
 
     return (
         <AdminLayout>
-            <Head title="Testimonials - Admin" />
+            <Head title="Customer Reviews - Admin" />
 
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-admin-text tracking-tight">Customer Reviews (Testimonials)</h1>
+                        <h1 className="text-2xl font-bold text-admin-text tracking-tight">Customer Reviews</h1>
                         <p className="text-sm font-medium text-admin-text-muted mt-1">Manage what customers are saying on your homepage.</p>
                     </div>
                     <button onClick={() => openModal()} className="px-4 py-2 bg-admin-primary text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-admin-primary-hover transition-colors">
