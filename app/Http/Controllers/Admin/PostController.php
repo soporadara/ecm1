@@ -246,6 +246,18 @@ class PostController extends Controller
         return back()->with('success', 'Reply saved successfully.');
     }
 
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|max:5120',
+        ]);
+
+        $path = $request->file('image')->store('posts', 'public');
+        $url = Storage::disk('public')->url($path);
+
+        return response()->json(['url' => $url]);
+    }
+
     private function collectImages(Request $request, ?string $imageUrls, ?string $coverImage, array $existing = []): array
     {
         $images = collect($existing)

@@ -40,15 +40,13 @@ export default function Customers({ customers, filters }: Props) {
     }, [search, startDate, endDate]);
 
     return (
-        <AdminLayout title="Logistics CRM - Customers">
+        <AdminLayout 
+            title="Logistics Customers"
+            description="Select a customer to view or manage their manual orders."
+        >
             <Head title="Customers — Logistics CRM" />
 
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">Logistics Customers</h1>
-                    <p className="text-sm text-admin-text-muted mt-1">Select a customer to view or manage their manual orders.</p>
-                </div>
-            </div>
+
 
             <div className="bg-admin-surface rounded-2xl border border-admin-border/50 shadow-sm shadow-admin-border/20 overflow-hidden">
                 <div className="p-4 border-b border-admin-border bg-admin-surface-muted/30">

@@ -71,15 +71,13 @@ export default function Orders({ orders, filters, statuses, paymentStatuses }: P
     };
 
     return (
-        <AdminLayout title="All Manual Orders">
+        <AdminLayout 
+            title="All Manual Orders"
+            description="Manage and track all logistics orders."
+        >
             <Head title="Orders — Logistics CRM" />
 
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-admin-text tracking-tight">All Manual Orders</h1>
-                    <p className="text-sm text-admin-text-muted mt-1">Manage and track all logistics orders.</p>
-                </div>
-            </div>
+
 
             <div className="bg-admin-surface rounded-2xl border border-admin-border/50 p-4 mb-6 shadow-sm shadow-admin-border/20">
                 <form onSubmit={handleFilter} className="flex flex-wrap gap-4 items-end">

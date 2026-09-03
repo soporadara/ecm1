@@ -13,9 +13,7 @@ class SitemapController extends Controller
     {
         $urls = [
             '/',
-            '/about',
             '/contact',
-            '/services',
             '/how-it-works',
             '/shipping-rates',
             '/warehouses',
@@ -29,7 +27,7 @@ class SitemapController extends Controller
 
         foreach ($urls as $url) {
             $xml .= '<url>';
-            $xml .= '<loc>' . url($url) . '</loc>';
+            $xml .= '<loc>' . htmlspecialchars(url($url), ENT_XML1, 'UTF-8') . '</loc>';
             $xml .= '<changefreq>weekly</changefreq>';
             $xml .= '<priority>' . ($url === '/' ? '1.0' : '0.8') . '</priority>';
             $xml .= '</url>';
@@ -39,7 +37,7 @@ class SitemapController extends Controller
         $blogs = Post::where('is_published', true)->get();
         foreach ($blogs as $blog) {
             $xml .= '<url>';
-            $xml .= '<loc>' . url('/blog/' . $blog->slug) . '</loc>';
+            $xml .= '<loc>' . htmlspecialchars(url('/blog/' . $blog->slug), ENT_XML1, 'UTF-8') . '</loc>';
             $xml .= '<changefreq>monthly</changefreq>';
             $xml .= '<priority>0.7</priority>';
             $xml .= '</url>';
@@ -49,7 +47,7 @@ class SitemapController extends Controller
         $pages = Page::where('is_published', true)->where('is_system', false)->get();
         foreach ($pages as $page) {
             $xml .= '<url>';
-            $xml .= '<loc>' . url('/pages/' . $page->slug) . '</loc>';
+            $xml .= '<loc>' . htmlspecialchars(url('/pages/' . $page->slug), ENT_XML1, 'UTF-8') . '</loc>';
             $xml .= '<changefreq>monthly</changefreq>';
             $xml .= '<priority>0.6</priority>';
             $xml .= '</url>';

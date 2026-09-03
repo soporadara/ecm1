@@ -42,7 +42,7 @@ def main():
         f"--exclude 'database/*.sqlite-journal' "
         f"./ {SSH_USER}@{SSH_HOST}:{REMOTE_PATH}"
     )
-    print("NOTE: We are using sshpass to authenticate.")
+    print("NOTE: We are using sshpass to authenticate automatically.")
     run_command(rsync_cmd)
     
     print_step("Uploading images to server (rsync)")
@@ -66,7 +66,9 @@ def main():
         f"sed -i \"s/^# DB_PASSWORD/DB_PASSWORD/\" .env && "
         f"sed -i \"s|^APP_URL=.*|APP_URL=https://mvmlogistics.asia|\" .env && "
         f"sed -i \"s/DB_CONNECTION=sqlite/DB_CONNECTION=mysql/\" .env && "
-        f"sed -i \"s/DB_HOST=localhost/DB_HOST=127.0.0.1/\" .env && "
+        f"sed -i \"s/DB_HOST=127.0.0.1/DB_HOST=localhost/\" .env && "
+        f"sed -i \"s|^DB_SOCKET=.*|DB_SOCKET=/tmp/mysql.sock|\" .env && "
+        f"grep -q \"^DB_SOCKET=\" .env || echo \"DB_SOCKET=/tmp/mysql.sock\" >> .env && "
         f"sed -i \"s|^MAIL_MAILER=.*|MAIL_MAILER=log|\" .env && "
         f"sed -i \"s|^MAIL_FROM_ADDRESS=.*|MAIL_FROM_ADDRESS=support@mvmlogistics.asia|\" .env && "
         f"sed -i \"s|^FIREBASE_CREDENTIALS=.*|FIREBASE_CREDENTIALS=storage/app/firebase-credentials.json|\" .env && "

@@ -54,6 +54,8 @@ interface Props {
     children: ReactNode;
     title?: string;
     description?: string;
+    image?: string;
+    keywords?: string;
 }
 
 type LanguageCode = 'km' | 'en' | 'vi';
@@ -114,7 +116,7 @@ function TelegramIcon() {
     );
 }
 
-export default function MainLayout({ children, title, description }: Props) {
+export default function MainLayout({ children, title, description, image, keywords }: Props) {
     const { auth, general_settings, flash, global_nav, telegram_bot_username, telegram_bot_id }: any = usePage().props;
     const { url, component } = usePage();
     const isHome = component === 'Home';
@@ -511,7 +513,7 @@ export default function MainLayout({ children, title, description }: Props) {
 
     return (
         <div className="min-h-[100dvh] overflow-x-hidden bg-white font-sans antialiased text-brand-gray transition-colors duration-300 [--public-header-height:5rem] [--public-header-offset:5rem] dark:bg-gray-950 dark:text-gray-300 lg:[--public-header-height:6rem] lg:[--public-header-offset:6rem]">
-            <SeoHead title={title} description={description} />
+            <SeoHead title={title} description={description} image={image} keywords={keywords} />
             <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-xl focus:bg-white focus:px-4 focus:py-3 focus:text-sm focus:font-black focus:text-gray-950 focus:shadow-lg">
                 Skip to content
             </a>

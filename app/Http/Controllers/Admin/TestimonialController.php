@@ -26,9 +26,9 @@ class TestimonialController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
-            'image' => 'nullable|image|max:2048',
-            'product_image_1' => 'nullable|image|max:2048',
-            'product_image_2' => 'nullable|image|max:2048'
+            'image' => 'nullable|image',
+            'product_image_1' => 'nullable|image',
+            'product_image_2' => 'nullable|image'
         ]);
 
         // Remove raw file entries before saving; replace with stored paths
@@ -57,9 +57,9 @@ class TestimonialController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
-            'image' => 'nullable|image|max:2048',
-            'product_image_1' => 'nullable|image|max:2048',
-            'product_image_2' => 'nullable|image|max:2048'
+            'image' => 'nullable|image',
+            'product_image_1' => 'nullable|image',
+            'product_image_2' => 'nullable|image'
         ]);
 
         if ($request->hasFile('image')) {

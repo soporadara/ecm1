@@ -1,18 +1,29 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import MainLayout from '../Layouts/MainLayout';
-import { Shield } from 'lucide-react';
+import { Shield, ArrowLeft } from 'lucide-react';
 
 export default function PrivacyPolicy() {
     return (
         <MainLayout title="Privacy Policy" description="How MVM Logistics protects your data">
             <Head title="Privacy Policy - MVM Logistics" />
             
-            <div className="bg-white dark:bg-gray-950 py-16 sm:py-24">
-                <div className="mx-auto max-w-3xl px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl text-center mb-16">
-                        <div className="mx-auto w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mb-6">
-                            <Shield className="w-8 h-8 text-brand-primary" />
-                        </div>
+            <div className="bg-white dark:bg-gray-950 min-h-screen">
+                {/* Header */}
+                <div className="bg-white dark:bg-gray-900 px-5 pt-8 pb-4 shadow-sm sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-3 max-w-3xl mx-auto">
+                        <button onClick={() => window.history.back()} className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-brand-primary transition-colors">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-2xl font-black text-gray-950 dark:text-white">Back</h1>
+                    </div>
+                </div>
+
+                <div className="py-16 sm:py-24">
+                    <div className="mx-auto max-w-3xl px-6 lg:px-8">
+                        <div className="mx-auto max-w-2xl text-center mb-16">
+                            <div className="mx-auto w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mb-6">
+                                <Shield className="w-8 h-8 text-brand-primary" />
+                            </div>
                         <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white sm:text-4xl font-serif">Privacy Policy</h1>
                         <p className="mt-4 text-lg leading-8 text-gray-600 dark:text-gray-400">
                             Effective Date: August 2026
@@ -62,6 +73,7 @@ export default function PrivacyPolicy() {
                         </p>
                     </div>
                 </div>
+            </div>
             </div>
         </MainLayout>
     );

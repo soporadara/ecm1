@@ -28,6 +28,7 @@
     </div>
 
     <div class="header">
+        <img src="{{ asset('logo.png') }}" alt="Logo" class="logo" style="max-height: 60px; margin-bottom: 15px;">
         <h1>{{ ucfirst(str_replace('_', ' ', $type)) }} Report</h1>
         <p>Generated on {{ now()->format('F j, Y, g:i a') }}</p>
         @if(isset($startDate) || isset($endDate))

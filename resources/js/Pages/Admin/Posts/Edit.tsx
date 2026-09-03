@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import toast from 'react-hot-toast';
 import RichTextEditor from '../../../Components/Premium/RichTextEditor';
+import ImageUploader from '../../../Components/Admin/ImageUploader';
 
 export default function Edit({ post, categories = [] }: { post: any; categories?: any[] }) {
     const [isSmartImportOpen, setIsSmartImportOpen] = useState(false);
@@ -212,21 +213,21 @@ export default function Edit({ post, categories = [] }: { post: any; categories?
                         <div>
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Article Image URLs</label>
                             <textarea
-                                className="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary"
-                                rows={5}
+                                className="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white focus:ring-brand-primary focus:border-brand-primary shadow-inner"
+                                rows={8}
                                 value={data.image_urls}
                                 onChange={e => setData('image_urls', e.target.value)}
                             />
+                            <p className="mt-2 text-xs text-gray-500">Any URL listed here will be saved as an image for this article.</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Upload More Images</label>
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={e => setData('image_files', Array.from(e.target.files || []))}
-                                className="block w-full rounded-xl border border-dashed border-gray-300 bg-white p-4 text-sm font-semibold text-gray-700 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-primary file:px-4 file:py-2 file:text-sm file:font-black file:text-white hover:border-brand-primary dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
-                            />
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Upload New Images</label>
+                            <ImageUploader onUploadSuccess={(url) => {
+                                setData(prev => ({
+                                    ...prev,
+                                    image_urls: prev.image_urls ? `${prev.image_urls}\n${url}` : url
+                                }));
+                            }} />
                         </div>
                     </div>
 

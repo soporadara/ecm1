@@ -35,7 +35,7 @@ export default function Settings() {
                 {/* Header */}
                 <div className="bg-white dark:bg-gray-900 px-5 pt-8 pb-4 shadow-sm sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800">
                     <div className="flex items-center gap-3">
-                        <Link href="/profile" className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-brand-primary transition-colors">
+                        <Link href="/profile" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-brand-primary transition-colors">
                             <ArrowLeft className="w-5 h-5" />
                         </Link>
                         <h1 className="text-2xl font-black text-gray-950 dark:text-white">Settings</h1>

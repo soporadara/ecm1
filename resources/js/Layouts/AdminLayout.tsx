@@ -8,6 +8,7 @@ import ConfirmModal from '@/Components/ConfirmModal';
 interface Props {
     children: ReactNode;
     title?: string;
+    description?: string;
     actions?: ReactNode;
 }
 
@@ -133,9 +134,11 @@ const NavGroup = ({
     );
 };
 
-export default function AdminLayout({ children, title, actions }: Props) {
+export default function AdminLayout({ children, title, description, actions }: Props) {
     const { auth, ziggy, general_settings, admin_counts } = usePage().props as any;
+    const { component } = usePage();
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/admin';
+    const isDashboard = component === 'Admin/Dashboard';
 
     const [collapsed, setCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -625,10 +628,19 @@ export default function AdminLayout({ children, title, actions }: Props) {
                                 <h1 className="truncate text-xl font-black text-admin-text">{title || 'Dashboard'}</h1>
                             </div>
                         <div className="hidden md:block">
-                            <h1 className="text-[26px] font-bold text-admin-text flex items-center gap-2">
-                                Good morning {auth?.user?.name?.split(' ')[0]} <span className="text-2xl">👋</span>
-                            </h1>
-                            <p className="text-[13px] text-admin-text-muted mt-1 font-medium">Time to rise up for today's tasks</p>
+                            {isDashboard ? (
+                                <>
+                                    <h1 className="text-[26px] font-bold text-admin-text flex items-center gap-2">
+                                        Good morning {auth?.user?.name?.split(' ')[0]} <span className="text-2xl">👋</span>
+                                    </h1>
+                                    <p className="text-[13px] text-admin-text-muted mt-1 font-medium">Time to rise up for today's tasks</p>
+                                </>
+                            ) : (
+                                <>
+                                    <h1 className="text-2xl font-black text-admin-text">{title || 'Dashboard'}</h1>
+                                    {description && <p className="text-[13px] text-admin-text-muted mt-1 font-medium">{description}</p>}
+                                </>
+                            )}
                         </div>
                         </div>
                     </div>

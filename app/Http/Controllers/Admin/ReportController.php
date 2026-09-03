@@ -135,7 +135,7 @@ class ReportController extends Controller
             $file = fopen('php://output', 'w');
             
             // Add metadata
-            fputcsv($file, [ucfirst(str_replace('_', ' ', $data['type'])) . ' Report']);
+            fputcsv($file, ['MVM Logistics - ' . ucfirst(str_replace('_', ' ', $data['type'])) . ' Report']);
             fputcsv($file, ['Generated on:', now()->format('Y-m-d H:i:s')]);
             if ($data['startDate'] || $data['endDate']) {
                 fputcsv($file, ['Period:', ($data['startDate'] ?? 'Beginning') . ' to ' . ($data['endDate'] ?? 'Now')]);

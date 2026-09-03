@@ -8,20 +8,23 @@ interface Props {
 interface State {
     hasError: boolean;
     error: Error | null;
+    errorInfo: ErrorInfo | null;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
     public state: State = {
         hasError: false,
-        error: null
+        error: null,
+        errorInfo: null,
     };
 
     public static getDerivedStateFromError(error: Error): State {
         // Update state so the next render will show the fallback UI.
-        return { hasError: true, error };
+        return { hasError: true, error, errorInfo: null };
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        this.setState({ error, errorInfo });
         console.error("Uncaught error:", error, errorInfo);
     }
 
@@ -43,9 +46,11 @@ export default class ErrorBoundary extends Component<Props, State> {
                                 We could not retrieve this product. Please check the link or use Manual Order.
                             </p>
                         </div>
-                        {process.env.NODE_ENV === 'development' && this.state.error && (
+                        {this.state.error && (
                             <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/10 rounded-lg text-left overflow-auto text-xs text-red-700 dark:text-red-400">
                                 {this.state.error.toString()}
+                                <br />
+                                {this.state.errorInfo?.componentStack}
                             </div>
                         )}
                         <div className="mt-8 flex flex-col space-y-3">

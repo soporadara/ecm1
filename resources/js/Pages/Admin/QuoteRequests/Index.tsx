@@ -6,13 +6,7 @@ import { useEffect } from 'react';
 
 interface QuoteRequest {
     id: number;
-    origin: string;
-    destination: string;
-    product_type: string;
-    quantity: number;
-    weight: string | null;
-    dimensions: string | null;
-    shipping_method: string;
+    description: string;
     name: string;
     phone: string;
     email: string | null;
@@ -127,8 +121,7 @@ export default function Index({ quotes, filters, statuses }: Props) {
                                 <thead className="bg-slate-50 dark:bg-slate-800/50">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 dark:text-white sm:pl-6">Contact</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900 dark:text-white">Route</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900 dark:text-white">Product Info</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900 dark:text-white">Description</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900 dark:text-white">Status</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900 dark:text-white">Date</th>
                                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -144,13 +137,8 @@ export default function Index({ quotes, filters, statuses }: Props) {
                                                 <div className="text-slate-500">{quote.phone}</div>
                                                 {quote.email && <div className="text-slate-500">{quote.email}</div>}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500 dark:text-slate-400">
-                                                <div className="font-medium text-slate-900 dark:text-white">{quote.origin} → {quote.destination}</div>
-                                                <div>{quote.shipping_method}</div>
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500 dark:text-slate-400">
-                                                <div className="font-medium text-slate-900 dark:text-white">{quote.product_type} ({quote.quantity} pcs)</div>
-                                                <div className="text-xs">W: {quote.weight || '-'}, D: {quote.dimensions || '-'}</div>
+                                            <td className="px-3 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-md">
+                                                <div className="font-medium text-slate-900 dark:text-white whitespace-pre-wrap">{quote.description}</div>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm">
                                                 <select

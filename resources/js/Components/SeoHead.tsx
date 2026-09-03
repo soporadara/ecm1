@@ -61,6 +61,8 @@ export default function SeoHead({ title, description, image, keywords }: SeoHead
             {/* JSON-LD Schemas */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+            
+            <link rel="canonical" href={`https://mvmlogistics.asia${usePage().url.split('?')[0]}`} />
         </Head>
     );
 }

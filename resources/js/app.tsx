@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { CurrencyProvider } from './Contexts/CurrencyContext';
 import { Toaster } from 'react-hot-toast';
+import ErrorBoundary from './Components/ErrorBoundary';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Pengu';
 
@@ -23,7 +24,9 @@ createInertiaApp({
 
         root.render(
             <CurrencyProvider defaultCurrency={defaultCurrency}>
-                <App {...props} />
+                <ErrorBoundary>
+                    <App {...props} />
+                </ErrorBoundary>
                 <Toaster 
                     position="bottom-right"
                     toastOptions={{

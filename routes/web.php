@@ -88,13 +88,12 @@ Route::middleware('guest')->group(function () {
         Route::post('/register', [AuthController::class, 'storeRegister']);
         Route::get('/cms/login', [AuthController::class, 'showCmsLogin'])->name('cms.login');
         Route::post('/cms/login', [AuthController::class, 'cmsLogin'])->name('cms.login.store');
-        
-        Route::post('/forgot-password/send-pin', [AuthController::class, 'sendResetPin'])->name('password.send-pin');
-        Route::post('/forgot-password/verify-pin', [AuthController::class, 'verifyResetPin'])->name('password.verify-pin');
-        Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
     });
     
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    // Deprecated forgot-password routes, redirect to telegram
+    Route::get('/forgot-password', function () {
+        return redirect('https://t.me/MVMLogistic');
+    })->name('password.request');
     Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
 });
 
@@ -209,6 +208,7 @@ Route::middleware(['auth:admin', 'is_admin'])->prefix('admin')->name('admin.')->
     Route::delete('comments/{comment}', [\App\Http\Controllers\Admin\PostController::class, 'deleteComment'])->name('comments.destroy');
     Route::post('comments/{comment}/reply', [\App\Http\Controllers\Admin\PostController::class, 'replyComment'])->name('comments.reply');
     Route::resource('post-categories', \App\Http\Controllers\Admin\PostCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::post('posts/upload-image', [\App\Http\Controllers\Admin\PostController::class, 'uploadImage'])->name('posts.upload-image');
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->except(['show']);
     Route::resource('popups', \App\Http\Controllers\Admin\PopupController::class)->except(['show']);
     Route::get('available-sites', [\App\Http\Controllers\Admin\MarketplaceAdminController::class, 'index'])->name('available-sites.index');

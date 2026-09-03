@@ -383,9 +383,9 @@ export default function Login() {
                                         />
                                         {t('login.remember_me')}
                                     </label>
-                                    <Link href="/forgot-password" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">
-                                        {t('login.forgot_password')}
-                                    </Link>
+                                    <a href="https://t.me/MVMLogistic" target="_blank" rel="noopener noreferrer" className="font-black text-[#a3747d] hover:text-[#835d65] hover:underline">
+                                        Forgot password?
+                                    </a>
                                 </div>
 
                                 <button

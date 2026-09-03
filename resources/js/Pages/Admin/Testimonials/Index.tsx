@@ -274,6 +274,7 @@ export default function Index({ testimonials: initialTestimonials }: any) {
                                             setData(d => ({ ...d, image: e.target.files ? e.target.files[0] : null, remove_image: false }));
                                         }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                     </div>
+                                    {errors.image && <div className="text-red-500 text-xs mt-1">{errors.image}</div>}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-admin-border/50">
@@ -289,6 +290,7 @@ export default function Index({ testimonials: initialTestimonials }: any) {
                                                 setData(d => ({ ...d, product_image_1: e.target.files ? e.target.files[0] : null, remove_product_image_1: false }));
                                             }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                         </div>
+                                        {errors.product_image_1 && <div className="text-red-500 text-xs mt-1">{errors.product_image_1}</div>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold mb-1">Product Image 2 (Optional)</label>
@@ -302,6 +304,7 @@ export default function Index({ testimonials: initialTestimonials }: any) {
                                                 setData(d => ({ ...d, product_image_2: e.target.files ? e.target.files[0] : null, remove_product_image_2: false }));
                                             }} className="w-full rounded-xl border border-admin-border/50 text-admin-text text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-admin-primary/10 file:text-admin-primary hover:file:bg-admin-primary/20 transition-colors cursor-pointer bg-admin-surface-muted" />
                                         </div>
+                                        {errors.product_image_2 && <div className="text-red-500 text-xs mt-1">{errors.product_image_2}</div>}
                                     </div>
                                 </div>
 

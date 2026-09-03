@@ -161,7 +161,7 @@ export default function CmsLogin() {
                             <label className="block">
                                 <span className={`mb-1.5 flex items-center justify-between gap-4 text-sm font-black ${lightMode ? 'text-slate-600' : 'text-slate-200'}`}>
                                     Password
-                                    <Link href="/forgot-password" className="text-xs font-black text-blue-500 hover:underline transition-colors hover:text-blue-400">Forgot?</Link>
+                                    <a href="https://t.me/MVMLogistic" target="_blank" rel="noopener noreferrer" className="text-xs font-black text-blue-500 hover:underline transition-colors hover:text-blue-400">Forgot?</a>
                                 </span>
                                 <span className="relative block">
                                     <span className={`pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 ${lightMode ? 'text-slate-500' : 'text-slate-400'}`}>

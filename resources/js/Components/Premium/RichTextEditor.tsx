@@ -245,7 +245,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
             </div>
 
             {/* Editor Area */}
-            <div className="bg-white dark:bg-gray-900 min-h-[300px] cursor-text" onClick={() => editor.commands.focus()}>
+            <div className="bg-white dark:bg-gray-900 min-h-[300px] max-h-[600px] overflow-y-auto cursor-text" onClick={() => editor.commands.focus()}>
                 <EditorContent editor={editor} />
             </div>
         </div>

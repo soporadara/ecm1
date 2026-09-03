@@ -40,10 +40,10 @@ export default function SupportFAB() {
                 ></div>
             )}
 
-            <div className="fixed bottom-32 right-4 lg:bottom-6 lg:right-6 z-[110] flex flex-col items-end gap-3">
+            <div className="fixed bottom-32 right-4 lg:bottom-6 lg:right-6 z-[110] flex flex-col items-end gap-3 pointer-events-none">
                 {/* Expanded Icons (Visible when clicked) */}
                 <div 
-                    className={`flex flex-col gap-3 transition-all duration-300 transform origin-bottom ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-4 pointer-events-none'}`}
+                    className={`flex flex-col gap-3 transition-all duration-300 transform origin-bottom ${isOpen ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto' : 'scale-75 opacity-0 translate-y-4 pointer-events-none'}`}
                 >
                     {links.map((link) => {
                         let linkUrl = link.url || '';
@@ -128,7 +128,7 @@ export default function SupportFAB() {
                 </div>
 
                 <div 
-                    className="relative flex items-center justify-center bg-orange-500 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-2xl hover:bg-orange-600 hover:shadow-orange-600/50 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 cursor-pointer group"
+                    className="relative flex items-center justify-center bg-orange-500 text-white p-4 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-2xl hover:bg-orange-600 hover:shadow-orange-600/50 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 cursor-pointer group pointer-events-auto"
                     onClick={() => setIsOpen(!isOpen)}
                     aria-label="Support contacts"
                 >

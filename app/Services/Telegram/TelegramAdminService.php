@@ -142,7 +142,7 @@ class TelegramAdminService
                     ['text' => "{$displayName} ({$code})", 'callback_data' => "view_user_{$u->id}"]
                 ];
             }
-            $markup['inline_keyboard'][] = [['text' => '⬅️ Cancel', 'callback_data' => 'admin_menu']];
+            $markup['inline_keyboard'][] = [['text' => '🔵 Cancel', 'callback_data' => 'admin_menu']];
             
             return $this->bot->sendMessage($chatId, $msg, $markup);
         }
@@ -217,7 +217,7 @@ class TelegramAdminService
             $text = "No orders found for status: " . ucfirst($status) . ".";
             $markup = [
                 'inline_keyboard' => [
-                    [['text' => '⬅️ Back to Menu', 'callback_data' => 'admin_menu']]
+                    [['text' => '🔵 Back to Menu', 'callback_data' => 'admin_menu']]
                 ]
             ];
             if ($messageId) {
@@ -235,7 +235,7 @@ class TelegramAdminService
             ];
         }
 
-        $markup['inline_keyboard'][] = [['text' => '⬅️ Back to Menu', 'callback_data' => 'admin_menu']];
+        $markup['inline_keyboard'][] = [['text' => '🔵 Back to Menu', 'callback_data' => 'admin_menu']];
 
         if ($messageId) {
             return $this->bot->editMessageText($chatId, $messageId, $text, $markup);
@@ -281,8 +281,8 @@ class TelegramAdminService
 
         $markup = [
             'inline_keyboard' => [
-                [['text' => '📄 Generate PDF Receipt', 'callback_data' => "pdf_order_{$order->id}"]],
-                [['text' => '⬅️ Back', 'callback_data' => "admin_orders_{$order->status}"]]
+                [['text' => '📗 Generate PDF Receipt', 'callback_data' => "pdf_order_{$order->id}"]],
+                [['text' => '🔵 Back', 'callback_data' => "admin_orders_{$order->status}"]]
             ]
         ];
 
@@ -374,7 +374,7 @@ class TelegramAdminService
         
         $markup = [
             'inline_keyboard' => [
-                [['text' => '⬅️ Back to Menu', 'callback_data' => "admin_menu"]]
+                [['text' => '🔵 Back to Menu', 'callback_data' => "admin_menu"]]
             ]
         ];
         

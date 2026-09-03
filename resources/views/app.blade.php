@@ -3,9 +3,32 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <meta name="description" content="MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from China, Vietnam, etc to Cambodia or From Cambodia to Vietnam.">
-        <meta name="keywords" content="Logistics from Vietnam to Cambodia, China to Cambodia, Cross-Border Logistics, MVM Logistics, ក្រុមហ៊ុនដឹកជញ្ជូន, ដឹកជញ្ជូនពីចិនទៅខ្មែរ, Vận chuyển Việt Nam Campuchia, manual order management application">
-        <title inertia>MVM Logistics — Cross-Border Logistics - Vietnam-Cambodia</title>
+        @php
+            $pageTitle = 'MVM Logistics — Cross-Border Logistics - Vietnam-Cambodia';
+            $pageDesc = 'MVM Logistics is a cross-border logistics and manual order management application. Our platform empowers users to request product purchasing from China, Vietnam, etc to Cambodia or From Cambodia to Vietnam.';
+            $pageImage = config('app.url', 'https://mvmlogistics.asia') . '/logo.png';
+            
+            if (isset($page['props']['post'])) {
+                $p = (array) $page['props']['post'];
+                $pageTitle = $p['seo_title'] ?? $p['title'] ?? $pageTitle;
+                $pageDesc = $p['seo_description'] ?? strip_tags(substr($p['content'] ?? '', 0, 160)) ?: $pageDesc;
+                $pageImage = $p['image'] ?? $pageImage;
+            } else if (isset($page['props']['page'])) {
+                $p = (array) $page['props']['page'];
+                $pageTitle = $p['seo_title'] ?? $p['title'] ?? $pageTitle;
+                $pageDesc = $p['seo_description'] ?? $pageDesc;
+            }
+        @endphp
+        <title inertia>{{ $pageTitle }}</title>
+        <meta name="description" content="{{ $pageDesc }}" inertia>
+        <meta property="og:title" content="{{ $pageTitle }}" inertia>
+        <meta property="og:description" content="{{ $pageDesc }}" inertia>
+        <meta property="og:image" content="{{ $pageImage }}" inertia>
+        <meta name="twitter:card" content="summary_large_image" inertia>
+        <meta name="twitter:title" content="{{ $pageTitle }}" inertia>
+        <meta name="twitter:description" content="{{ $pageDesc }}" inertia>
+        <meta name="twitter:image" content="{{ $pageImage }}" inertia>
+        
         <script>
             (() => {
                 try {
@@ -29,6 +52,7 @@
         <link rel="icon" type="image/png" sizes="512x512" href="{{ $faviconHref }}">
         <link rel="shortcut icon" href="/favicon.ico?v={{ file_exists(public_path('favicon.ico')) ? filemtime(public_path('favicon.ico')) : time() }}">
         <link rel="apple-touch-icon" href="{{ $faviconHref }}">
+        <link rel="canonical" href="{{ rtrim(config('app.url', 'https://mvmlogistics.asia'), '/') . request()->getPathInfo() }}">
         
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

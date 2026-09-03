@@ -31,16 +31,10 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
     const hasBanners = banners && banners.length > 0;
     const { data, setData, post, processing, errors, reset } = useForm({
-        origin: '',
-        destination: '',
-        product_type: '',
-        quantity: '',
-        weight: '',
-        dimensions: '',
-        shipping_method: 'Standard Delivery',
         name: '',
         phone: '',
         email: '',
+        description: '',
     });
     
     useEffect(() => {
@@ -378,7 +372,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                             <div>
                                                 <h4 className="font-bold text-gray-950 dark:text-white text-sm">{testimonial.customer_name}</h4>
                                                 <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-primary" />
+                                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
                                                     Verified Customer
                                                 </p>
                                             </div>
@@ -437,7 +431,7 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                                             </div>
                                         )}
                                         {post.category && (
-                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-md text-[11px] font-bold text-brand-primary tracking-wide uppercase shadow-sm">
+                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-md text-[11px] font-bold text-brand-primary dark:text-black tracking-wide uppercase shadow-sm">
                                                 {post.category.name}
                                             </div>
                                         )}
@@ -574,58 +568,26 @@ export default function Home({ banners, bannerMode = 'slideshow', page, marketpl
                             });
                         }}>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.origin', 'Origin')}</label>
-                                <input type="text" value={data.origin} onChange={e => setData('origin', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="e.g. Guangzhou, China" required />
-                                {errors.origin && <div className="text-red-500 text-xs mt-1">{errors.origin}</div>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.destination', 'Destination')}</label>
-                                <input type="text" value={data.destination} onChange={e => setData('destination', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="e.g. Phnom Penh, Cambodia" required />
-                                {errors.destination && <div className="text-red-500 text-xs mt-1">{errors.destination}</div>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.product_type', 'Product Type')}</label>
-                                <input type="text" value={data.product_type} onChange={e => setData('product_type', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="e.g. Electronics, Clothing" required />
-                                {errors.product_type && <div className="text-red-500 text-xs mt-1">{errors.product_type}</div>}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.quantity', 'Quantity')}</label>
-                                <input type="number" value={data.quantity} onChange={e => setData('quantity', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="e.g. 100" required />
-                                {errors.quantity && <div className="text-red-500 text-xs mt-1">{errors.quantity}</div>}
-                            </div>
-                            <div className="md:col-span-2 grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.weight', 'Weight (kg)')}</label>
-                                    <input type="text" value={data.weight} onChange={e => setData('weight', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="e.g. 50 kg" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.dimensions', 'Dimensions (cm)')}</label>
-                                    <input type="text" value={data.dimensions} onChange={e => setData('dimensions', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder="L x W x H" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.shipping_method', 'Preferred Shipping Method')}</label>
-                                <select value={data.shipping_method} onChange={e => setData('shipping_method', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50">
-                                    <option>{t('quote.method_standard', 'Standard Delivery')}</option>
-                                    <option>{t('quote.method_express', 'Express Air Freight')}</option>
-                                    <option>{t('quote.method_sea', 'Sea Freight')}</option>
-                                    <option>{t('quote.method_land', 'Land Transport')}</option>
-                                </select>
-                            </div>
-                            <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.name', 'Name')}</label>
                                 <input type="text" value={data.name} onChange={e => setData('name', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder={t('quote.name_placeholder', 'Your Name')} required />
                                 {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
                             </div>
                             <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.email', 'Email')}</label>
+                                <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder={t('quote.email_placeholder', 'Your Email Address')} />
+                                {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
+                            </div>
+                            <div className="md:col-span-2">
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.phone', 'Phone / Telegram')}</label>
                                 <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder={t('quote.phone_placeholder', 'Your Phone Number')} required />
                                 {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.email', 'Email')}</label>
-                                <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder={t('quote.email_placeholder', 'Your Email Address')} />
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('quote.description', 'Quote Description')}</label>
+                                <textarea value={data.description} onChange={e => setData('description', e.target.value)} rows={4} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 py-3 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-brand-primary/50" placeholder={t('quote.description_placeholder', 'Please describe what you need to ship...')} required></textarea>
+                                {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
                             </div>
+                            
                             <div className="md:col-span-2 mt-4 text-center">
                                 <button disabled={processing} type="submit" className="inline-flex min-h-14 items-center justify-center rounded-xl bg-brand-primary px-10 text-base font-black uppercase tracking-wider text-white shadow-lg shadow-brand-primary/20 transition hover:bg-brand-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 disabled:opacity-50">
                                     {processing ? '...' : t('quote.submit_btn', 'Get Quote')}

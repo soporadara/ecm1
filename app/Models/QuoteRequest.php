@@ -10,13 +10,7 @@ class QuoteRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'origin',
-        'destination',
-        'product_type',
-        'quantity',
-        'weight',
-        'dimensions',
-        'shipping_method',
+        'description',
         'name',
         'phone',
         'email',

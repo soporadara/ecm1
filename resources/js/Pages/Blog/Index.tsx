@@ -29,7 +29,7 @@ export default function Index({ posts }: any) {
                                         </div>
                                     )}
                                     {post.category && (
-                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-md text-[11px] font-bold text-[#1c55c0] dark:text-[#1c55c0] tracking-wide uppercase shadow-sm">
+                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-md text-[11px] font-bold text-[#1c55c0] dark:text-black tracking-wide uppercase shadow-sm">
                                             {post.category.name}
                                         </div>
                                     )}
